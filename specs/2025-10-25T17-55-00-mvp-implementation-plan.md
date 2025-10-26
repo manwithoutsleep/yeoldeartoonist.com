@@ -27,6 +27,13 @@ This document outlines the detailed implementation phases for building yeoldeart
 - ✅ Email: Resend
 - ✅ Hosting: Vercel + Porkbun DNS
 
+**Additional References**
+
+For additional details on this project refer to these documents:
+
+- @specs\architecture-plan.md
+- @specs\architecture-summary.md
+
 ---
 
 ## Phase 1: Foundation (Week 1-2)
@@ -135,8 +142,8 @@ Set up the complete project infrastructure, database, and development environmen
   - `artwork` (public)
   - `events` (public)
   - `projects` (public)
-  - `admin` (private)
-  - `site` (public)
+  - `admin` (private) (I don't know that we'll need this, discuss with me before implementing)
+  - `site` (public) (I don't know that we'll need this, discuss with me before implementing)
 - [ ] Create storage policies as documented in architecture-plan.md section 5.2
 
 #### 1.7 TypeScript Types
@@ -156,12 +163,12 @@ Set up the complete project infrastructure, database, and development environmen
 
 #### 1.9 Git & Deployment Setup
 
-- [ ] Initialize git and make first commit
-- [ ] Create GitHub repository
-- [ ] Push to GitHub
-- [ ] Connect Vercel to GitHub repository
-- [ ] Configure Vercel environment variables (copy from `.env.local`)
-- [ ] Test that Vercel preview deployment works
+- [x] Initialize git and make first commit
+- [x] Create GitHub repository
+- [x] Push to GitHub
+- [x] Connect Vercel to GitHub repository
+- [x] Configure Vercel environment variables (copy from `.env.local`)
+- [x] Test that Vercel preview deployment works
 
 #### 1.10 Documentation
 

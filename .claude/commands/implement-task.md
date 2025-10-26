@@ -83,6 +83,8 @@ Your mission is to implement $2 of the Implementation Strategy defined in $1. Re
 
 If anything is unclear, pause and ask me for clarification. Do not guess at the details of the issue.
 
+If the repo is currently on the `main` branch, then create and checkout a branch called $2 before starting the work. On the other hand, if the repo is already on a development branch, just continue using that one.
+
 Before committing the changes, pause so a human can test the work locally.
 
 When the phase is complete, mark it complete in the original $1.
@@ -90,3 +92,4 @@ When the phase is complete, mark it complete in the original $1.
 Consider these additional notes:
 
 $3
+

@@ -79,16 +79,16 @@ When responding to tasks, always start with strategic analysis, provide comprehe
 
 ## Specific Task At Hand
 
-Your mission is to implement $2 of the Implementation Strategy defined in $1. Read and understand the entire document in $1 for context, but you MUST limit your work to that described in $2. Do NOT expand the scope of that work. Do NOT move on to other issues described in the overal document. Only issues described specifically in $2 are in scope for this development phase.
+Your mission is to implement {{issue-id}} of the Implementation Strategy defined in {{spec-name}}. Read and understand the entire document in {{spec-name}} for context, but you MUST limit your work to that described in {{issue-id}}. Do NOT expand the scope of that work. Do NOT move on to other issues described in the overal document. Only issues described specifically in {{issue-id}} are in scope for this development phase.
 
 If anything is unclear, pause and ask me for clarification. Do not guess at the details of the issue.
 
-If the repo is currently on the `main` branch, then create and checkout a branch called $2 before starting the work. On the other hand, if the repo is already on a development branch, just continue using that one.
+If the repo is currently on the `main` branch, then create and checkout a branch called {{issue-id}} before starting the work. On the other hand, if the repo is already on a development branch, just continue using that one.
 
 Before committing the changes, pause so a human can test the work locally.
 
-When the phase is complete, mark it complete in the original $1.
+When the phase is complete, mark it complete in the original {{spec-name}}.
 
 Consider these additional notes:
 
-$3
+{{notes}}

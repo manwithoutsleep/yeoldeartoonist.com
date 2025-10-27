@@ -33,6 +33,7 @@ For additional details on this project refer to these documents:
 
 - @specs\architecture-plan.md
 - @specs\architecture-summary.md
+- @specs\2025-10-25T11-09-00-initial-plan-discussion.md
 
 ---
 
@@ -208,12 +209,24 @@ Set up the complete project infrastructure, database, and development environmen
 
 Build all customer-facing pages with responsive design and optimized images.
 
+### Key Decision: Static Branding Assets
+
+Logo, navigation images, section header images, and scroll background are stored as static assets in `/public/images/` and served from Vercel CDN (not Supabase Storage). **Rationale**: These are structural/branding elements that rarely change; storing locally provides faster performance for above-the-fold content and simplifies deployment.
+
 ### Tasks
 
 #### 2.1 Layout & Navigation
 
 - [ ] Create `src/components/layout/Header.tsx` - Logo and top section
+    - See @specs\wireframes\01-Home-Page.jpg for header layout
+    - See @specs\assets\logo.jpg for the site logo
+    - Header background is white with black text
 - [ ] Create `src/components/layout/Navigation.tsx` - Main nav with 4 links
+    - See @specs\wireframes\01-Home-Page.jpg for header layout
+    - **Desktop**: Navigation links as image buttons (individual nav-\*.jpg files from @specs\assets\navigation\)
+    - **Mobile**: Responsive text/icon navigation (switches from image to text for better mobile UX)
+    - See @specs\assets\navigation\navigation.jpg for reference of all buttons
+    - Navigation background is white with black text
 - [ ] Create `src/components/layout/Footer.tsx` - Contact info, copyright, socials
 - [ ] Create `src/app/layout.tsx` - Root layout with header/nav/footer
 - [ ] Implement responsive design (mobile-first)
@@ -230,6 +243,10 @@ Build all customer-facing pages with responsive design and optimized images.
 
 #### 2.3 Image Management
 
+- [ ] Copy static branding assets to `/public/images/`
+    - These are static assets served from Vercel CDN (not Supabase Storage)
+    - Assets: logo.jpg, scroll.jpg, nav-\*.jpg files, section-header images (gallery.jpg, shoppe.jpg, contact.jpg, in-the-works.jpg)
+    - Rationale: Structural/branding elements that rarely change; faster performance for above-the-fold content
 - [ ] Create `src/lib/utils/image.ts` - Image URL helpers
 - [ ] Create `src/components/artwork/ArtworkImage.tsx` - Optimized image component
 - [ ] Configure Next.js image optimization in `next.config.js`
@@ -239,9 +256,14 @@ Build all customer-facing pages with responsive design and optimized images.
 #### 2.4 Home Page
 
 - [ ] Create `src/app/page.tsx` - Home page
+    - See @specs\wireframes\01-Home-Page.jpg for page layout
+    - Page background is black
+    - Page text is on top of the scroll image from @specs\assets\scroll.jpg
 - [ ] Build hero section with scroll image
-- [ ] Add navigation preview cards for Gallery, Shoppe, In The Works, Contact
-- [ ] Display featured artwork samples
+- [ ] Add large, clickable navigation preview cards for Gallery, Shoppe, In The Works, Contact
+    - Use section-header images from @specs\assets\section-headers\ for each card
+    - Each card links to its respective section
+    - Use placeholder text for page descriptions (content to be provided later)
 - [ ] Implement ISR with `revalidate = 3600`
 - [ ] Make fully responsive
 - [ ] Update site metadata in `src/app/layout.tsx`:
@@ -252,10 +274,22 @@ Build all customer-facing pages with responsive design and optimized images.
 #### 2.5 Gallery Page
 
 - [ ] Create `src/app/gallery/page.tsx` - Gallery listing
+    - See @specs\wireframes\02-Gallery.jpg for page layout
+    - Page background is white with black text
 - [ ] Create gallery grid with thumbnail images
-- [ ] Add artwork title and description
+- [ ] Add artwork title and optional description
 - [ ] Create `src/app/gallery/[slug]/page.tsx` - Individual artwork detail
 - [ ] Build detailed artwork view (large image, full description, metadata)
+    - For MVP we will not use any of these fields on the Gallery page:
+        - price
+        - original_price
+        - sku
+        - inventory_count
+        - is_limited_edition
+        - medium
+        - year_created
+        - is_featured
+        - tags
 - [ ] Add back link to gallery
 - [ ] Implement `generateStaticParams()` for dynamic routes
 - [ ] Make fully responsive
@@ -263,12 +297,22 @@ Build all customer-facing pages with responsive design and optimized images.
 #### 2.6 Shoppe Page (Without Cart)
 
 - [ ] Create `src/app/shoppe/page.tsx` - Product listing
+    - See @specs\wireframes\03-Shoppe.jpg for page layout
+    - Page background is white with black text
 - [ ] Build product grid with:
     - Thumbnail image
-    - Title and description
+    - Title and optional description
     - Price display
     - Quantity selector UI (non-functional for now)
     - "Add to Cart" button (non-functional for now)
+    - For MVP we will not use any of these fields on the Shoppe page:
+        - original_price
+        - sku
+        - is_limited_edition
+        - medium
+        - year_created
+        - is_featured
+        - tags
 - [ ] Implement ISR for product listing
 - [ ] Make fully responsive
 - [ ] Note: Cart functionality added in Phase 3
@@ -276,27 +320,35 @@ Build all customer-facing pages with responsive design and optimized images.
 #### 2.7 In The Works Page
 
 - [ ] Create `src/app/in-the-works/page.tsx`
+    - See @specs\wireframes\04-In-The-Works.jpg for page layout
+    - Page background is white with black text
 - [ ] Display projects section with:
-    - Project title, description, progress
-    - Expected completion date
-    - Status (planning, active, completed)
+    - Project title, description, image
+    - For MVP we will not use any of these fields on the Projects section:
+        - status
+        - progress_percentage
+        - expected_competion_date
 - [ ] Display events section with:
-    - Event title, date range, location
-    - Booth number, venue details
-    - Links to convention website
+    - Event title, description, image, date range, location
+    - For MVP we will not use any of these fields on the Events section:
+        - venue_name
+        - booth_number
+        - convention_url
 - [ ] Sort upcoming events first
 - [ ] Make fully responsive
 
 #### 2.8 Contact Page (Meet The Artist)
 
 - [ ] Create `src/app/contact/page.tsx`
-- [ ] Display "Meet The Artist: [Name]" title
-- [ ] Add artist image (left side)
+    - See @specs\wireframes\05-Contact.jpg for page layout
+    - Page background is black with white text
+- [ ] Display "Meet The Artist: [Name]" title and page metadata
+- [ ] Add artist image (left side) from @specs\assets\projects\meet-the-artist.jpg
 - [ ] Add artist bio/description (right side)
 - [ ] Display contact information:
     - Email
+    - USPS address "PO Box 123, Columbia, MO, 65201, US"
     - Social media links
-    - Convention booth info
 - [ ] Simple contact form (for Phase 4)
 - [ ] Make fully responsive (stack on mobile)
 

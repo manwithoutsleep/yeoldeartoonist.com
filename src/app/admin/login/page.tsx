@@ -1,9 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/hooks/useAuth';
+
+/**
+ * Sanitize authentication error messages to prevent account enumeration attacks.
+ * Reveals only generic errors instead of specific user/password errors.
+ */
+function sanitizeAuthError(errorMessage: string): string {
+    if (!errorMessage) {
+        return 'An error occurred. Please try again.';
+    }
+
+    const lowerMessage = errorMessage.toLowerCase();
+
+    // Prevent revealing whether an email exists in the system
+    if (
+        lowerMessage.includes('invalid') ||
+        lowerMessage.includes('no user') ||
+        lowerMessage.includes('not found')
+    ) {
+        return 'Invalid email or password';
+    }
+
+    // Network/service errors
+    if (
+        lowerMessage.includes('network') ||
+        lowerMessage.includes('timeout') ||
+        lowerMessage.includes('service unavailable')
+    ) {
+        return 'Authentication service temporarily unavailable. Please try again.';
+    }
+
+    // Generic fallback for unexpected errors
+    return 'An error occurred. Please try again.';
+}
 
 export default function LoginPage() {
     const router = useRouter();
@@ -13,50 +45,97 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-    // Check if user is already authenticated
+    // Check if user is already authenticated on component mount
+    // Prevents redirect race condition with cleanup flag
     useEffect(() => {
-        const checkAuth = async () => {
-            const supabase = createClient();
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
+        let isMounted = true;
 
-            if (session) {
-                // User is already logged in, redirect to admin dashboard
-                router.push('/admin');
+        const checkAuth = async () => {
+            // Check middleware cache first - if admin_session cookie exists and is valid, user is authenticated
+            const cookies = document.cookie;
+            if (cookies.includes('admin_session')) {
+                const adminSessionCookie = cookies
+                    .split('; ')
+                    .find((row) => row.startsWith('admin_session='));
+
+                if (adminSessionCookie) {
+                    try {
+                        const sessionValue = decodeURIComponent(
+                            adminSessionCookie.split('=')[1]
+                        );
+                        const sessionData = JSON.parse(sessionValue);
+
+                        // Verify session hasn't expired
+                        if (sessionData?.expiresAt > Date.now() && isMounted) {
+                            // User is already logged in, redirect to admin dashboard
+                            router.push('/admin');
+                            return;
+                        }
+                    } catch {
+                        // Cookie parsing failed, continue with normal flow
+                        if (process.env.NODE_ENV === 'development') {
+                            console.debug('Session cookie parsing failed');
+                        }
+                    }
+                }
             }
-            setIsCheckingAuth(false);
+
+            if (isMounted) {
+                setIsCheckingAuth(false);
+            }
         };
 
         checkAuth();
+
+        return () => {
+            isMounted = false;
+        };
     }, [router]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            setError(null);
 
-        if (!email || !password) {
-            setError('Email and password are required');
-            return;
-        }
+            if (!email || !password) {
+                setError('Email and password are required');
+                return;
+            }
 
-        const { data, error: signInError } = await signIn(email, password);
+            const { data, error: signInError } = await signIn(email, password);
 
-        if (signInError) {
-            setError(signInError.message);
-            return;
-        }
+            if (signInError) {
+                // Sanitize error message to prevent account enumeration
+                const sanitized = sanitizeAuthError(signInError.message);
+                setError(sanitized);
+                return;
+            }
 
-        if (data?.session) {
-            // Redirect to admin dashboard on successful login
-            router.push('/admin');
-        }
-    };
+            if (data?.session) {
+                // Redirect to admin dashboard on successful login
+                router.push('/admin');
+            }
+        },
+        [email, password, signIn, router]
+    );
+    // Dependencies are necessary: email and password are form state that changes,
+    // signIn is a stable callback from useAuth, router is from useRouter.
+    // This callback must update whenever these values change to ensure fresh values in the handler.
 
     if (isCheckingAuth) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div>Loading...</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
+                    </div>
+                    <p className="text-gray-600 font-medium">
+                        Checking authentication...
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                        Redirecting if you are already logged in...
+                    </p>
+                </div>
             </div>
         );
     }
@@ -113,7 +192,10 @@ export default function LoginPage() {
                     {(error || authError) && (
                         <div className="rounded-md bg-red-50 p-4">
                             <div className="text-sm font-medium text-red-800">
-                                {error || authError?.message}
+                                {error ||
+                                    (authError?.message
+                                        ? sanitizeAuthError(authError.message)
+                                        : 'An error occurred. Please try again.')}
                             </div>
                         </div>
                     )}

@@ -516,18 +516,45 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Set up Supabase Auth in dashboard
 - [ ] Create first admin user in administrators table
 - [ ] Create `src/app/admin/login/page.tsx` - Admin login page
+    - [ ] Include session checking with unmount cleanup flag
+    - [ ] Add visual loading state with spinner and descriptive text
+    - [ ] Implement error sanitization to prevent account enumeration attacks
+    - [ ] Use useCallback for form submission with proper dependencies
 - [ ] Create login form with email/password
-- [ ] Implement Supabase Auth signIn
+- [ ] Implement Supabase Auth signIn with normalized error handling
+    - [ ] All errors should be normalized to consistent AuthError type
+    - [ ] Error messages should be sanitized (generic messages for "invalid" errors)
 - [ ] Redirect authenticated users to dashboard
+    - [ ] Check admin_session cookie (set by middleware) on initial load
+    - [ ] Prevent race condition with isMounted flag in useEffect
+    - [ ] Redirect if valid cached session exists
 - [ ] Add logout functionality
+    - [ ] Clear admin_session cookie on logout
+    - [ ] Clear application state
+    - [ ] Redirect to login page
 
 #### 4.2 Admin Middleware & Protection
 
 - [ ] Implement middleware to protect `/admin` routes
-- [ ] Check user authentication
+    - [ ] Add environment-aware error logging (development vs production)
+    - [ ] Only log sensitive errors in development environment
+    - [ ] Fail gracefully with redirect to login in production
+- [ ] Implement session caching for performance optimization
+    - [ ] Check admin_session cookie for cached valid session
+    - [ ] Verify session expiry (15-minute cache window)
+    - [ ] Skip database queries if valid cache exists
+    - [ ] Store userId, adminId, role, and expiresAt in secure cookie
+- [ ] Check user authentication using Supabase service role key
+    - [ ] Use service role key for admin operations (enforces RLS)
+    - [ ] Verify NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are present
 - [ ] Verify user is in administrators table with is_active = true
+    - [ ] Query administrators table for user's admin record
+    - [ ] Verify is_active = true before allowing access
 - [ ] Redirect unauthenticated users to login
+    - [ ] Set proper cookie for cache when authentication succeeds
 - [ ] Add role-based access control (admin vs super_admin)
+    - [ ] Store role in session cache for use in components
+    - [ ] Use role to determine which features are available
 
 #### 4.3 Admin Layout
 

@@ -68,6 +68,9 @@ export function useAuth() {
             setLoading(false);
         }
     }, []);
+    // Note: Empty dependency array is correct. setLoading and setError are stable setState functions.
+    // createClient and normalizeError are pure functions without dependencies.
+    // This callback doesn't need parameters from the component scope.
 
     const signUp = useCallback(async (email: string, password: string) => {
         setLoading(true);
@@ -94,6 +97,7 @@ export function useAuth() {
             setLoading(false);
         }
     }, []);
+    // Note: Same as signIn - empty dependency array is correct for the same reasons.
 
     const signOut = useCallback(async () => {
         setLoading(true);
@@ -117,6 +121,7 @@ export function useAuth() {
             setLoading(false);
         }
     }, []);
+    // Note: Same as signIn and signUp - empty dependency array is correct.
 
     return {
         signIn,

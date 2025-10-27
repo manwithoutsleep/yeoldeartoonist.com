@@ -13,6 +13,7 @@ import type { Database } from '@/types/database';
 export async function middleware(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const pathname = requestUrl.pathname;
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     // Only protect admin routes (but allow login without auth)
     if (!pathname.startsWith('/admin')) {
@@ -34,12 +35,16 @@ export async function middleware(request: NextRequest) {
 
     // Validate required environment variables
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        console.error('Missing NEXT_PUBLIC_SUPABASE_URL in middleware');
+        if (isDevelopment) {
+            console.error('Missing NEXT_PUBLIC_SUPABASE_URL in middleware');
+        }
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.error('Missing SUPABASE_SERVICE_ROLE_KEY in middleware');
+        if (isDevelopment) {
+            console.error('Missing SUPABASE_SERVICE_ROLE_KEY in middleware');
+        }
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
@@ -68,6 +73,29 @@ export async function middleware(request: NextRequest) {
         }
     );
 
+    // Check if user has a cached admin session in cookies
+    // This optimization avoids repeated database queries for every request
+    const cachedAdminSession = request.cookies.get('admin_session')?.value;
+
+    if (cachedAdminSession) {
+        try {
+            // Verify the cached session is still valid
+            const sessionData = JSON.parse(cachedAdminSession);
+            if (
+                sessionData &&
+                sessionData.userId &&
+                sessionData.expiresAt > Date.now()
+            ) {
+                return supabaseResponse;
+            }
+        } catch {
+            // If cache parsing fails, continue with normal auth flow
+            if (isDevelopment) {
+                console.warn('Failed to parse cached admin session');
+            }
+        }
+    }
+
     // Check if user is authenticated
     const {
         data: { user },
@@ -90,6 +118,22 @@ export async function middleware(request: NextRequest) {
         // User is not an admin or is inactive, redirect to login
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
+
+    // Cache the admin session for 15 minutes to reduce database queries
+    const cacheExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const sessionCache = JSON.stringify({
+        userId: user.id,
+        adminId: admin.id,
+        role: admin.role,
+        expiresAt: cacheExpiry,
+    });
+
+    supabaseResponse.cookies.set('admin_session', sessionCache, {
+        httpOnly: false, // Allows JavaScript to check if user is admin
+        secure: !isDevelopment, // HTTPS in production
+        sameSite: 'lax',
+        maxAge: 15 * 60, // 15 minutes
+    });
 
     return supabaseResponse;
 }

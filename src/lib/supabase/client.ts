@@ -18,5 +18,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
 }
 
+/**
+ * Create a Supabase client for use in the browser.
+ * Uses the public anon key and manages authentication via browser storage.
+ * Suitable for client-side operations on public data and user auth flows.
+ *
+ * @returns {SupabaseClient} A configured Supabase client instance
+ */
 export const createClient = () =>
     createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);

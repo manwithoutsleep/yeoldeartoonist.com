@@ -43,11 +43,7 @@ export default function LoginPage() {
         const { data, error: signInError } = await signIn(email, password);
 
         if (signInError) {
-            const errorMessage =
-                signInError instanceof Error
-                    ? signInError.message
-                    : 'Failed to sign in';
-            setError(errorMessage);
+            setError(signInError.message);
             return;
         }
 
@@ -117,7 +113,7 @@ export default function LoginPage() {
                     {(error || authError) && (
                         <div className="rounded-md bg-red-50 p-4">
                             <div className="text-sm font-medium text-red-800">
-                                {error || authError}
+                                {error || authError?.message}
                             </div>
                         </div>
                     )}
@@ -132,15 +128,7 @@ export default function LoginPage() {
                 </form>
 
                 <div className="text-center text-sm text-gray-600">
-                    <p>
-                        Don&apos;t have an account?{' '}
-                        <a
-                            href="/admin/signup"
-                            className="font-medium text-blue-600 hover:text-blue-500"
-                        >
-                            Sign up here
-                        </a>
-                    </p>
+                    <p>Admin accounts are created by super_admin users only.</p>
                 </div>
             </div>
         </div>

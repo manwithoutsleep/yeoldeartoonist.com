@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const pathname = requestUrl.pathname;
 
-    // Only protect admin routes (but allow login and signup without auth)
+    // Only protect admin routes (but allow login without auth)
     if (!pathname.startsWith('/admin')) {
         return NextResponse.next({
             request: {
@@ -23,8 +23,8 @@ export async function middleware(request: NextRequest) {
         });
     }
 
-    // Allow login and signup pages without authentication
-    if (pathname === '/admin/login' || pathname === '/admin/signup') {
+    // Allow login page without authentication
+    if (pathname === '/admin/login') {
         return NextResponse.next({
             request: {
                 headers: request.headers,
@@ -32,7 +32,19 @@ export async function middleware(request: NextRequest) {
         });
     }
 
-    // Create a Supabase client with the cookies from the request
+    // Validate required environment variables
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        console.error('Missing NEXT_PUBLIC_SUPABASE_URL in middleware');
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('Missing SUPABASE_SERVICE_ROLE_KEY in middleware');
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    // Create a Supabase client with the service role key for admin operations
+    // This ensures RLS policies are properly enforced during authentication checks
     const supabaseResponse = NextResponse.next({
         request: {
             headers: request.headers,
@@ -40,8 +52,8 @@ export async function middleware(request: NextRequest) {
     });
 
     const supabase = createServerClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
         {
             cookies: {
                 getAll() {
@@ -66,7 +78,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Check if user is an active administrator
+    // Check if user is an active administrator using service role access
     const { data: admin, error: adminError } = await supabase
         .from('administrators')
         .select('id, role, is_active')

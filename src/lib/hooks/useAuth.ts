@@ -1,9 +1,46 @@
 import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
+/**
+ * Normalized error type that always has a message property
+ * for consistent error handling across all auth operations
+ */
+interface AuthError {
+    message: string;
+}
+
+function normalizeError(error: unknown): AuthError {
+    if (error instanceof Error) {
+        return { message: error.message };
+    }
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return { message: String((error as Record<string, unknown>).message) };
+    }
+    return { message: 'An unexpected error occurred' };
+}
+
+/**
+ * Custom hook for authentication operations with consistent error handling.
+ * Manages sign in, sign up, and sign out flows with Supabase Auth.
+ * All errors are normalized to an AuthError type with a consistent message property.
+ *
+ * @returns {Object} Authentication methods and state
+ * @returns {Function} signIn - Sign in with email and password
+ * @returns {Function} signUp - Create a new user account
+ * @returns {Function} signOut - Sign out the current user
+ * @returns {boolean} loading - Loading state during auth operations
+ * @returns {AuthError | null} error - Error state from normalized errors
+ *
+ * @example
+ * const { signIn, loading, error } = useAuth();
+ * const { data, error: signInError } = await signIn(email, password);
+ * if (signInError) {
+ *   console.error(signInError.message); // Always has message property
+ * }
+ */
 export function useAuth() {
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<AuthError | null>(null);
 
     const signIn = useCallback(async (email: string, password: string) => {
         setLoading(true);
@@ -17,16 +54,16 @@ export function useAuth() {
                 });
 
             if (signInError) {
-                setError(signInError.message);
-                return { data: null, error: signInError };
+                const normalizedError = normalizeError(signInError);
+                setError(normalizedError);
+                return { data: null, error: normalizedError };
             }
 
             return { data, error: null };
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : 'An error occurred';
-            setError(message);
-            return { data: null, error: err };
+            const normalizedError = normalizeError(err);
+            setError(normalizedError);
+            return { data: null, error: normalizedError };
         } finally {
             setLoading(false);
         }
@@ -43,16 +80,16 @@ export function useAuth() {
             });
 
             if (signUpError) {
-                setError(signUpError.message);
-                return { data: null, error: signUpError };
+                const normalizedError = normalizeError(signUpError);
+                setError(normalizedError);
+                return { data: null, error: normalizedError };
             }
 
             return { data, error: null };
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : 'An error occurred';
-            setError(message);
-            return { data: null, error: err };
+            const normalizedError = normalizeError(err);
+            setError(normalizedError);
+            return { data: null, error: normalizedError };
         } finally {
             setLoading(false);
         }
@@ -66,16 +103,16 @@ export function useAuth() {
             const { error: signOutError } = await supabase.auth.signOut();
 
             if (signOutError) {
-                setError(signOutError.message);
-                return { error: signOutError };
+                const normalizedError = normalizeError(signOutError);
+                setError(normalizedError);
+                return { error: normalizedError };
             }
 
             return { error: null };
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : 'An error occurred';
-            setError(message);
-            return { error: err };
+            const normalizedError = normalizeError(err);
+            setError(normalizedError);
+            return { error: normalizedError };
         } finally {
             setLoading(false);
         }

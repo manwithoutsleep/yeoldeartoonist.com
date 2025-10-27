@@ -244,6 +244,10 @@ Build all customer-facing pages with responsive design and optimized images.
 - [ ] Display featured artwork samples
 - [ ] Implement ISR with `revalidate = 3600`
 - [ ] Make fully responsive
+- [ ] Update site metadata in `src/app/layout.tsx`:
+    - Change `title` from "Create Next App" to "Ye Olde Artoonist"
+    - Change `description` to reflect actual site purpose
+    - Update in both `metadata` export and dynamic meta tags
 
 #### 2.5 Gallery Page
 

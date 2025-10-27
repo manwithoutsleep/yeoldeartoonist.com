@@ -7,6 +7,7 @@
 ### 1. Database Schema Improvements
 
 **Major Changes from Original:**
+
 - Changed `id` from `int` to `UUID` (better for distributed systems)
 - Added `slug` fields for SEO-friendly URLs
 - Added inventory management (`inventory_count`, `sku`)
@@ -17,6 +18,7 @@
 
 **Critical Addition - Order Tables:**
 The original schema was missing order/transaction tracking. Added:
+
 - `orders` - Stores customer info, shipping, totals, payment status
 - `order_items` - Stores individual items with price snapshots
 
@@ -25,17 +27,20 @@ The original schema was missing order/transaction tracking. Added:
 **Recommended Approach: Hybrid Storage**
 
 **Client-Side (Browsing):**
+
 - Store cart in localStorage for persistence
 - No sensitive data, just artwork IDs and quantities
 - Fast, works offline
 
 **Server-Side (Checkout):**
+
 - Transfer to encrypted server session at checkout
 - Validate against database (prices, inventory)
 - Generate secure order record
 - Use Stripe for payment (PCI compliant)
 
 **Security Features:**
+
 - Input validation with Zod
 - Server-side cart validation before checkout
 - CSRF protection via SameSite cookies
@@ -45,6 +50,7 @@ The original schema was missing order/transaction tracking. Added:
 ### 3. Code Structure
 
 **Folder Highlights:**
+
 ```
 src/
 ├── app/                    # Next.js App Router
@@ -70,6 +76,7 @@ src/
 ### 4. Authentication & Admin
 
 **Strategy:**
+
 - Supabase Auth for admin users only
 - Email/password authentication
 - Role-based access control (admin vs super_admin)
@@ -77,6 +84,7 @@ src/
 - No customer accounts (MVP decision)
 
 **Key Files:**
+
 - `src/middleware.ts` - Route protection
 - `src/lib/auth/permissions.ts` - RBAC logic
 - `src/app/admin/layout.tsx` - Admin wrapper
@@ -84,12 +92,14 @@ src/
 ### 5. Image Management
 
 **Storage Strategy:**
+
 - Supabase Storage with organized buckets
 - Generate 4 variants: original, large, preview, thumbnail
 - Use WebP format for optimization
 - Next.js Image component for responsive loading
 
 **Optimization:**
+
 - Auto-generate optimized variants on upload
 - Serve via CDN (Supabase CDN)
 - Lazy loading with blur placeholder
@@ -100,34 +110,37 @@ src/
 **Three-Layer Approach:**
 
 1. **ISR (Incremental Static Regeneration)**
-   - Revalidate pages every hour
-   - Pre-generate artwork detail pages
-   - Instant page loads
+    - Revalidate pages every hour
+    - Pre-generate artwork detail pages
+    - Instant page loads
 
 2. **Caching**
-   - CDN caching for static assets
-   - Next.js data cache for queries
-   - On-demand revalidation from admin
+    - CDN caching for static assets
+    - Next.js data cache for queries
+    - On-demand revalidation from admin
 
 3. **Query Optimization**
-   - Database indexes on frequently queried fields
-   - Select only needed columns
-   - Batch operations where possible
+    - Database indexes on frequently queried fields
+    - Select only needed columns
+    - Batch operations where possible
 
 ## Technology Stack
 
 **Core:**
+
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
 - Supabase (Database + Auth + Storage)
 
 **E-commerce:**
+
 - Stripe (Payments)
 - Zod (Validation)
 - localStorage (Cart)
 
 **Image Processing:**
+
 - Sharp (Server-side optimization)
 - Next.js Image (Delivery)
 - WebP (Format)
@@ -145,6 +158,7 @@ src/
 ## Critical Success Factors
 
 ### Must-Have for MVP:
+
 1. All database tables created with proper relationships
 2. RLS policies configured for security
 3. Stripe webhook configured for payment confirmation
@@ -152,6 +166,7 @@ src/
 5. Image optimization pipeline functional
 
 ### Common Pitfalls to Avoid:
+
 1. Don't skip RLS policies - security risk
 2. Don't store unvalidated cart data - validate on server before checkout
 3. Don't forget to handle inventory (decrement on purchase)
@@ -172,11 +187,13 @@ src/
 ## Scalability Notes
 
 **MVP Will Handle:**
+
 - 1,000+ artworks
 - 100+ orders/day
 - 10,000+ monthly visitors
 
 **When to Upgrade:**
+
 - Database: Add read replicas at >10k orders/month
 - Storage: Migrate to CloudFlare R2 at >100GB
 - Search: Add Algolia at >5k artworks
@@ -197,6 +214,7 @@ src/
 **Selected: All standard Stripe payment methods**
 
 Why this approach:
+
 - Single integration supports cards, Apple Pay, Google Pay, Link
 - No additional code complexity - Stripe handles UI/UX
 - Higher conversion rates (10-30% improvement with digital wallets)
@@ -207,6 +225,7 @@ Why this approach:
 Implementation: Use Stripe Payment Element component (supports all methods automatically)
 
 **To enable LATER (when average order value justifies):**
+
 - Afterpay/Klarna for BNPL (~6% fee, customer pays it, good for $200+ pieces)
 
 ### Shipping - DECIDED ✓
@@ -214,6 +233,7 @@ Implementation: Use Stripe Payment Element component (supports all methods autom
 **Selected: Flat rate shipping**
 
 Why this approach:
+
 - Simplicity: Single database field, no complex logic
 - Perfect for art (lightweight, predictable weight)
 - Transparent to customers, no surprises at checkout
@@ -224,6 +244,7 @@ Why this approach:
 Implementation: Add `shipping_cost` column to `orders` table (default $5.00, configurable in admin)
 
 **To upgrade LATER (if complexity justifies):**
+
 - Integrate EasyPost or Shippo when shipping international or with varied weights
 - Customer demand warrants real carrier rates
 - MVP data shows need for it
@@ -233,6 +254,7 @@ Implementation: Add `shipping_cost` column to `orders` table (default $5.00, con
 **Selected: Stripe Tax**
 
 Why this approach:
+
 - Sales tax is genuinely complex (nexus rules, category exemptions, multi-state, international)
 - Stripe Tax handles all compliance automatically
 - Single API integration (already using Stripe for payments)
@@ -244,6 +266,7 @@ Why this approach:
 Implementation: Enable Stripe Tax in Stripe dashboard, pass product tax codes to Stripe API during checkout
 
 Benefits:
+
 - No custom tax logic to maintain
 - Compliance handled by Stripe (they have legal team)
 - Accurate tax collection by jurisdiction
@@ -266,6 +289,7 @@ Before starting implementation:
 **Selected: Resend**
 
 Why:
+
 - Built for transactional emails (order confirmations, receipts)
 - Simple API, excellent Next.js integration
 - ~$0.20 per email (very cost-effective)
@@ -279,12 +303,14 @@ Implementation: Resend SDK in checkout API route, email templates for order conf
 **Selected: Vercel hosting + Porkbun domain**
 
 Setup:
+
 - Deploy Next.js project to Vercel (automatic CI/CD from git)
 - Domain already purchased at Porkbun
 - Configure DNS at Porkbun to point to Vercel nameservers
 - SSL/TLS handled automatically by Vercel
 
 Benefits:
+
 - Zero-config deployment for Next.js
 - Automatic preview deployments for PRs
 - Global CDN for static assets and images
@@ -303,11 +329,13 @@ Benefits:
 | **Total** | **$20-65/month** | Scales with site growth |
 
 **Joe's Costs (Stripe fees - Joe pays these):**
+
 - ~2.9% + $0.30 per transaction (payment processing)
 - ~0.5% for tax calculation (Stripe Tax)
 - Credit card processing is automatic from customer purchases
 
 **Free/Already Purchased:**
+
 - Porkbun domain (already purchased)
 - Supabase free tier for dev/staging (no additional cost)
 - Vercel preview deployments (included in Pro)
@@ -316,29 +344,34 @@ Benefits:
 ### Storage Costs (Likely Later)
 
 **Supabase Storage Upgrade Path:**
+
 - Free tier: 1GB storage
 - Pro tier: Scales based on usage (~$0.15/GB beyond included storage)
 - **Expected timeline:** MVP launch with <100 pieces = no upgrades needed for 3-6+ months
 
 **Alternative if Storage Gets Expensive:**
+
 - Migrate images to Cloudflare R2: $0.015/GB/month (significant savings at scale)
 - Keep database on Supabase, move just image storage
 
 ### Cost Optimization Strategy
 
 **MVP Launch (Month 1-2):**
+
 - Vercel Pro: $20/month (required)
 - Supabase Free: $0
 - Resend Free: $0
 - **Total: $20/month**
 
 **After Initial Growth (Month 3-6):**
+
 - Vercel Pro: $20/month
 - Supabase Pro: $25/month (when you hit free tier limits)
 - Resend Free: $0 (still under 3k/month)
 - **Total: $45/month**
 
 **As Business Scales (Month 6+):**
+
 - Revisit based on actual usage data
 - Only upgrade services that are genuinely constrained
 - Consider R2 migration if storage becomes expensive

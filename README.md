@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ye Olde Artoonist - MVP Implementation
 
-## Getting Started
+A Next.js e-commerce platform for artist Joe's artwork and merchandise, built with TypeScript, Supabase, Stripe, and Tailwind CSS.
 
-First, run the development server:
+## Project Status
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Phase 1: Foundation** ✅ In Progress
+
+- Database schema designed and ready for deployment (with CLI migration workflow)
+- Project structure created with proper TypeScript setup
+- Supabase clients and middleware configured
+- All dependencies installed
+- Professional migration workflow configured
+
+See [docs/PHASE_1_SUMMARY.md](./docs/PHASE_1_SUMMARY.md) for detailed completion status.
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Supabase account with project created
+- Stripe test account
+- Resend account
+
+### Setup Instructions
+
+1. **Start the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+    Navigate to [http://localhost:3000](http://localhost:3000)
+
+2. **Test migrations locally:**
+
+    ```bash
+    npm run db:start
+    # Visit http://127.0.0.1:54333 to verify
+    npm run db:stop
+    ```
+
+3. **Deploy to production:**
+   See [docs/SETUP.md](./docs/SETUP.md) for detailed instructions on pushing to remote
+
+4. **Verify the setup:**
+   Use [docs/PHASE_1_VERIFICATION.md](./docs/PHASE_1_VERIFICATION.md) to check all components
+
+### Project Structure
+
+```
+src/
+├── app/              # Next.js app router pages
+├── components/       # React components
+├── lib/              # Utilities and helpers
+│   ├── db/           # Database queries
+│   │   └── migrations/  # SQL migrations
+│   └── supabase/     # Supabase clients
+├── types/            # TypeScript types
+├── hooks/            # Custom React hooks
+├── context/          # React Context providers
+└── styles/           # CSS files
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 14 + React 19 + TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase PostgreSQL
+- **Authentication**: Supabase Auth
+- **Payments**: Stripe
+- **Email**: Resend
+- **Image Processing**: Sharp
+- **Storage**: Supabase Storage
+- **Hosting**: Vercel
+- **Validation**: Zod
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development Commands
 
-## Learn More
+### Application
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev        # Start development server
+npm run build      # Build for production
+npm run start      # Start production server
+npm run lint       # Run linter
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Database (Migrations)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:start              # Start local Supabase with migrations
+npm run db:stop               # Stop local Supabase
+npm run db:push               # Push migrations to production
+npm run db:pull               # Pull remote schema to local
+npm run db:create-migration   # Create a new migration
+npm run db:reset              # Reset local database from scratch
+```
 
-## Deploy on Vercel
+See [docs/MIGRATIONS_GUIDE.md](./docs/MIGRATIONS_GUIDE.md) for detailed migration workflow.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All documentation is in the [`docs/`](./docs/) folder. Start with:
+
+- **[docs/INDEX.md](./docs/INDEX.md)** - Documentation index and navigation
+- **[docs/QUICK_START.md](./docs/QUICK_START.md)** - Fast testing guide (5 min)
+- **[docs/SETUP.md](./docs/SETUP.md)** - Complete setup instructions
+- **[docs/MIGRATIONS_GUIDE.md](./docs/MIGRATIONS_GUIDE.md)** - Database migration workflow
+- **[docs/PHASE_1_SUMMARY.md](./docs/PHASE_1_SUMMARY.md)** - Phase 1 completion details
+- **[src/lib/db/migrations/001_initial_schema.sql](./src/lib/db/migrations/001_initial_schema.sql)** - Database schema
+
+## Environment Variables
+
+See `.env.example` for the complete list. Required variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- `STRIPE_SECRET_KEY` - Stripe secret key (test mode)
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
+- `RESEND_API_KEY` - Resend email API key
+
+## License
+
+Private project for yeoldeartoonist.com

@@ -59,16 +59,16 @@ Set up the complete project infrastructure, database, and development environmen
 - [x] Initialize git repository: `git init`
 - [x] Create `.gitignore` with `.env.local`, `node_modules/`, `.next/`, etc.
 - [x] Create `.env.example` file with all required variables
-- [ ] Install additional dependencies:
-  ```bash
-  npm install @supabase/supabase-js @supabase/ssr
-  npm install stripe @stripe/stripe-js @stripe/react-stripe-js
-  npm install zod
-  npm install sharp
-  npm install resend
-  npm install date-fns
-  npm install --save-dev @types/node @types/react
-  ```
+- [x] Install additional dependencies:
+    ```bash
+    npm install @supabase/supabase-js @supabase/ssr
+    npm install stripe @stripe/stripe-js @stripe/react-stripe-js
+    npm install zod
+    npm install sharp
+    npm install resend
+    npm install date-fns
+    npm install --save-dev @types/node @types/react
+    ```
 
 #### 1.2 Environment Setup
 
@@ -80,86 +80,88 @@ Set up the complete project infrastructure, database, and development environmen
 - [x] Get Resend API key
 - [x] Create `.env.local` file with all credentials:
 
-  ```
-  NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-  NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
-  SUPABASE_SERVICE_ROLE_KEY=xxx
+    ```
+    NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+    SUPABASE_SERVICE_ROLE_KEY=xxx
 
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-  STRIPE_SECRET_KEY=sk_test_xxx
-  STRIPE_WEBHOOK_SECRET=whsec_xxx
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+    STRIPE_SECRET_KEY=sk_test_xxx
+    STRIPE_WEBHOOK_SECRET=whsec_xxx
 
-  NEXT_PUBLIC_SITE_URL=http://localhost:3000
-  NEXT_PUBLIC_SITE_NAME=Ye Olde Artoonist
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    NEXT_PUBLIC_SITE_NAME=Ye Olde Artoonist
 
-  RESEND_API_KEY=xxx
-  RESEND_FROM_EMAIL=orders@yeoldeartoonist.com
+    RESEND_API_KEY=xxx
+    RESEND_FROM_EMAIL=orders@yeoldeartoonist.com
 
-  CART_SESSION_SECRET=generate-a-random-32-char-string
-  ```
+    CART_SESSION_SECRET=generate-a-random-32-char-string
+    ```
 
 #### 1.3 Folder Structure
 
-- [ ] Create folder structure as documented in architecture-plan.md:
-  - `src/app/` - Next.js pages
-  - `src/components/` - React components
-  - `src/lib/` - Utilities
-  - `src/types/` - TypeScript types
-  - `src/hooks/` - Custom hooks
-  - `src/context/` - React context
-  - `src/styles/` - CSS
+- [x] Create folder structure as documented in architecture-plan.md:
+    - `src/app/` - Next.js pages
+    - `src/components/` - React components
+    - `src/lib/` - Utilities
+    - `src/types/` - TypeScript types
+    - `src/hooks/` - Custom hooks
+    - `src/context/` - React context
+    - `src/styles/` - CSS
 
 #### 1.4 Database Schema Creation
 
 - [ ] In Supabase dashboard, go to SQL Editor
-- [ ] Run SQL schema from architecture-plan.md section 1.2:
-  - Create `administrators` table
-  - Create `artwork` table
-  - Create `pages` table
-  - Create `page_artwork` table
-  - Create `projects` table
-  - Create `events` table
-  - Create `orders` table
-  - Create `order_items` table
-- [ ] Create all indexes as specified
-- [ ] Create database functions and triggers:
-  - `update_updated_at_column()` trigger
-  - `generate_order_number()` function
-  - `set_order_number()` trigger
-  - `decrement_artwork_inventory()` trigger
+- [x] Run SQL schema from architecture-plan.md section 1.2:
+    - Create `administrators` table
+    - Create `artwork` table
+    - Create `pages` table
+    - Create `page_artwork` table
+    - Create `projects` table
+    - Create `events` table
+    - Create `orders` table
+    - Create `order_items` table
+- [x] Create all indexes as specified
+- [x] Create database functions and triggers:
+    - `update_updated_at_column()` trigger
+    - `generate_order_number()` function
+    - `set_order_number()` trigger
+    - `decrement_artwork_inventory()` trigger
+- [ ] **MANUAL STEP**: Apply migration in Supabase SQL Editor (see SETUP.md)
 
 #### 1.5 Row-Level Security (RLS)
 
-- [ ] Enable RLS on all tables (Enable policy enforcement)
-- [ ] Create RLS policies for each table (see architecture-plan.md):
-  - Public read policies for published content
-  - Admin-only manage policies
-  - Proper cascade rules for deletions
+- [x] Enable RLS on all tables (Enable policy enforcement) - Created in migration
+- [x] Create RLS policies for each table (see architecture-plan.md):
+    - Public read policies for published content
+    - Admin-only manage policies
+    - Proper cascade rules for deletions
+- [ ] **MANUAL STEP**: Verify RLS is enabled on all tables in Supabase dashboard
 
 #### 1.6 Storage Buckets
 
-- [ ] In Supabase Storage, create buckets:
-  - `artwork` (public)
-  - `events` (public)
-  - `projects` (public)
-  - `admin` (private) (I don't know that we'll need this, discuss with me before implementing)
-  - `site` (public) (I don't know that we'll need this, discuss with me before implementing)
-- [ ] Create storage policies as documented in architecture-plan.md section 5.2
+- [ ] **MANUAL STEP**: In Supabase Storage, create buckets:
+    - `artwork` (public)
+    - `events` (public)
+    - `projects` (public)
+    - ~~`admin` (private)~~ Skipped per clarification
+    - ~~`site` (public)~~ Skipped per clarification
+- [ ] **MANUAL STEP**: Create storage policies as documented in architecture-plan.md section 5.2
 
 #### 1.7 TypeScript Types
 
-- [ ] Generate types from Supabase: `npx supabase gen types typescript --project-id=your-project-id > src/types/database.ts`
-- [ ] Create type files:
-  - `src/types/cart.ts` - Cart interfaces
-  - `src/types/order.ts` - Order interfaces
-  - `src/types/index.ts` - Shared types
-- [ ] Set up TypeScript configuration in `tsconfig.json` with proper path aliases
+- [x] Generate types from Supabase: `npx supabase gen types typescript --project-id=your-project-id > src/types/database.ts`
+- [x] Create type files:
+    - `src/types/cart.ts` - Cart interfaces
+    - `src/types/order.ts` - Order interfaces
+    - `src/types/index.ts` - Shared types
+- [x] Set up TypeScript configuration in `tsconfig.json` with proper path aliases
 
 #### 1.8 Supabase Client Setup
 
-- [ ] Create `src/lib/supabase/client.ts` (browser client)
-- [ ] Create `src/lib/supabase/server.ts` (server client)
-- [ ] Create `src/middleware.ts` for admin authentication
+- [x] Create `src/lib/supabase/client.ts` (browser client)
+- [x] Create `src/lib/supabase/server.ts` (server client)
+- [x] Create `src/middleware.ts` for admin authentication
 
 #### 1.9 Git & Deployment Setup
 
@@ -172,9 +174,13 @@ Set up the complete project infrastructure, database, and development environmen
 
 #### 1.10 Documentation
 
-- [ ] Document setup process in README
-- [ ] Add notes about running locally: `npm run dev`
-- [ ] Document how to seed database (for Phase 2)
+- [x] Document setup process in SETUP.md
+- [x] Add notes about running locally: `npm run dev`
+- [x] Document how to seed database (for Phase 2)
+- [x] Created PHASE_1_SUMMARY.md
+- [x] Created PHASE_1_VERIFICATION.md
+- [x] Created IMPLEMENTATION_COMPLETE.md
+- [x] Updated README.md
 
 ### Deliverables
 
@@ -254,11 +260,11 @@ Build all customer-facing pages with responsive design and optimized images.
 
 - [ ] Create `src/app/shoppe/page.tsx` - Product listing
 - [ ] Build product grid with:
-  - Thumbnail image
-  - Title and description
-  - Price display
-  - Quantity selector UI (non-functional for now)
-  - "Add to Cart" button (non-functional for now)
+    - Thumbnail image
+    - Title and description
+    - Price display
+    - Quantity selector UI (non-functional for now)
+    - "Add to Cart" button (non-functional for now)
 - [ ] Implement ISR for product listing
 - [ ] Make fully responsive
 - [ ] Note: Cart functionality added in Phase 3
@@ -267,13 +273,13 @@ Build all customer-facing pages with responsive design and optimized images.
 
 - [ ] Create `src/app/in-the-works/page.tsx`
 - [ ] Display projects section with:
-  - Project title, description, progress
-  - Expected completion date
-  - Status (planning, active, completed)
+    - Project title, description, progress
+    - Expected completion date
+    - Status (planning, active, completed)
 - [ ] Display events section with:
-  - Event title, date range, location
-  - Booth number, venue details
-  - Links to convention website
+    - Event title, date range, location
+    - Booth number, venue details
+    - Links to convention website
 - [ ] Sort upcoming events first
 - [ ] Make fully responsive
 
@@ -284,19 +290,19 @@ Build all customer-facing pages with responsive design and optimized images.
 - [ ] Add artist image (left side)
 - [ ] Add artist bio/description (right side)
 - [ ] Display contact information:
-  - Email
-  - Social media links
-  - Convention booth info
+    - Email
+    - Social media links
+    - Convention booth info
 - [ ] Simple contact form (for Phase 4)
 - [ ] Make fully responsive (stack on mobile)
 
 #### 2.9 UI Components
 
 - [ ] Create reusable UI components in `src/components/ui/`:
-  - `Button.tsx` - Styled button component
-  - `Card.tsx` - Content card component
-  - `Input.tsx` - Form input component
-  - `Grid.tsx` - Responsive grid component
+    - `Button.tsx` - Styled button component
+    - `Card.tsx` - Content card component
+    - `Input.tsx` - Form input component
+    - `Grid.tsx` - Responsive grid component
 - [ ] Use Tailwind for consistent styling
 - [ ] Make all components mobile-responsive
 
@@ -345,11 +351,11 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Create `src/hooks/useCart.ts` - Cart hook for components
 - [ ] Create `src/context/CartContext.tsx` - React Context for global cart state
 - [ ] Implement cart operations:
-  - Add item to cart
-  - Remove item from cart
-  - Update quantity
-  - Clear cart
-  - Calculate subtotal
+    - Add item to cart
+    - Remove item from cart
+    - Update quantity
+    - Clear cart
+    - Calculate subtotal
 
 #### 3.2 Cart UI Components
 
@@ -365,11 +371,11 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 - [ ] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
 - [ ] Display all cart items with:
-  - Item thumbnail
-  - Title and price
-  - Quantity editor
-  - Remove button
-  - Line subtotal
+    - Item thumbnail
+    - Title and price
+    - Quantity editor
+    - Remove button
+    - Line subtotal
 - [ ] Display cart summary (subtotal, shipping estimate, tax estimate)
 - [ ] "Continue Shopping" and "Checkout" buttons
 - [ ] Empty cart state message
@@ -382,10 +388,10 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Create `src/components/checkout/AddressForm.tsx` - Address fields
 - [ ] Create `src/components/checkout/PaymentForm.tsx` - Stripe payment element
 - [ ] Form fields:
-  - Customer name and email
-  - Shipping address (address line 1, line 2, city, state, zip, country)
-  - Billing address (with "Same as shipping" option)
-  - Order notes (optional)
+    - Customer name and email
+    - Shipping address (address line 1, line 2, city, state, zip, country)
+    - Billing address (with "Same as shipping" option)
+    - Order notes (optional)
 - [ ] Form validation with Zod schema
 - [ ] Show order summary on right side
 
@@ -403,14 +409,14 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 - [ ] Create `src/lib/cart/validation.ts` - Server-side cart validation
 - [ ] Validate cart items against database before checkout:
-  - Verify items exist and are published
-  - Verify prices match (catch tampering)
-  - Verify inventory available
-  - Check quantities
+    - Verify items exist and are published
+    - Verify prices match (catch tampering)
+    - Verify inventory available
+    - Check quantities
 - [ ] Calculate accurate totals:
-  - Subtotal from item prices
-  - Shipping ($5.00 flat rate)
-  - Tax via Stripe Tax API
+    - Subtotal from item prices
+    - Shipping ($5.00 flat rate)
+    - Tax via Stripe Tax API
 - [ ] Return validated cart or error
 
 #### 3.7 Order Creation
@@ -418,13 +424,13 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Create `src/lib/db/orders.ts` - Order database functions
 - [ ] Create order in database on successful payment intent
 - [ ] Store order with:
-  - Order number (auto-generated)
-  - Customer info
-  - Shipping/billing addresses
-  - Cart items as order_items
-  - Totals (subtotal, shipping, tax)
-  - Payment intent ID
-  - Order status (pending)
+    - Order number (auto-generated)
+    - Customer info
+    - Shipping/billing addresses
+    - Cart items as order_items
+    - Totals (subtotal, shipping, tax)
+    - Payment intent ID
+    - Order status (pending)
 - [ ] Decrement inventory on successful payment
 
 #### 3.8 Stripe Webhook
@@ -440,12 +446,12 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 - [ ] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
 - [ ] Display:
-  - Order confirmation message
-  - Order number
-  - Order total
-  - Shipping address
-  - Note: Email sent (when Resend integrated)
-  - Link back to gallery
+    - Order confirmation message
+    - Order number
+    - Order total
+    - Shipping address
+    - Note: Email sent (when Resend integrated)
+    - Link back to gallery
 - [ ] Send confirmation email via Resend (integrate later)
 - [ ] Clear cart after successful payment
 
@@ -524,12 +530,12 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Create `src/app/admin/layout.tsx` - Admin page layout
 - [ ] Create `src/components/admin/AdminSidebar.tsx` - Navigation sidebar
 - [ ] Add navigation links:
-  - Dashboard
-  - Artwork
-  - Orders
-  - Projects
-  - Events
-  - Settings (super_admin only)
+    - Dashboard
+    - Artwork
+    - Orders
+    - Projects
+    - Events
+    - Settings (super_admin only)
 - [ ] Add logout button
 - [ ] Display current admin name
 - [ ] Responsive layout (mobile sidebar collapse)
@@ -538,10 +544,10 @@ Build complete admin dashboard for content management, order management, and ima
 
 - [ ] Create `src/app/admin/page.tsx` - Main dashboard
 - [ ] Display key metrics:
-  - Total orders (all time)
-  - Orders this month
-  - Total revenue
-  - Pending orders
+    - Total orders (all time)
+    - Orders this month
+    - Total revenue
+    - Pending orders
 - [ ] Quick links to manage content
 - [ ] Recent orders list (last 10)
 - [ ] System status indicators
@@ -553,12 +559,12 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Create `src/app/admin/artwork/[id]/edit/page.tsx` - Edit artwork form
 - [ ] Create `src/components/admin/ArtworkForm.tsx` - Reusable form
 - [ ] Form fields:
-  - Title, description, slug
-  - Price, original price, SKU
-  - Inventory count, is_limited_edition
-  - Medium, dimensions, year_created
-  - Is published, is featured, display order
-  - Alt text, SEO title, SEO description, tags
+    - Title, description, slug
+    - Price, original price, SKU
+    - Inventory count, is_limited_edition
+    - Medium, dimensions, year_created
+    - Is published, is featured, display order
+    - Alt text, SEO title, SEO description, tags
 - [ ] Validation with Zod
 - [ ] Success/error messages
 
@@ -568,11 +574,11 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Create `src/app/api/admin/upload/route.ts` - Upload endpoint
 - [ ] Create `src/components/admin/ImageUploader.tsx` - File upload component
 - [ ] Implement image upload flow:
-  - Accept image file
-  - Generate 3 variants (thumbnail, preview, large)
-  - Convert to WebP
-  - Upload to Supabase Storage
-  - Return image URLs
+    - Accept image file
+    - Generate 3 variants (thumbnail, preview, large)
+    - Convert to WebP
+    - Upload to Supabase Storage
+    - Return image URLs
 - [ ] Add drag-and-drop upload
 - [ ] Show upload progress
 - [ ] Display image preview
@@ -583,55 +589,55 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Create `src/app/admin/orders/[id]/page.tsx` - Order detail
 - [ ] Create `src/components/admin/OrdersList.tsx` - Orders table
 - [ ] Display in orders list:
-  - Order number
-  - Customer name/email
-  - Order date
-  - Total amount
-  - Status
-  - Payment status
+    - Order number
+    - Customer name/email
+    - Order date
+    - Total amount
+    - Status
+    - Payment status
 - [ ] Sort/filter options (by date, status, amount)
 - [ ] Order detail view shows:
-  - All order info
-  - Customer address
-  - Order items (products ordered)
-  - Order timeline
-  - Admin notes field
-  - Update order status dropdown
-  - Add shipping tracking number
+    - All order info
+    - Customer address
+    - Order items (products ordered)
+    - Order timeline
+    - Admin notes field
+    - Update order status dropdown
+    - Add shipping tracking number
 
 #### 4.8 Projects & Events Management
 
 - [ ] Create `src/app/admin/projects/page.tsx` - Projects list
 - [ ] Create project form with:
-  - Title, slug, description
-  - Status (planning, active, completed, archived)
-  - Progress percentage
-  - Expected completion date
-  - Is published, display order
-  - Image upload
+    - Title, slug, description
+    - Status (planning, active, completed, archived)
+    - Progress percentage
+    - Expected completion date
+    - Is published, display order
+    - Image upload
 - [ ] Create `src/app/admin/events/page.tsx` - Events list
 - [ ] Create event form with:
-  - Title, slug, description
-  - Date range (start and end)
-  - Location, venue name, booth number
-  - Links to convention website
-  - Is published
-  - Image upload
+    - Title, slug, description
+    - Date range (start and end)
+    - Location, venue name, booth number
+    - Links to convention website
+    - Is published
+    - Image upload
 
 #### 4.9 Settings & Admin Users (Super Admin Only)
 
 - [ ] Create `src/app/admin/settings/page.tsx` - Settings page
 - [ ] Implement admin user management:
-  - List administrators
-  - Add new admin user
-  - Edit admin (name, role, active status)
-  - Remove admin access
+    - List administrators
+    - Add new admin user
+    - Edit admin (name, role, active status)
+    - Remove admin access
 - [ ] Display role-based permissions
 - [ ] Add configuration for:
-  - Shipping cost
-  - Site name/description
-  - Social media links
-  - Contact email
+    - Shipping cost
+    - Site name/description
+    - Social media links
+    - Contact email
 
 #### 4.10 API Routes for Admin
 
@@ -647,9 +653,9 @@ Build complete admin dashboard for content management, order management, and ima
 
 - [ ] Create `src/app/api/admin/revalidate/route.ts` - On-demand revalidation
 - [ ] Trigger revalidation when content changes:
-  - After artwork created/updated
-  - After projects/events updated
-  - After pages updated
+    - After artwork created/updated
+    - After projects/events updated
+    - After pages updated
 - [ ] Use Next.js `revalidatePath` and `revalidateTag`
 
 #### 4.12 Testing
@@ -700,20 +706,20 @@ Integrate Resend for transactional emails, optimize performance, and prepare for
 - [ ] Create email templates in Resend dashboard or as React components
 - [ ] Create `src/lib/email/templates.ts` - Email template functions
 - [ ] Create email template for:
-  - Order confirmation
-  - Shipping notification
-  - Delivery notification
+    - Order confirmation
+    - Shipping notification
+    - Delivery notification
 - [ ] Use Resend React email templates for better HTML
 
 #### 5.2 Order Confirmation Email
 
 - [ ] Create email template for order confirmation
 - [ ] Include:
-  - Order number and date
-  - Order items with prices
-  - Shipping address
-  - Order total
-  - Link to track order (placeholder)
+    - Order number and date
+    - Order items with prices
+    - Shipping address
+    - Order total
+    - Link to track order (placeholder)
 - [ ] Send email when order payment captured
 - [ ] Integrate in checkout webhook handler
 - [ ] Test email sending with Resend
@@ -736,9 +742,9 @@ Integrate Resend for transactional emails, optimize performance, and prepare for
 #### 5.5 SEO Optimization
 
 - [ ] Add metadata to all pages:
-  - Meta titles and descriptions
-  - Open Graph images
-  - Canonical URLs
+    - Meta titles and descriptions
+    - Open Graph images
+    - Canonical URLs
 - [ ] Create `robots.txt` and `sitemap.xml`
 - [ ] Add structured data (Schema.org) for products
 - [ ] Optimize images with proper alt text
@@ -950,4 +956,3 @@ Based on feedback from Phase 1-5:
 5. **Track progress** - Use the verification checklists
 
 You're ready to build! 🚀
-

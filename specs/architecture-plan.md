@@ -20,6 +20,7 @@
 ### 1.1 Schema Evaluation & Improvements
 
 #### Current Schema Issues:
+
 1. **Missing primary key constraints and auto-increment**
 2. **No foreign key relationships defined**
 3. **Missing essential e-commerce fields** (inventory, SKU, dimensions, status)
@@ -30,6 +31,7 @@
 ### 1.2 Refined Database Schema
 
 #### Table: `administrators`
+
 ```sql
 CREATE TABLE administrators (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -62,6 +64,7 @@ CREATE POLICY "Super admins can manage administrators"
 ```
 
 #### Table: `artwork`
+
 ```sql
 CREATE TABLE artwork (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -121,6 +124,7 @@ CREATE POLICY "Admins can manage artwork"
 ```
 
 #### Table: `pages`
+
 ```sql
 CREATE TABLE pages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -156,6 +160,7 @@ CREATE POLICY "Admins can manage pages"
 ```
 
 #### Table: `page_artwork`
+
 ```sql
 CREATE TABLE page_artwork (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -183,6 +188,7 @@ CREATE POLICY "Admins can manage page artwork"
 ```
 
 #### Table: `projects`
+
 ```sql
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -215,6 +221,7 @@ CREATE POLICY "Admins can manage projects"
 ```
 
 #### Table: `events`
+
 ```sql
 CREATE TABLE events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -254,6 +261,7 @@ CREATE POLICY "Admins can manage events"
 ```
 
 #### Table: `orders` (NEW - Essential for checkout)
+
 ```sql
 CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -334,6 +342,7 @@ CREATE POLICY "Admins can manage orders"
 ```
 
 #### Table: `order_items` (NEW - Essential for checkout)
+
 ```sql
 CREATE TABLE order_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -631,6 +640,7 @@ yeoldeartoonist.com/
 ### 2.2 Key Configuration Files
 
 #### `.env.example`
+
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
@@ -661,32 +671,33 @@ ADMIN_EMAIL=admin@yeoldeartoonist.com
 ```
 
 #### `next.config.js`
+
 ```javascript
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-    ],
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '*.supabase.co',
+                pathname: '/storage/v1/object/public/**',
+            },
+        ],
+        formats: ['image/avif', 'image/webp'],
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    },
 
-  // Enable React strict mode
-  reactStrictMode: true,
+    // Enable React strict mode
+    reactStrictMode: true,
 
-  // Optimize for production
-  swcMinify: true,
+    // Optimize for production
+    swcMinify: true,
 
-  // Experimental features
-  experimental: {
-    optimizePackageImports: ['@supabase/supabase-js'],
-  },
+    // Experimental features
+    experimental: {
+        optimizePackageImports: ['@supabase/supabase-js'],
+    },
 };
 
 module.exports = nextConfig;
@@ -701,43 +712,45 @@ module.exports = nextConfig;
 **Hybrid Approach (Recommended for MVP):**
 
 1. **Client-Side (localStorage) for browsing**
-   - Store cart items in browser localStorage for persistence
-   - Encrypt cart data using Web Crypto API
-   - No PII (Personally Identifiable Information) stored
+    - Store cart items in browser localStorage for persistence
+    - Encrypt cart data using Web Crypto API
+    - No PII (Personally Identifiable Information) stored
 
 2. **Server-Side Session for checkout**
-   - When user proceeds to checkout, transfer cart to server session
-   - Use encrypted cookies with iron-session
-   - Session expires after 30 minutes of inactivity
+    - When user proceeds to checkout, transfer cart to server session
+    - Use encrypted cookies with iron-session
+    - Session expires after 30 minutes of inactivity
 
 ### 3.2 Implementation
 
 #### `src/types/cart.ts`
+
 ```typescript
 export interface CartItem {
-  artworkId: string;
-  title: string;
-  priceCents: number;
-  quantity: number;
-  thumbnailPath: string;
-  inventoryCount: number;
+    artworkId: string;
+    title: string;
+    priceCents: number;
+    quantity: number;
+    thumbnailPath: string;
+    inventoryCount: number;
 }
 
 export interface Cart {
-  items: CartItem[];
-  subtotalCents: number;
-  lastUpdated: string;
+    items: CartItem[];
+    subtotalCents: number;
+    lastUpdated: string;
 }
 
 export interface CheckoutSession {
-  cartId: string;
-  items: CartItem[];
-  subtotalCents: number;
-  expiresAt: string;
+    cartId: string;
+    items: CartItem[];
+    subtotalCents: number;
+    expiresAt: string;
 }
 ```
 
 #### `src/lib/cart/storage.ts`
+
 ```typescript
 import { Cart, CartItem } from '@/types/cart';
 
@@ -745,124 +758,151 @@ const CART_KEY = 'yeolde_cart';
 const CART_VERSION = '1.0';
 
 export const cartStorage = {
-  // Get cart from localStorage
-  getCart(): Cart {
-    if (typeof window === 'undefined') return { items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() };
+    // Get cart from localStorage
+    getCart(): Cart {
+        if (typeof window === 'undefined')
+            return {
+                items: [],
+                subtotalCents: 0,
+                lastUpdated: new Date().toISOString(),
+            };
 
-    try {
-      const stored = localStorage.getItem(CART_KEY);
-      if (!stored) return { items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() };
+        try {
+            const stored = localStorage.getItem(CART_KEY);
+            if (!stored)
+                return {
+                    items: [],
+                    subtotalCents: 0,
+                    lastUpdated: new Date().toISOString(),
+                };
 
-      const cart = JSON.parse(stored) as Cart;
-      // Validate cart structure
-      return this.validateCart(cart);
-    } catch (error) {
-      console.error('Error reading cart:', error);
-      return { items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() };
-    }
-  },
+            const cart = JSON.parse(stored) as Cart;
+            // Validate cart structure
+            return this.validateCart(cart);
+        } catch (error) {
+            console.error('Error reading cart:', error);
+            return {
+                items: [],
+                subtotalCents: 0,
+                lastUpdated: new Date().toISOString(),
+            };
+        }
+    },
 
-  // Save cart to localStorage
-  setCart(cart: Cart): void {
-    if (typeof window === 'undefined') return;
+    // Save cart to localStorage
+    setCart(cart: Cart): void {
+        if (typeof window === 'undefined') return;
 
-    try {
-      const validated = this.validateCart(cart);
-      localStorage.setItem(CART_KEY, JSON.stringify(validated));
-    } catch (error) {
-      console.error('Error saving cart:', error);
-    }
-  },
+        try {
+            const validated = this.validateCart(cart);
+            localStorage.setItem(CART_KEY, JSON.stringify(validated));
+        } catch (error) {
+            console.error('Error saving cart:', error);
+        }
+    },
 
-  // Add item to cart
-  addItem(item: CartItem): Cart {
-    const cart = this.getCart();
-    const existingIndex = cart.items.findIndex(i => i.artworkId === item.artworkId);
+    // Add item to cart
+    addItem(item: CartItem): Cart {
+        const cart = this.getCart();
+        const existingIndex = cart.items.findIndex(
+            (i) => i.artworkId === item.artworkId
+        );
 
-    if (existingIndex >= 0) {
-      // Update quantity
-      cart.items[existingIndex].quantity += item.quantity;
-    } else {
-      cart.items.push(item);
-    }
+        if (existingIndex >= 0) {
+            // Update quantity
+            cart.items[existingIndex].quantity += item.quantity;
+        } else {
+            cart.items.push(item);
+        }
 
-    cart.subtotalCents = this.calculateSubtotal(cart.items);
-    cart.lastUpdated = new Date().toISOString();
+        cart.subtotalCents = this.calculateSubtotal(cart.items);
+        cart.lastUpdated = new Date().toISOString();
 
-    this.setCart(cart);
-    return cart;
-  },
+        this.setCart(cart);
+        return cart;
+    },
 
-  // Remove item from cart
-  removeItem(artworkId: string): Cart {
-    const cart = this.getCart();
-    cart.items = cart.items.filter(item => item.artworkId !== artworkId);
-    cart.subtotalCents = this.calculateSubtotal(cart.items);
-    cart.lastUpdated = new Date().toISOString();
+    // Remove item from cart
+    removeItem(artworkId: string): Cart {
+        const cart = this.getCart();
+        cart.items = cart.items.filter((item) => item.artworkId !== artworkId);
+        cart.subtotalCents = this.calculateSubtotal(cart.items);
+        cart.lastUpdated = new Date().toISOString();
 
-    this.setCart(cart);
-    return cart;
-  },
+        this.setCart(cart);
+        return cart;
+    },
 
-  // Update item quantity
-  updateQuantity(artworkId: string, quantity: number): Cart {
-    const cart = this.getCart();
-    const item = cart.items.find(i => i.artworkId === artworkId);
+    // Update item quantity
+    updateQuantity(artworkId: string, quantity: number): Cart {
+        const cart = this.getCart();
+        const item = cart.items.find((i) => i.artworkId === artworkId);
 
-    if (item) {
-      if (quantity <= 0) {
-        return this.removeItem(artworkId);
-      }
+        if (item) {
+            if (quantity <= 0) {
+                return this.removeItem(artworkId);
+            }
 
-      // Check inventory
-      if (quantity > item.inventoryCount) {
-        throw new Error(`Only ${item.inventoryCount} available`);
-      }
+            // Check inventory
+            if (quantity > item.inventoryCount) {
+                throw new Error(`Only ${item.inventoryCount} available`);
+            }
 
-      item.quantity = quantity;
-      cart.subtotalCents = this.calculateSubtotal(cart.items);
-      cart.lastUpdated = new Date().toISOString();
+            item.quantity = quantity;
+            cart.subtotalCents = this.calculateSubtotal(cart.items);
+            cart.lastUpdated = new Date().toISOString();
 
-      this.setCart(cart);
-    }
+            this.setCart(cart);
+        }
 
-    return cart;
-  },
+        return cart;
+    },
 
-  // Clear cart
-  clearCart(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(CART_KEY);
-  },
+    // Clear cart
+    clearCart(): void {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(CART_KEY);
+    },
 
-  // Validate cart structure
-  validateCart(cart: any): Cart {
-    if (!cart || typeof cart !== 'object') {
-      return { items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() };
-    }
+    // Validate cart structure
+    validateCart(cart: any): Cart {
+        if (!cart || typeof cart !== 'object') {
+            return {
+                items: [],
+                subtotalCents: 0,
+                lastUpdated: new Date().toISOString(),
+            };
+        }
 
-    const items = Array.isArray(cart.items) ? cart.items.filter(item =>
-      item.artworkId &&
-      typeof item.priceCents === 'number' &&
-      typeof item.quantity === 'number' &&
-      item.quantity > 0
-    ) : [];
+        const items = Array.isArray(cart.items)
+            ? cart.items.filter(
+                  (item) =>
+                      item.artworkId &&
+                      typeof item.priceCents === 'number' &&
+                      typeof item.quantity === 'number' &&
+                      item.quantity > 0
+              )
+            : [];
 
-    return {
-      items,
-      subtotalCents: this.calculateSubtotal(items),
-      lastUpdated: cart.lastUpdated || new Date().toISOString()
-    };
-  },
+        return {
+            items,
+            subtotalCents: this.calculateSubtotal(items),
+            lastUpdated: cart.lastUpdated || new Date().toISOString(),
+        };
+    },
 
-  // Calculate subtotal
-  calculateSubtotal(items: CartItem[]): number {
-    return items.reduce((sum, item) => sum + (item.priceCents * item.quantity), 0);
-  }
+    // Calculate subtotal
+    calculateSubtotal(items: CartItem[]): number {
+        return items.reduce(
+            (sum, item) => sum + item.priceCents * item.quantity,
+            0
+        );
+    },
 };
 ```
 
 #### `src/hooks/useCart.ts`
+
 ```typescript
 'use client';
 
@@ -871,119 +911,135 @@ import { Cart, CartItem } from '@/types/cart';
 import { cartStorage } from '@/lib/cart/storage';
 
 export function useCart() {
-  const [cart, setCart] = useState<Cart>({ items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() });
-  const [isLoading, setIsLoading] = useState(true);
+    const [cart, setCart] = useState<Cart>({
+        items: [],
+        subtotalCents: 0,
+        lastUpdated: new Date().toISOString(),
+    });
+    const [isLoading, setIsLoading] = useState(true);
 
-  // Load cart on mount
-  useEffect(() => {
-    setCart(cartStorage.getCart());
-    setIsLoading(false);
-  }, []);
+    // Load cart on mount
+    useEffect(() => {
+        setCart(cartStorage.getCart());
+        setIsLoading(false);
+    }, []);
 
-  const addToCart = useCallback(async (item: CartItem) => {
-    setIsLoading(true);
-    try {
-      const updatedCart = cartStorage.addItem(item);
-      setCart(updatedCart);
-      return updatedCart;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const addToCart = useCallback(async (item: CartItem) => {
+        setIsLoading(true);
+        try {
+            const updatedCart = cartStorage.addItem(item);
+            setCart(updatedCart);
+            return updatedCart;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-  const removeFromCart = useCallback(async (artworkId: string) => {
-    setIsLoading(true);
-    try {
-      const updatedCart = cartStorage.removeItem(artworkId);
-      setCart(updatedCart);
-      return updatedCart;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const removeFromCart = useCallback(async (artworkId: string) => {
+        setIsLoading(true);
+        try {
+            const updatedCart = cartStorage.removeItem(artworkId);
+            setCart(updatedCart);
+            return updatedCart;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-  const updateQuantity = useCallback(async (artworkId: string, quantity: number) => {
-    setIsLoading(true);
-    try {
-      const updatedCart = cartStorage.updateQuantity(artworkId, quantity);
-      setCart(updatedCart);
-      return updatedCart;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const updateQuantity = useCallback(
+        async (artworkId: string, quantity: number) => {
+            setIsLoading(true);
+            try {
+                const updatedCart = cartStorage.updateQuantity(
+                    artworkId,
+                    quantity
+                );
+                setCart(updatedCart);
+                return updatedCart;
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        []
+    );
 
-  const clearCart = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      cartStorage.clearCart();
-      setCart({ items: [], subtotalCents: 0, lastUpdated: new Date().toISOString() });
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const clearCart = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            cartStorage.clearCart();
+            setCart({
+                items: [],
+                subtotalCents: 0,
+                lastUpdated: new Date().toISOString(),
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-  const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
-  return {
-    cart,
-    isLoading,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    itemCount
-  };
+    return {
+        cart,
+        isLoading,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        itemCount,
+    };
 }
 ```
 
 ### 3.3 Payment Processing with Stripe
 
 #### `src/lib/payments/stripe.ts`
+
 ```typescript
 import Stripe from 'stripe';
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
+    throw new Error('STRIPE_SECRET_KEY is not set');
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
-  typescript: true,
+    apiVersion: '2024-11-20.acacia',
+    typescript: true,
 });
 
 export async function createPaymentIntent(
-  amountCents: number,
-  orderId: string,
-  customerEmail: string
+    amountCents: number,
+    orderId: string,
+    customerEmail: string
 ): Promise<Stripe.PaymentIntent> {
-  return await stripe.paymentIntents.create({
-    amount: amountCents,
-    currency: 'usd',
-    automatic_payment_methods: { enabled: true },
-    metadata: {
-      orderId,
-      customerEmail,
-    },
-    receipt_email: customerEmail,
-  });
+    return await stripe.paymentIntents.create({
+        amount: amountCents,
+        currency: 'usd',
+        automatic_payment_methods: { enabled: true },
+        metadata: {
+            orderId,
+            customerEmail,
+        },
+        receipt_email: customerEmail,
+    });
 }
 
 export async function verifyWebhookSignature(
-  payload: string | Buffer,
-  signature: string
+    payload: string | Buffer,
+    signature: string
 ): Promise<Stripe.Event> {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!webhookSecret) {
-    throw new Error('STRIPE_WEBHOOK_SECRET is not set');
-  }
+    if (!webhookSecret) {
+        throw new Error('STRIPE_WEBHOOK_SECRET is not set');
+    }
 
-  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
 }
 ```
 
 #### `src/app/api/checkout/route.ts`
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -992,107 +1048,105 @@ import { createOrder } from '@/lib/db/orders';
 import { validateCart } from '@/lib/cart/validation';
 
 const checkoutSchema = z.object({
-  customerEmail: z.string().email(),
-  customerName: z.string().min(1),
-  shippingAddress: z.object({
-    line1: z.string().min(1),
-    line2: z.string().optional(),
-    city: z.string().min(1),
-    state: z.string().min(2),
-    postalCode: z.string().min(5),
-    country: z.string().default('US'),
-  }),
-  billingAddress: z.object({
-    line1: z.string().min(1),
-    line2: z.string().optional(),
-    city: z.string().min(1),
-    state: z.string().min(2),
-    postalCode: z.string().min(5),
-    country: z.string().default('US'),
-  }),
-  cartItems: z.array(z.object({
-    artworkId: z.string().uuid(),
-    quantity: z.number().int().positive(),
-  })),
+    customerEmail: z.string().email(),
+    customerName: z.string().min(1),
+    shippingAddress: z.object({
+        line1: z.string().min(1),
+        line2: z.string().optional(),
+        city: z.string().min(1),
+        state: z.string().min(2),
+        postalCode: z.string().min(5),
+        country: z.string().default('US'),
+    }),
+    billingAddress: z.object({
+        line1: z.string().min(1),
+        line2: z.string().optional(),
+        city: z.string().min(1),
+        state: z.string().min(2),
+        postalCode: z.string().min(5),
+        country: z.string().default('US'),
+    }),
+    cartItems: z.array(
+        z.object({
+            artworkId: z.string().uuid(),
+            quantity: z.number().int().positive(),
+        })
+    ),
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validatedData = checkoutSchema.parse(body);
+    try {
+        const body = await request.json();
+        const validatedData = checkoutSchema.parse(body);
 
-    // Validate cart items and calculate totals
-    const { items, subtotalCents, shippingCents, taxCents, totalCents } =
-      await validateCart(validatedData.cartItems);
+        // Validate cart items and calculate totals
+        const { items, subtotalCents, shippingCents, taxCents, totalCents } =
+            await validateCart(validatedData.cartItems);
 
-    // Create order in database
-    const order = await createOrder({
-      customerEmail: validatedData.customerEmail,
-      customerName: validatedData.customerName,
-      shippingAddress: validatedData.shippingAddress,
-      billingAddress: validatedData.billingAddress,
-      items,
-      subtotalCents,
-      shippingCents,
-      taxCents,
-      totalCents,
-    });
+        // Create order in database
+        const order = await createOrder({
+            customerEmail: validatedData.customerEmail,
+            customerName: validatedData.customerName,
+            shippingAddress: validatedData.shippingAddress,
+            billingAddress: validatedData.billingAddress,
+            items,
+            subtotalCents,
+            shippingCents,
+            taxCents,
+            totalCents,
+        });
 
-    // Create Stripe payment intent
-    const paymentIntent = await createPaymentIntent(
-      totalCents,
-      order.id,
-      validatedData.customerEmail
-    );
+        // Create Stripe payment intent
+        const paymentIntent = await createPaymentIntent(
+            totalCents,
+            order.id,
+            validatedData.customerEmail
+        );
 
-    return NextResponse.json({
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      clientSecret: paymentIntent.client_secret,
-    });
+        return NextResponse.json({
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            clientSecret: paymentIntent.client_secret,
+        });
+    } catch (error) {
+        console.error('Checkout error:', error);
 
-  } catch (error) {
-    console.error('Checkout error:', error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json(
+                { error: 'Invalid checkout data', details: error.errors },
+                { status: 400 }
+            );
+        }
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid checkout data', details: error.errors },
-        { status: 400 }
-      );
+        return NextResponse.json({ error: 'Checkout failed' }, { status: 500 });
     }
-
-    return NextResponse.json(
-      { error: 'Checkout failed' },
-      { status: 500 }
-    );
-  }
 }
 ```
 
 ### 3.4 Security Best Practices
 
 1. **Input Validation**
-   - Use Zod for runtime type validation
-   - Sanitize all user inputs
-   - Validate cart items against database before checkout
+    - Use Zod for runtime type validation
+    - Sanitize all user inputs
+    - Validate cart items against database before checkout
 
 2. **CSRF Protection**
-   - Next.js API routes use SameSite cookies by default
-   - Add CSRF tokens for sensitive operations
+    - Next.js API routes use SameSite cookies by default
+    - Add CSRF tokens for sensitive operations
 
 3. **Rate Limiting**
-   - Implement rate limiting on checkout endpoint
-   - Use Upstash or Vercel KV for distributed rate limiting
+    - Implement rate limiting on checkout endpoint
+    - Use Upstash or Vercel KV for distributed rate limiting
 
 4. **PCI Compliance**
-   - Never store credit card numbers
-   - Use Stripe Elements for payment collection
-   - All payment data handled by Stripe
+    - Never store credit card numbers
+    - Use Stripe Elements for payment collection
+    - All payment data handled by Stripe
 
 5. **Data Encryption**
-   - Use HTTPS everywhere (enforced by Vercel)
-   - Encrypt sensitive data at rest in database
-   - Use environment variables for secrets
+    - Use HTTPS everywhere (enforced by Vercel)
+    - Encrypt sensitive data at rest in database
+    - Use environment variables for secrets
 
 ---
 
@@ -1103,218 +1157,228 @@ export async function POST(request: NextRequest) {
 **Strategy:** Use Supabase Auth with email/password for admin users only.
 
 #### `src/lib/supabase/server.ts`
+
 ```typescript
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database';
 
 export async function createClient() {
-  const cookieStore = await cookies();
+    const cookieStore = await cookies();
 
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Server component - can't set cookies
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
-            // Server component - can't remove cookies
-          }
-        },
-      },
-    }
-  );
+    return createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value;
+                },
+                set(name: string, value: string, options: CookieOptions) {
+                    try {
+                        cookieStore.set({ name, value, ...options });
+                    } catch (error) {
+                        // Server component - can't set cookies
+                    }
+                },
+                remove(name: string, options: CookieOptions) {
+                    try {
+                        cookieStore.set({ name, value: '', ...options });
+                    } catch (error) {
+                        // Server component - can't remove cookies
+                    }
+                },
+            },
+        }
+    );
 }
 ```
 
 #### `src/lib/supabase/client.ts`
+
 ```typescript
 import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/types/database';
 
 export function createClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+    return createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 }
 ```
 
 ### 4.2 Admin Authentication Middleware
 
 #### `src/middleware.ts`
+
 ```typescript
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+    let response = NextResponse.next({
+        request: {
+            headers: request.headers,
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
+    });
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return request.cookies.get(name)?.value;
+                },
+                set(name: string, value: string, options: CookieOptions) {
+                    request.cookies.set({
+                        name,
+                        value,
+                        ...options,
+                    });
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
+                    });
+                    response.cookies.set({
+                        name,
+                        value,
+                        ...options,
+                    });
+                },
+                remove(name: string, options: CookieOptions) {
+                    request.cookies.set({
+                        name,
+                        value: '',
+                        ...options,
+                    });
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
+                    });
+                    response.cookies.set({
+                        name,
+                        value: '',
+                        ...options,
+                    });
+                },
             },
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-        },
-      },
-    }
-  );
+        }
+    );
 
-  // Check if accessing admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    const { data: { user } } = await supabase.auth.getUser();
+    // Check if accessing admin routes
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
 
-    // Allow login page
-    if (request.nextUrl.pathname === '/admin/login') {
-      if (user) {
-        // Already logged in, redirect to dashboard
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-      return response;
+        // Allow login page
+        if (request.nextUrl.pathname === '/admin/login') {
+            if (user) {
+                // Already logged in, redirect to dashboard
+                return NextResponse.redirect(new URL('/admin', request.url));
+            }
+            return response;
+        }
+
+        // Protect all other admin routes
+        if (!user) {
+            return NextResponse.redirect(new URL('/admin/login', request.url));
+        }
+
+        // Check if user is an admin
+        const { data: admin } = await supabase
+            .from('administrators')
+            .select('is_active')
+            .eq('id', user.id)
+            .single();
+
+        if (!admin || !admin.is_active) {
+            return NextResponse.redirect(new URL('/admin/login', request.url));
+        }
     }
 
-    // Protect all other admin routes
-    if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-
-    // Check if user is an admin
-    const { data: admin } = await supabase
-      .from('administrators')
-      .select('is_active')
-      .eq('id', user.id)
-      .single();
-
-    if (!admin || !admin.is_active) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-  }
-
-  return response;
+    return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+    matcher: ['/admin/:path*'],
 };
 ```
 
 ### 4.3 Role-Based Access Control (RBAC)
 
 #### `src/lib/auth/permissions.ts`
+
 ```typescript
 export enum AdminRole {
-  ADMIN = 'admin',
-  SUPER_ADMIN = 'super_admin',
+    ADMIN = 'admin',
+    SUPER_ADMIN = 'super_admin',
 }
 
 export enum Permission {
-  VIEW_ARTWORK = 'view:artwork',
-  MANAGE_ARTWORK = 'manage:artwork',
-  VIEW_ORDERS = 'view:orders',
-  MANAGE_ORDERS = 'manage:orders',
-  VIEW_ADMINS = 'view:admins',
-  MANAGE_ADMINS = 'manage:admins',
-  MANAGE_SETTINGS = 'manage:settings',
+    VIEW_ARTWORK = 'view:artwork',
+    MANAGE_ARTWORK = 'manage:artwork',
+    VIEW_ORDERS = 'view:orders',
+    MANAGE_ORDERS = 'manage:orders',
+    VIEW_ADMINS = 'view:admins',
+    MANAGE_ADMINS = 'manage:admins',
+    MANAGE_SETTINGS = 'manage:settings',
 }
 
 const rolePermissions: Record<AdminRole, Permission[]> = {
-  [AdminRole.ADMIN]: [
-    Permission.VIEW_ARTWORK,
-    Permission.MANAGE_ARTWORK,
-    Permission.VIEW_ORDERS,
-    Permission.MANAGE_ORDERS,
-  ],
-  [AdminRole.SUPER_ADMIN]: [
-    Permission.VIEW_ARTWORK,
-    Permission.MANAGE_ARTWORK,
-    Permission.VIEW_ORDERS,
-    Permission.MANAGE_ORDERS,
-    Permission.VIEW_ADMINS,
-    Permission.MANAGE_ADMINS,
-    Permission.MANAGE_SETTINGS,
-  ],
+    [AdminRole.ADMIN]: [
+        Permission.VIEW_ARTWORK,
+        Permission.MANAGE_ARTWORK,
+        Permission.VIEW_ORDERS,
+        Permission.MANAGE_ORDERS,
+    ],
+    [AdminRole.SUPER_ADMIN]: [
+        Permission.VIEW_ARTWORK,
+        Permission.MANAGE_ARTWORK,
+        Permission.VIEW_ORDERS,
+        Permission.MANAGE_ORDERS,
+        Permission.VIEW_ADMINS,
+        Permission.MANAGE_ADMINS,
+        Permission.MANAGE_SETTINGS,
+    ],
 };
 
-export function hasPermission(role: AdminRole, permission: Permission): boolean {
-  return rolePermissions[role]?.includes(permission) ?? false;
+export function hasPermission(
+    role: AdminRole,
+    permission: Permission
+): boolean {
+    return rolePermissions[role]?.includes(permission) ?? false;
 }
 
 export async function checkAdminPermission(
-  userId: string,
-  permission: Permission
+    userId: string,
+    permission: Permission
 ): Promise<boolean> {
-  const { createClient } = await import('@/lib/supabase/server');
-  const supabase = await createClient();
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
 
-  const { data: admin } = await supabase
-    .from('administrators')
-    .select('role, is_active')
-    .eq('id', userId)
-    .single();
+    const { data: admin } = await supabase
+        .from('administrators')
+        .select('role, is_active')
+        .eq('id', userId)
+        .single();
 
-  if (!admin || !admin.is_active) {
-    return false;
-  }
+    if (!admin || !admin.is_active) {
+        return false;
+    }
 
-  return hasPermission(admin.role as AdminRole, permission);
+    return hasPermission(admin.role as AdminRole, permission);
 }
 ```
 
 ### 4.4 Admin Dashboard Structure
 
 #### `src/app/admin/layout.tsx`
+
 ```typescript
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -1361,6 +1425,7 @@ export default async function AdminLayout({
 ### 5.1 Supabase Storage Organization
 
 **Bucket Structure:**
+
 ```
 artwork/
 ├── originals/           # Original high-res images
@@ -1438,67 +1503,69 @@ CREATE POLICY "Admins can delete artwork"
 ### 5.3 Image Optimization Strategy
 
 #### `src/lib/utils/image.ts`
+
 ```typescript
 import sharp from 'sharp';
 
 export interface ImageSize {
-  width: number;
-  height: number;
-  quality: number;
+    width: number;
+    height: number;
+    quality: number;
 }
 
 export const IMAGE_SIZES = {
-  thumbnail: { width: 300, height: 300, quality: 80 },
-  preview: { width: 800, height: 800, quality: 85 },
-  large: { width: 1600, height: 1600, quality: 90 },
+    thumbnail: { width: 300, height: 300, quality: 80 },
+    preview: { width: 800, height: 800, quality: 85 },
+    large: { width: 1600, height: 1600, quality: 90 },
 } as const;
 
 export async function optimizeImage(
-  buffer: Buffer,
-  size: ImageSize
+    buffer: Buffer,
+    size: ImageSize
 ): Promise<Buffer> {
-  return await sharp(buffer)
-    .resize(size.width, size.height, {
-      fit: 'inside',
-      withoutEnlargement: true,
-    })
-    .webp({ quality: size.quality })
-    .toBuffer();
+    return await sharp(buffer)
+        .resize(size.width, size.height, {
+            fit: 'inside',
+            withoutEnlargement: true,
+        })
+        .webp({ quality: size.quality })
+        .toBuffer();
 }
 
 export async function generateImageVariants(
-  originalBuffer: Buffer,
-  artworkId: string
+    originalBuffer: Buffer,
+    artworkId: string
 ): Promise<{
-  thumbnail: Buffer;
-  preview: Buffer;
-  large: Buffer;
+    thumbnail: Buffer;
+    preview: Buffer;
+    large: Buffer;
 }> {
-  const [thumbnail, preview, large] = await Promise.all([
-    optimizeImage(originalBuffer, IMAGE_SIZES.thumbnail),
-    optimizeImage(originalBuffer, IMAGE_SIZES.preview),
-    optimizeImage(originalBuffer, IMAGE_SIZES.large),
-  ]);
+    const [thumbnail, preview, large] = await Promise.all([
+        optimizeImage(originalBuffer, IMAGE_SIZES.thumbnail),
+        optimizeImage(originalBuffer, IMAGE_SIZES.preview),
+        optimizeImage(originalBuffer, IMAGE_SIZES.large),
+    ]);
 
-  return { thumbnail, preview, large };
+    return { thumbnail, preview, large };
 }
 
 export function getImageUrl(bucket: string, path: string): string {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 export function getArtworkImageUrls(artworkId: string) {
-  return {
-    thumbnail: getImageUrl('artwork', `thumbnails/${artworkId}.webp`),
-    preview: getImageUrl('artwork', `previews/${artworkId}.webp`),
-    large: getImageUrl('artwork', `large/${artworkId}.webp`),
-    original: getImageUrl('artwork', `originals/${artworkId}`), // Keep original extension
-  };
+    return {
+        thumbnail: getImageUrl('artwork', `thumbnails/${artworkId}.webp`),
+        preview: getImageUrl('artwork', `previews/${artworkId}.webp`),
+        large: getImageUrl('artwork', `large/${artworkId}.webp`),
+        original: getImageUrl('artwork', `originals/${artworkId}`), // Keep original extension
+    };
 }
 ```
 
 #### `src/components/artwork/ArtworkImage.tsx`
+
 ```typescript
 'use client';
 
@@ -1563,88 +1630,87 @@ export default function ArtworkImage({
 ### 5.4 Upload Flow
 
 #### `src/app/api/admin/upload/route.ts`
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateImageVariants } from '@/lib/utils/image';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  // Check admin auth
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const artworkId = formData.get('artworkId') as string;
-
-    if (!file || !artworkId) {
-      return NextResponse.json(
-        { error: 'Missing file or artworkId' },
-        { status: 400 }
-      );
+    // Check admin auth
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Read file buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
+    try {
+        const formData = await request.formData();
+        const file = formData.get('file') as File;
+        const artworkId = formData.get('artworkId') as string;
 
-    // Generate optimized variants
-    const variants = await generateImageVariants(buffer, artworkId);
+        if (!file || !artworkId) {
+            return NextResponse.json(
+                { error: 'Missing file or artworkId' },
+                { status: 400 }
+            );
+        }
 
-    // Upload original
-    const originalExt = file.name.split('.').pop();
-    const { error: originalError } = await supabase.storage
-      .from('artwork')
-      .upload(`originals/${artworkId}.${originalExt}`, buffer, {
-        contentType: file.type,
-        upsert: true,
-      });
+        // Read file buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
 
-    if (originalError) throw originalError;
+        // Generate optimized variants
+        const variants = await generateImageVariants(buffer, artworkId);
 
-    // Upload variants
-    await Promise.all([
-      supabase.storage
-        .from('artwork')
-        .upload(`thumbnails/${artworkId}.webp`, variants.thumbnail, {
-          contentType: 'image/webp',
-          upsert: true,
-        }),
-      supabase.storage
-        .from('artwork')
-        .upload(`previews/${artworkId}.webp`, variants.preview, {
-          contentType: 'image/webp',
-          upsert: true,
-        }),
-      supabase.storage
-        .from('artwork')
-        .upload(`large/${artworkId}.webp`, variants.large, {
-          contentType: 'image/webp',
-          upsert: true,
-        }),
-    ]);
+        // Upload original
+        const originalExt = file.name.split('.').pop();
+        const { error: originalError } = await supabase.storage
+            .from('artwork')
+            .upload(`originals/${artworkId}.${originalExt}`, buffer, {
+                contentType: file.type,
+                upsert: true,
+            });
 
-    return NextResponse.json({
-      success: true,
-      paths: {
-        original: `originals/${artworkId}.${originalExt}`,
-        thumbnail: `thumbnails/${artworkId}.webp`,
-        preview: `previews/${artworkId}.webp`,
-        large: `large/${artworkId}.webp`,
-      },
-    });
+        if (originalError) throw originalError;
 
-  } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Upload failed' },
-      { status: 500 }
-    );
-  }
+        // Upload variants
+        await Promise.all([
+            supabase.storage
+                .from('artwork')
+                .upload(`thumbnails/${artworkId}.webp`, variants.thumbnail, {
+                    contentType: 'image/webp',
+                    upsert: true,
+                }),
+            supabase.storage
+                .from('artwork')
+                .upload(`previews/${artworkId}.webp`, variants.preview, {
+                    contentType: 'image/webp',
+                    upsert: true,
+                }),
+            supabase.storage
+                .from('artwork')
+                .upload(`large/${artworkId}.webp`, variants.large, {
+                    contentType: 'image/webp',
+                    upsert: true,
+                }),
+        ]);
+
+        return NextResponse.json({
+            success: true,
+            paths: {
+                original: `originals/${artworkId}.${originalExt}`,
+                thumbnail: `thumbnails/${artworkId}.webp`,
+                preview: `previews/${artworkId}.webp`,
+                large: `large/${artworkId}.webp`,
+            },
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    }
 }
 ```
 
@@ -1693,189 +1759,200 @@ export async function generateStaticParams() {
 **Multi-Layer Caching:**
 
 1. **CDN Caching (Vercel Edge)**
-   - Static assets: 1 year
-   - Images: 1 week
-   - API responses: 5 minutes
+    - Static assets: 1 year
+    - Images: 1 week
+    - API responses: 5 minutes
 
 2. **Next.js Data Cache**
-   - Use `unstable_cache` for expensive queries
-   - Revalidate on-demand via admin actions
+    - Use `unstable_cache` for expensive queries
+    - Revalidate on-demand via admin actions
 
 3. **Supabase Query Caching**
-   - Use PostgREST query caching headers
-   - Cache frequently accessed data
+    - Use PostgREST query caching headers
+    - Cache frequently accessed data
 
 #### `src/lib/cache/index.ts`
+
 ```typescript
 import { unstable_cache } from 'next/cache';
 
 export function getCachedArtwork() {
-  return unstable_cache(
-    async () => {
-      const { createClient } = await import('@/lib/supabase/server');
-      const supabase = await createClient();
+    return unstable_cache(
+        async () => {
+            const { createClient } = await import('@/lib/supabase/server');
+            const supabase = await createClient();
 
-      const { data } = await supabase
-        .from('artwork')
-        .select('*')
-        .eq('is_published', true)
-        .order('display_order');
+            const { data } = await supabase
+                .from('artwork')
+                .select('*')
+                .eq('is_published', true)
+                .order('display_order');
 
-      return data;
-    },
-    ['artwork-published'],
-    {
-      revalidate: 3600,
-      tags: ['artwork'],
-    }
-  );
+            return data;
+        },
+        ['artwork-published'],
+        {
+            revalidate: 3600,
+            tags: ['artwork'],
+        }
+    );
 }
 
 export function getCachedUpcomingEvents() {
-  return unstable_cache(
-    async () => {
-      const { createClient } = await import('@/lib/supabase/server');
-      const supabase = await createClient();
+    return unstable_cache(
+        async () => {
+            const { createClient } = await import('@/lib/supabase/server');
+            const supabase = await createClient();
 
-      const { data } = await supabase
-        .from('events')
-        .select('*')
-        .eq('is_published', true)
-        .gte('end_date', new Date().toISOString())
-        .order('start_date');
+            const { data } = await supabase
+                .from('events')
+                .select('*')
+                .eq('is_published', true)
+                .gte('end_date', new Date().toISOString())
+                .order('start_date');
 
-      return data;
-    },
-    ['events-upcoming'],
-    {
-      revalidate: 1800, // 30 minutes
-      tags: ['events'],
-    }
-  );
+            return data;
+        },
+        ['events-upcoming'],
+        {
+            revalidate: 1800, // 30 minutes
+            tags: ['events'],
+        }
+    );
 }
 ```
 
 #### On-Demand Revalidation
+
 ```typescript
 // src/app/api/admin/revalidate/route.ts
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  // Check admin auth
-  const { tag, path } = await request.json();
+    // Check admin auth
+    const { tag, path } = await request.json();
 
-  if (tag) {
-    revalidateTag(tag);
-  }
+    if (tag) {
+        revalidateTag(tag);
+    }
 
-  if (path) {
-    revalidatePath(path);
-  }
+    if (path) {
+        revalidatePath(path);
+    }
 
-  return NextResponse.json({ revalidated: true });
+    return NextResponse.json({ revalidated: true });
 }
 ```
 
 ### 6.3 Database Query Optimization
 
 #### Efficient Query Patterns
+
 ```typescript
 // src/lib/db/artwork.ts
 import { createClient } from '@/lib/supabase/server';
 
 export async function getPublishedArtwork(options?: {
-  limit?: number;
-  offset?: number;
-  featured?: boolean;
+    limit?: number;
+    offset?: number;
+    featured?: boolean;
 }) {
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  let query = supabase
-    .from('artwork')
-    .select('id, title, slug, description, price_cents, thumbnail_path, is_featured, tags', { count: 'exact' })
-    .eq('is_published', true)
-    .order('display_order', { ascending: true });
+    let query = supabase
+        .from('artwork')
+        .select(
+            'id, title, slug, description, price_cents, thumbnail_path, is_featured, tags',
+            { count: 'exact' }
+        )
+        .eq('is_published', true)
+        .order('display_order', { ascending: true });
 
-  if (options?.featured) {
-    query = query.eq('is_featured', true);
-  }
+    if (options?.featured) {
+        query = query.eq('is_featured', true);
+    }
 
-  if (options?.limit) {
-    query = query.limit(options.limit);
-  }
+    if (options?.limit) {
+        query = query.limit(options.limit);
+    }
 
-  if (options?.offset) {
-    query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
-  }
+    if (options?.offset) {
+        query = query.range(
+            options.offset,
+            options.offset + (options.limit || 10) - 1
+        );
+    }
 
-  return await query;
+    return await query;
 }
 
 export async function getArtworkBySlug(slug: string) {
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('artwork')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
+    const { data, error } = await supabase
+        .from('artwork')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
 }
 
 // Batch fetch artwork by IDs (for cart validation)
 export async function getArtworkByIds(ids: string[]) {
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('artwork')
-    .select('id, title, price_cents, inventory_count, thumbnail_path')
-    .in('id', ids)
-    .eq('is_published', true);
+    const { data, error } = await supabase
+        .from('artwork')
+        .select('id, title, price_cents, inventory_count, thumbnail_path')
+        .in('id', ids)
+        .eq('is_published', true);
 
-  if (error) throw error;
-  return data;
+    if (error) throw error;
+    return data;
 }
 ```
 
 ### 6.4 Performance Monitoring
 
 #### `src/lib/monitoring/performance.ts`
+
 ```typescript
 export function measurePerformance(label: string) {
-  const start = performance.now();
+    const start = performance.now();
 
-  return {
-    end: () => {
-      const duration = performance.now() - start;
-      console.log(`[Performance] ${label}: ${duration.toFixed(2)}ms`);
+    return {
+        end: () => {
+            const duration = performance.now() - start;
+            console.log(`[Performance] ${label}: ${duration.toFixed(2)}ms`);
 
-      // Send to analytics (e.g., Vercel Analytics, Sentry)
-      if (typeof window !== 'undefined' && window.analytics) {
-        window.analytics.track('Performance', {
-          label,
-          duration,
-        });
-      }
-    },
-  };
+            // Send to analytics (e.g., Vercel Analytics, Sentry)
+            if (typeof window !== 'undefined' && window.analytics) {
+                window.analytics.track('Performance', {
+                    label,
+                    duration,
+                });
+            }
+        },
+    };
 }
 
 // Usage in components
 export function usePerformanceTracker(label: string) {
-  useEffect(() => {
-    const tracker = measurePerformance(label);
-    return () => tracker.end();
-  }, [label]);
+    useEffect(() => {
+        const tracker = measurePerformance(label);
+        return () => tracker.end();
+    }, [label]);
 }
 ```
 
 ### 6.5 Scalability Considerations
 
 **Current MVP Architecture Scales To:**
+
 - 1,000+ artwork pieces
 - 100+ orders/day
 - 10,000+ monthly visitors
@@ -1883,24 +1960,24 @@ export function usePerformanceTracker(label: string) {
 **When to Scale:**
 
 1. **Database (>10k orders/month)**
-   - Add read replicas for analytics
-   - Implement connection pooling (PgBouncer)
-   - Consider separating read/write operations
+    - Add read replicas for analytics
+    - Implement connection pooling (PgBouncer)
+    - Consider separating read/write operations
 
 2. **Storage (>100GB images)**
-   - Migrate to CloudFlare R2 or AWS S3
-   - Implement CDN (Cloudflare Images)
-   - Add image proxy service
+    - Migrate to CloudFlare R2 or AWS S3
+    - Implement CDN (Cloudflare Images)
+    - Add image proxy service
 
 3. **Search (>5k artwork)**
-   - Add Algolia or Meilisearch for search
-   - Implement faceted filtering
-   - Add full-text search indexes
+    - Add Algolia or Meilisearch for search
+    - Implement faceted filtering
+    - Add full-text search indexes
 
 4. **Orders (>1k orders/day)**
-   - Implement order queue system (BullMQ)
-   - Add background jobs for emails
-   - Consider order processing microservice
+    - Implement order queue system (BullMQ)
+    - Add background jobs for emails
+    - Consider order processing microservice
 
 ---
 
@@ -1920,6 +1997,7 @@ export function usePerformanceTracker(label: string) {
 - [ ] Create basic folder structure
 
 **Deliverables:**
+
 - Working Next.js app
 - Database with all tables
 - Type-safe database queries
@@ -1938,6 +2016,7 @@ export function usePerformanceTracker(label: string) {
 - [ ] Add image optimization
 
 **Deliverables:**
+
 - All public pages functional
 - Responsive design working
 - Images loading optimally
@@ -1956,6 +2035,7 @@ export function usePerformanceTracker(label: string) {
 - [ ] Test payment flow
 
 **Deliverables:**
+
 - Working shopping cart
 - Secure checkout process
 - Payment integration complete
@@ -1974,6 +2054,7 @@ export function usePerformanceTracker(label: string) {
 - [ ] Implement RBAC
 
 **Deliverables:**
+
 - Full admin dashboard
 - Content management working
 - Role-based access control
@@ -1992,6 +2073,7 @@ export function usePerformanceTracker(label: string) {
 - [ ] Deploy to production
 
 **Deliverables:**
+
 - Production-ready application
 - Performance optimized
 - Security hardened
@@ -2000,12 +2082,14 @@ export function usePerformanceTracker(label: string) {
 ### Post-Launch Enhancements
 
 **Phase 6: Analytics & Monitoring**
+
 - Add Vercel Analytics
 - Implement error tracking (Sentry)
 - Set up order notifications
 - Create admin analytics dashboard
 
 **Phase 7: Advanced Features**
+
 - Email marketing integration
 - Print-on-demand integration
 - Customer accounts (optional)
@@ -2044,31 +2128,31 @@ CART_SESSION_SECRET=your-32-char-secret
 
 ```json
 {
-  "dependencies": {
-    "next": "^14.2.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "@supabase/supabase-js": "^2.45.0",
-    "@supabase/ssr": "^0.5.0",
-    "stripe": "^16.12.0",
-    "@stripe/stripe-js": "^4.7.0",
-    "@stripe/react-stripe-js": "^2.8.0",
-    "zod": "^3.23.0",
-    "sharp": "^0.33.0",
-    "nodemailer": "^6.9.0",
-    "date-fns": "^4.1.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.6.0",
-    "@types/react": "^18.3.0",
-    "@types/node": "^20.16.0",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0",
-    "supabase": "^1.200.0",
-    "eslint": "^8.57.0",
-    "prettier": "^3.3.0"
-  }
+    "dependencies": {
+        "next": "^14.2.0",
+        "react": "^18.3.0",
+        "react-dom": "^18.3.0",
+        "@supabase/supabase-js": "^2.45.0",
+        "@supabase/ssr": "^0.5.0",
+        "stripe": "^16.12.0",
+        "@stripe/stripe-js": "^4.7.0",
+        "@stripe/react-stripe-js": "^2.8.0",
+        "zod": "^3.23.0",
+        "sharp": "^0.33.0",
+        "nodemailer": "^6.9.0",
+        "date-fns": "^4.1.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.6.0",
+        "@types/react": "^18.3.0",
+        "@types/node": "^20.16.0",
+        "tailwindcss": "^3.4.0",
+        "autoprefixer": "^10.4.0",
+        "postcss": "^8.4.0",
+        "supabase": "^1.200.0",
+        "eslint": "^8.57.0",
+        "prettier": "^3.3.0"
+    }
 }
 ```
 

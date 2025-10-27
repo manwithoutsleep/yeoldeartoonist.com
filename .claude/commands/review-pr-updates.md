@@ -1,5 +1,5 @@
 ---
-argument-hint: [github_issue] [pr-num]
+argument-hint: [spec-file] [task-id] [pr-num] [branch-name]
 description: Review a PR and add comments
 ---
 
@@ -11,11 +11,7 @@ You MUST NOT write, modify, or execute any code.
 
 Programming Language/Framework: TypeScript / Next.js
 
-Goal of this PR: Implement the requirements of GitHub issue $1.
-
-You have access to the GitHub CLI. Use `gh --help` for syntax.
-
-You can access the contents of the GitHub issue using the command `gh view $1`
+Goal of this PR: Implement the requirements of {{task-id}} in {{spec-file}}.
 
 Relevant Architecture/Design Decisions: This is a prototype in early stages of development. We want to balance security with convenience, but at this stage of the project we will intentionally lean towards convenience with the plan to revisit security issues at a later stage.
 
@@ -23,15 +19,15 @@ Coding Standards: ESLint and Prettier are configured to enforce standards.
 
 ## 2. The Code to Review
 
-The code is in GitHub PR number $2. You can view the PR using the GitHub CLI with the command `gh pr view $2`.
+The code is in GitHub PR number {{pr-num}}. You can view the PR using the GitHub CLI with the command `gh pr view {{pr-num}}`.
 
-You have access to the git CLI. You can see the diff by comparing branch `issue-$1` against `main`.
+You have access to the git CLI. You can see the diff by comparing branch `{{branch-name}}` against `main`.
 
 ## 3. Review Instructions
 
 You have already reviewed this PR and added comments to it. The implementor has addressed those comments and pushed the changes. We are now ready for you to review the updates and, if appropriate, give your approval to merge the PR.
 
-Please review the code above with the following criteria in mind. For each piece of feedback, use the GitHub CLI to add a comment to PR $2, specifying the file and line number, providing the code snippet, and explaining your reasoning clearly.
+Please review the code above with the following criteria in mind. For each piece of feedback, use the GitHub CLI to add a comment to PR {{pr-num}}, specifying the file and line number, providing the code snippet, and explaining your reasoning clearly.
 
 ### A. High-Level Review
 

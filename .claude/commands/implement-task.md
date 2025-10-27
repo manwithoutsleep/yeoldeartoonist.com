@@ -92,4 +92,3 @@ When the phase is complete, mark it complete in the original $1.
 Consider these additional notes:
 
 $3
-

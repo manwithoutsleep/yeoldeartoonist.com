@@ -34,3 +34,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase cli
+/supabase/.branches/
+/supabase/.temp/
+.supabase/
+
+# ide
+.vscode/
+.idea/
+*.swp
+*.swo

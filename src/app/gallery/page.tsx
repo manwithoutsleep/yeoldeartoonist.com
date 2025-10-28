@@ -22,8 +22,7 @@ export default async function GalleryPage() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <h1 className="text-5xl font-bold text-center mb-4">Gallery</h1>
                 <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                    Explore our collection of original artwork and creative
-                    pieces
+                    Welcome to the landscape of my imagination!
                 </p>
 
                 {error && (

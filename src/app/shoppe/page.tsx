@@ -27,8 +27,7 @@ export default async function ShoppePage() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <h1 className="text-5xl font-bold text-center mb-4">Shoppe</h1>
                 <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                    Purchase original artwork and unique pieces from Ye Olde
-                    Artoonist
+                    Greetings travelers! Feel free to peruse my prints & curios.
                 </p>
 
                 {error && (

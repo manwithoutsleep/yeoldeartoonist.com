@@ -21,7 +21,7 @@ export default async function Home() {
     return (
         <div className="bg-black text-white">
             {/* Hero Section with Scroll Background */}
-            <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black">
+            <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black mt-6">
                 <Image
                     src="/images/pages/scroll.jpg"
                     alt="Scroll background"
@@ -30,11 +30,11 @@ export default async function Home() {
                     className="object-contain absolute inset-0"
                     priority
                 />
-                <div className="relative z-10 text-center px-4">
+                <div className="relative z-10 text-center px-4 max-w-xl ml-32 mr-12">
                     <h1 className="text-5xl md:text-7xl font-bold mb-4">
                         HUZZAHH!!
                     </h1>
-                    <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+                    <p className="text-xl md:text-2xl mb-8">
                         Greetings and welcome to my site! Here you&apos;ll find
                         a place to view my art, peruse my wares and keep up to
                         date with upcoming projects. I will also post any events

@@ -32,7 +32,8 @@ export default async function InTheWorksPage() {
                     In The Works
                 </h1>
                 <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                    Discover upcoming projects and convention appearances
+                    Stop by from time to time to stay informed of all the going
+                    ons!
                 </p>
 
                 {error && (

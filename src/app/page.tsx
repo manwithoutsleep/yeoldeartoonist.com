@@ -1,66 +1,120 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import { getFeaturedArtwork } from '@/lib/db/artwork';
+import { siteConfig } from '@/config/site';
 
-export default function Home() {
+/**
+ * Home page - Hero section with scroll background and navigation card previews
+ *
+ * Features:
+ * - Black background with scroll image
+ * - Featured artwork showcase
+ * - Navigation cards for main sections
+ * - Server-side rendering for SSG/ISR benefits
+ */
+
+export const revalidate = 3600; // Revalidate every hour (ISR)
+
+export default async function Home() {
+    const { data: featured } = await getFeaturedArtwork(1);
+
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-            <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+        <div className="bg-black text-white">
+            {/* Hero Section with Scroll Background */}
+            <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black mt-6">
                 <Image
-                    className="dark:invert"
-                    src="/next.svg"
-                    alt="Next.js logo"
-                    width={100}
-                    height={20}
+                    src="/images/pages/scroll.jpg"
+                    alt="Scroll background"
+                    fill
+                    sizes="100vw"
+                    className="object-contain absolute inset-0"
                     priority
                 />
-                <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-                    <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-                        To get started, edit the page.tsx file.
+                <div className="relative z-10 text-center px-4 max-w-xl ml-32 mr-12 pl-16 pr-16">
+                    <h1 className="text-5xl md:text-7xl font-bold mb-4">
+                        HUZZAHH!!
                     </h1>
-                    <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                        Looking for a starting point or more instructions? Head
-                        over to{' '}
-                        <a
-                            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                            className="font-medium text-zinc-950 dark:text-zinc-50"
-                        >
-                            Templates
-                        </a>{' '}
-                        or the{' '}
-                        <a
-                            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                            className="font-medium text-zinc-950 dark:text-zinc-50"
-                        >
-                            Learning
-                        </a>{' '}
-                        center.
+                    <p className="text-xl md:text-2xl mb-8">
+                        Greetings and welcome to my site! Here you&apos;ll find
+                        a place to view my art, peruse my wares and keep up to
+                        date with upcoming projects. I will also post any events
+                        I plan on attending. SKAL!!
                     </p>
                 </div>
-                <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-                    <a
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-                        href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <Image
-                            className="dark:invert"
-                            src="/vercel.svg"
-                            alt="Vercel logomark"
-                            width={16}
-                            height={16}
-                        />
-                        Deploy Now
-                    </a>
-                    <a
-                        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-                        href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Documentation
-                    </a>
+            </div>
+
+            {/* Navigation Cards Section */}
+            <div className="bg-black text-white py-16">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-4xl font-bold text-center mb-12">
+                        Explore Our Work
+                    </h2>
+
+                    <div className="flex flex-col gap-8">
+                        {siteConfig.navigation.cards.map((card) => (
+                            <Link
+                                key={card.href}
+                                href={card.href}
+                                className="group block overflow-hidden rounded border-4 border-black hover:shadow-xl transition-shadow"
+                            >
+                                <div className="relative w-full overflow-hidden">
+                                    <Image
+                                        src={`/images/section-headers/${card.image}`}
+                                        alt={`${card.title}: ${card.description}`}
+                                        width={1200}
+                                        height={600}
+                                        className="w-full h-auto object-contain group-hover:scale-105 transition-transform"
+                                    />
+                                </div>
+                                <div className="bg-black text-white p-6 text-center">
+                                    <p className="text-xl md:text-2xl font-semibold">
+                                        {card.description}
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
-            </main>
+            </div>
+
+            {/* Featured Artwork Section */}
+            {featured && featured.length > 0 && (
+                <div className="bg-black text-white py-16">
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h2 className="text-4xl font-bold text-center mb-12">
+                            Featured Artwork
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            {featured[0]?.image_large_url && (
+                                <div className="relative w-full h-96">
+                                    <Image
+                                        src={featured[0].image_large_url}
+                                        alt={featured[0].title}
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <h3 className="text-3xl font-bold mb-4">
+                                    {featured[0]?.title}
+                                </h3>
+                                <p className="text-gray-300 mb-6">
+                                    {featured[0]?.description}
+                                </p>
+                                <Link
+                                    href={`/gallery/${featured[0]?.slug}`}
+                                    className="inline-block bg-white text-black px-8 py-3 rounded font-semibold hover:bg-gray-200 transition-colors"
+                                >
+                                    View Artwork
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

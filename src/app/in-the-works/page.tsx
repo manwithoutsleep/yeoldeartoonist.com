@@ -101,7 +101,11 @@ export default async function InTheWorksPage() {
                                                 </span>{' '}
                                                 {new Date(
                                                     project.expected_completion_date
-                                                ).toLocaleDateString()}
+                                                ).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}
                                             </p>
                                         )}
                                     </div>
@@ -159,11 +163,19 @@ export default async function InTheWorksPage() {
                                                 </span>{' '}
                                                 {new Date(
                                                     event.start_date
-                                                ).toLocaleDateString()}{' '}
+                                                ).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}{' '}
                                                 -{' '}
                                                 {new Date(
                                                     event.end_date
-                                                ).toLocaleDateString()}
+                                                ).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}
                                             </div>
 
                                             <div>

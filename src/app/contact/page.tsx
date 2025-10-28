@@ -93,7 +93,7 @@ export default function ContactPage() {
                     {/* Artist Image */}
                     <div className="relative w-full aspect-square rounded overflow-hidden border-4 border-white">
                         <Image
-                            src="/images/pages/meet-the-artist.jpg"
+                            src="/images/pages/meet-the-artist.webp"
                             alt="The Artist"
                             fill
                             priority

@@ -23,7 +23,7 @@ export default async function Home() {
             {/* Hero Section with Scroll Background */}
             <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black mt-6">
                 <Image
-                    src="/images/pages/scroll.jpg"
+                    src="/images/pages/scroll.webp"
                     alt="Scroll background"
                     fill
                     sizes="100vw"
@@ -57,13 +57,14 @@ export default async function Home() {
                                 href={card.href}
                                 className="group block overflow-hidden rounded border-4 border-black hover:shadow-xl transition-shadow"
                             >
-                                <div className="relative w-full overflow-hidden">
+                                <div className="relative w-full overflow-hidden aspect-video">
                                     <Image
                                         src={`/images/section-headers/${card.image}`}
                                         alt={`${card.title}: ${card.description}`}
-                                        width={1200}
-                                        height={600}
+                                        width={1152}
+                                        height={800}
                                         className="w-full h-auto object-contain group-hover:scale-105 transition-transform"
+                                        loading="lazy"
                                     />
                                 </div>
                                 <div className="bg-black text-white p-6 text-center">

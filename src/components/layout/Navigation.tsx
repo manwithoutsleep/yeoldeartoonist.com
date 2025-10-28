@@ -17,14 +17,14 @@ export function Navigation() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const navItems = [
-        { label: 'Gallery', href: '/gallery', image: 'nav-gallery.jpg' },
-        { label: 'Shoppe', href: '/shoppe', image: 'nav-shoppe.jpg' },
+        { label: 'Gallery', href: '/gallery', image: 'nav-gallery.webp' },
+        { label: 'Shoppe', href: '/shoppe', image: 'nav-shoppe.webp' },
         {
             label: 'In The Works',
             href: '/in-the-works',
-            image: 'nav-in-the-works.jpg',
+            image: 'nav-in-the-works.webp',
         },
-        { label: 'Contact', href: '/contact', image: 'nav-contact.jpg' },
+        { label: 'Contact', href: '/contact', image: 'nav-contact.webp' },
     ];
 
     return (
@@ -44,6 +44,7 @@ export function Navigation() {
                                 width={200}
                                 height={100}
                                 className="h-auto w-auto"
+                                loading="lazy"
                             />
                         </Link>
                     ))}

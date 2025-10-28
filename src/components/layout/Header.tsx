@@ -17,10 +17,10 @@ export function Header() {
                     <Link href="/">
                         <div className="relative w-full max-w-full">
                             <Image
-                                src="/images/header-footer/logo.jpg"
+                                src="/images/header-footer/logo.webp"
                                 alt="Ye Olde Artoonist Logo"
                                 width={300}
-                                height={100}
+                                height={189}
                                 priority
                                 className="h-auto w-full lg:w-auto"
                             />

@@ -1,10 +1,6 @@
-'use client';
-
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
 import { getAllProjects } from '@/lib/db/projects';
 import { getUpcomingEvents } from '@/lib/db/events';
-import type { Database } from '@/types/database';
 
 /**
  * In The Works page - Display projects and upcoming events
@@ -14,59 +10,20 @@ import type { Database } from '@/types/database';
  * - Projects section with title, description, image
  * - Events section with date range, location
  * - Upcoming events sorted first
+ * - Server-side rendering for SSG/ISR benefits
  */
 
-export default function InTheWorksPage() {
-    const [projects, setProjects] = useState<
-        Database['public']['Tables']['projects']['Row'][]
-    >([]);
-    const [events, setEvents] = useState<
-        Database['public']['Tables']['events']['Row'][]
-    >([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const revalidate = 3600; // Revalidate every hour (ISR)
 
-    useEffect(() => {
-        const loadContent = async () => {
-            try {
-                const [projectsRes, eventsRes] = await Promise.all([
-                    getAllProjects(),
-                    getUpcomingEvents(),
-                ]);
+export default async function InTheWorksPage() {
+    const [projectsRes, eventsRes] = await Promise.all([
+        getAllProjects(),
+        getUpcomingEvents(),
+    ]);
 
-                if (projectsRes.error) {
-                    setError(projectsRes.error.message);
-                } else if (projectsRes.data) {
-                    setProjects(projectsRes.data);
-                }
-
-                if (eventsRes.error) {
-                    setError(eventsRes.error.message);
-                } else if (eventsRes.data) {
-                    setEvents(eventsRes.data);
-                }
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load projects and events'
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadContent();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <div className="bg-white text-black min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-xl font-semibold">Loading...</p>
-                </div>
-            </div>
-        );
-    }
+    const projects = projectsRes.data || [];
+    const events = eventsRes.data || [];
+    const error = projectsRes.error || eventsRes.error;
 
     return (
         <div className="bg-white text-black">
@@ -80,13 +37,13 @@ export default function InTheWorksPage() {
 
                 {error && (
                     <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-8">
-                        <p>Error loading content: {error}</p>
+                        <p>Error loading content: {error.message}</p>
                     </div>
                 )}
 
                 {/* Projects Section */}
-                <section className="mb-20">
-                    <h2 className="text-3xl font-bold mb-8 border-b-4 border-black pb-4">
+                <section className="mb-16">
+                    <h2 className="text-3xl font-bold mb-8 border-b-2 border-black pb-4">
                         Projects
                     </h2>
 
@@ -107,7 +64,7 @@ export default function InTheWorksPage() {
                                         <div className="relative w-full h-48 overflow-hidden bg-gray-100">
                                             <Image
                                                 src={project.image_url}
-                                                alt={project.title}
+                                                alt={`${project.title}${project.description ? ': ' + project.description : ''}`}
                                                 fill
                                                 className="object-cover"
                                             />
@@ -155,8 +112,8 @@ export default function InTheWorksPage() {
                 </section>
 
                 {/* Events Section */}
-                <section>
-                    <h2 className="text-3xl font-bold mb-8 border-b-4 border-black pb-4">
+                <section className="mb-16">
+                    <h2 className="text-3xl font-bold mb-8 border-b-2 border-black pb-4">
                         Upcoming Events
                     </h2>
 
@@ -177,7 +134,7 @@ export default function InTheWorksPage() {
                                         <div className="relative w-full h-48 overflow-hidden bg-gray-100">
                                             <Image
                                                 src={event.image_url}
-                                                alt={event.title}
+                                                alt={`${event.title}${event.description ? ': ' + event.description : ''}`}
                                                 fill
                                                 className="object-cover"
                                             />

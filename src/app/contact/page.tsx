@@ -2,8 +2,22 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Input, TextArea } from '@/components/ui/Input';
+import { siteConfig } from '@/config/site';
 import { useState } from 'react';
+import { z } from 'zod';
+
+// Form validation schema
+const contactFormSchema = z.object({
+    name: z
+        .string()
+        .min(1, 'Name is required')
+        .max(100, 'Name must be less than 100 characters'),
+    email: z.string().email('Please enter a valid email address'),
+    message: z
+        .string()
+        .min(10, 'Message must be at least 10 characters')
+        .max(5000, 'Message must be less than 5000 characters'),
+});
 
 /**
  * Contact page - Meet The Artist
@@ -13,9 +27,11 @@ import { useState } from 'react';
  * - Artist image and bio (left side)
  * - Contact information (right side)
  * - Contact form placeholder for Phase 4
- * - Social media links
+ * - Social media links (marked as "not yet configured")
  * - Responsive design
  */
+
+type FormErrors = Partial<Record<keyof typeof contactFormSchema.shape, string>>;
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -24,22 +40,44 @@ export default function ContactPage() {
         message: '',
     });
     const [submitted, setSubmitted] = useState(false);
+    const [errors, setErrors] = useState<FormErrors>({});
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        // Clear error for this field when user starts typing
+        if (errors[name as keyof FormErrors]) {
+            setErrors((prev) => ({ ...prev, [name]: undefined }));
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate form data
+        const result = contactFormSchema.safeParse(formData);
+
+        if (!result.success) {
+            // Convert Zod errors to a simpler format
+            const newErrors: FormErrors = {};
+            result.error.issues.forEach((issue) => {
+                const path = issue.path[0];
+                if (typeof path === 'string') {
+                    newErrors[path as keyof FormErrors] = issue.message;
+                }
+            });
+            setErrors(newErrors);
+            return;
+        }
+
         // Form functionality will be implemented in Phase 4
-        console.log('Form submission (Phase 4):', formData);
         setSubmitted(true);
         setTimeout(() => {
             setSubmitted(false);
             setFormData({ name: '', email: '', message: '' });
+            setErrors({});
         }, 3000);
     };
 
@@ -48,7 +86,7 @@ export default function ContactPage() {
             {/* Artist Section */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <h1 className="text-5xl font-bold text-center mb-12">
-                    Meet The Artist: Joe Schlottach
+                    Meet The Artist: {siteConfig.artist.name}
                 </h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
@@ -66,20 +104,7 @@ export default function ContactPage() {
                     {/* Artist Bio */}
                     <div>
                         <p className="text-lg text-gray-300 mb-4">
-                            I am a Missouri born and raised lover of the arts!
-                            Honed my craft before the advent of the internet and
-                            now work in both practical and digital. Over the
-                            last couple decades I have worked on varried
-                            commissions and murals as a freelance artist outside
-                            of my 8 to 5's. Being a child of the 80's I was
-                            surrounded by nature and heavily influenced by the
-                            modern age of comics, the renaissance period of
-                            Disney, Hollywood Blockbusters, Saturday morning
-                            cartoons and Anime, the rise of the home gaming
-                            consoles and the Golden age of arcades as well as
-                            the multitudes of fantasy/sci-fi literature.
-                            Basically an all you can eat smorgasbord for my
-                            imagination!
+                            {siteConfig.artist.bio}
                         </p>
                     </div>
                 </div>
@@ -99,10 +124,10 @@ export default function ContactPage() {
                                     Email
                                 </h3>
                                 <a
-                                    href="mailto:joe@yeoldeartoonist.com"
+                                    href={`mailto:${siteConfig.artist.email}`}
                                     className="text-blue-400 hover:text-blue-300 text-lg"
                                 >
-                                    joe@yeoldeartoonist.com
+                                    {siteConfig.artist.email}
                                 </a>
                             </div>
 
@@ -112,11 +137,14 @@ export default function ContactPage() {
                                     Mailing Address
                                 </h3>
                                 <p className="text-gray-300">
-                                    PO Box 123
+                                    {siteConfig.artist.mailingAddress.poBox}
                                     <br />
-                                    Columbia, MO 65201
+                                    {
+                                        siteConfig.artist.mailingAddress.city
+                                    }, {siteConfig.artist.mailingAddress.state}{' '}
+                                    {siteConfig.artist.mailingAddress.zip}
                                     <br />
-                                    United States
+                                    {siteConfig.artist.mailingAddress.country}
                                 </p>
                             </div>
 
@@ -126,38 +154,37 @@ export default function ContactPage() {
                                     Follow Us
                                 </h3>
                                 <div className="flex gap-4">
-                                    <a
-                                        href="#"
-                                        className="text-blue-400 hover:text-blue-300 text-lg"
-                                        aria-label="Twitter"
+                                    <span
+                                        className="text-gray-500 text-lg opacity-50"
+                                        title="Coming soon"
                                     >
                                         Twitter
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="text-blue-400 hover:text-blue-300 text-lg"
-                                        aria-label="Instagram"
+                                    </span>
+                                    <span
+                                        className="text-gray-500 text-lg opacity-50"
+                                        title="Coming soon"
                                     >
                                         Instagram
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="text-blue-400 hover:text-blue-300 text-lg"
-                                        aria-label="Facebook"
+                                    </span>
+                                    <span
+                                        className="text-gray-500 text-lg opacity-50"
+                                        title="Coming soon"
                                     >
                                         Facebook
-                                    </a>
+                                    </span>
                                 </div>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Social media links coming soon!
+                                </p>
                             </div>
 
-                            {/* Business Hours */}
+                            {/* Response Time */}
                             <div>
                                 <h3 className="font-semibold text-white mb-2">
                                     Response Time
                                 </h3>
                                 <p className="text-gray-300">
-                                    I typically respond to emails within 1-2
-                                    business days. Thank you for reaching out!
+                                    {siteConfig.artist.responseTime}
                                 </p>
                             </div>
                         </div>
@@ -190,8 +217,20 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     placeholder="Your name"
                                     required
-                                    className="w-full border-2 border-white rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                                    className={`w-full border-2 rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-white focus:ring-white'}`}
+                                    aria-invalid={!!errors.name}
+                                    aria-describedby={
+                                        errors.name ? 'name-error' : undefined
+                                    }
                                 />
+                                {errors.name && (
+                                    <p
+                                        id="name-error"
+                                        className="text-red-400 text-sm mt-1"
+                                    >
+                                        {errors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="w-full">
@@ -205,8 +244,20 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     placeholder="your@email.com"
                                     required
-                                    className="w-full border-2 border-white rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                                    className={`w-full border-2 rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-white focus:ring-white'}`}
+                                    aria-invalid={!!errors.email}
+                                    aria-describedby={
+                                        errors.email ? 'email-error' : undefined
+                                    }
                                 />
+                                {errors.email && (
+                                    <p
+                                        id="email-error"
+                                        className="text-red-400 text-sm mt-1"
+                                    >
+                                        {errors.email}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="w-full">
@@ -220,8 +271,22 @@ export default function ContactPage() {
                                     placeholder="Your message here..."
                                     rows={6}
                                     required
-                                    className="w-full border-2 border-white rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                                    className={`w-full border-2 rounded px-4 py-2 bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.message ? 'border-red-500 focus:ring-red-500' : 'border-white focus:ring-white'}`}
+                                    aria-invalid={!!errors.message}
+                                    aria-describedby={
+                                        errors.message
+                                            ? 'message-error'
+                                            : undefined
+                                    }
                                 />
+                                {errors.message && (
+                                    <p
+                                        id="message-error"
+                                        className="text-red-400 text-sm mt-1"
+                                    >
+                                        {errors.message}
+                                    </p>
+                                )}
                             </div>
 
                             <Button

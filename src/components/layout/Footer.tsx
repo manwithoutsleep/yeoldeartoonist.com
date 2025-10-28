@@ -79,27 +79,30 @@ export function Footer() {
                             Follow Us
                         </h3>
                         <div className="text-black text-sm space-y-2">
-                            <a
-                                href="#"
-                                className="block hover:underline"
-                                aria-label="Twitter"
+                            <span
+                                className="block opacity-50"
+                                title="Coming soon"
+                                aria-label="Twitter - Coming soon"
                             >
                                 Twitter
-                            </a>
-                            <a
-                                href="#"
-                                className="block hover:underline"
-                                aria-label="Instagram"
+                            </span>
+                            <span
+                                className="block opacity-50"
+                                title="Coming soon"
+                                aria-label="Instagram - Coming soon"
                             >
                                 Instagram
-                            </a>
-                            <a
-                                href="#"
-                                className="block hover:underline"
-                                aria-label="Facebook"
+                            </span>
+                            <span
+                                className="block opacity-50"
+                                title="Coming soon"
+                                aria-label="Facebook - Coming soon"
                             >
                                 Facebook
-                            </a>
+                            </span>
+                            <p className="text-xs text-gray-600 mt-3">
+                                Social media links coming soon!
+                            </p>
                         </div>
                     </div>
                 </div>

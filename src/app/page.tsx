@@ -1,10 +1,7 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { getFeaturedArtwork } from '@/lib/db/artwork';
-import type { Database } from '@/types/database';
+import { siteConfig } from '@/config/site';
 
 /**
  * Home page - Hero section with scroll background and navigation card previews
@@ -13,51 +10,13 @@ import type { Database } from '@/types/database';
  * - Black background with scroll image
  * - Featured artwork showcase
  * - Navigation cards for main sections
+ * - Server-side rendering for SSG/ISR benefits
  */
 
-export default function Home() {
-    const [featured, setFeatured] = useState<
-        Database['public']['Tables']['artwork']['Row'][]
-    >([]);
-    const [isLoading, setIsLoading] = useState(true);
+export const revalidate = 3600; // Revalidate every hour (ISR)
 
-    useEffect(() => {
-        const loadFeatured = async () => {
-            const { data } = await getFeaturedArtwork(1);
-            if (data) {
-                setFeatured(data);
-            }
-            setIsLoading(false);
-        };
-        loadFeatured();
-    }, []);
-
-    const navigationCards = [
-        {
-            title: 'Gallery',
-            href: '/gallery',
-            image: 'gallery.jpg',
-            description: 'CHECK IT! PEEP THE VISUALS!',
-        },
-        {
-            title: 'Shoppe',
-            href: '/shoppe',
-            image: 'shoppe.jpg',
-            description: 'PURVEYOR OF PRINTS, KNICKNACKS & DOOHICKEYS!',
-        },
-        {
-            title: 'In The Works',
-            href: '/in-the-works',
-            image: 'in the works.jpg',
-            description: 'STAY UP TO DATE ON UPCOMING PROJECTS AND EVENTS!',
-        },
-        {
-            title: 'Contact',
-            href: '/contact',
-            image: 'contact.jpg',
-            description: 'NO CARRIER PIGEON REQUIRED!',
-        },
-    ];
+export default async function Home() {
+    const { data: featured } = await getFeaturedArtwork(1);
 
     return (
         <div className="bg-black text-white">
@@ -67,6 +26,7 @@ export default function Home() {
                     src="/images/pages/scroll.jpg"
                     alt="Scroll background"
                     fill
+                    sizes="100vw"
                     className="object-contain absolute inset-0"
                     priority
                 />
@@ -75,8 +35,8 @@ export default function Home() {
                         HUZZAHH!!
                     </h1>
                     <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-                        Greetings and welcome to my site! Here you'll find a
-                        place to view my art, peruse my wares and keep up to
+                        Greetings and welcome to my site! Here you&apos;ll find
+                        a place to view my art, peruse my wares and keep up to
                         date with upcoming projects. I will also post any events
                         I plan on attending. SKAL!!
                     </p>
@@ -91,7 +51,7 @@ export default function Home() {
                     </h2>
 
                     <div className="flex flex-col gap-8">
-                        {navigationCards.map((card) => (
+                        {siteConfig.navigation.cards.map((card) => (
                             <Link
                                 key={card.href}
                                 href={card.href}
@@ -100,7 +60,7 @@ export default function Home() {
                                 <div className="relative w-full overflow-hidden">
                                     <Image
                                         src={`/images/section-headers/${card.image}`}
-                                        alt={card.title}
+                                        alt={`${card.title}: ${card.description}`}
                                         width={1200}
                                         height={600}
                                         className="w-full h-auto object-contain group-hover:scale-105 transition-transform"
@@ -118,7 +78,7 @@ export default function Home() {
             </div>
 
             {/* Featured Artwork Section */}
-            {!isLoading && featured.length > 0 && (
+            {featured && featured.length > 0 && (
                 <div className="bg-black text-white py-16">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                         <h2 className="text-4xl font-bold text-center mb-12">

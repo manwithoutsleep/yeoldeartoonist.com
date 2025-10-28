@@ -51,13 +51,16 @@ export async function getAllProjects(
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getAllProjects query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load projects. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -93,13 +96,16 @@ export async function getProjectBySlug(slug: string): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error(`getProjectBySlug query failed for slug "${slug}":`, err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load project. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }

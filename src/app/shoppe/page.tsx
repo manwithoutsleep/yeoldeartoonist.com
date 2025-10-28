@@ -1,10 +1,6 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { getAllArtwork } from '@/lib/db/artwork';
-import type { Database } from '@/types/database';
 
 /**
  * Shoppe page - Product listing for shop items
@@ -15,49 +11,16 @@ import type { Database } from '@/types/database';
  * - Product card with price
  * - Add to cart button (non-functional for MVP)
  * - Quantity selector UI
+ * - Server-side rendering for SSG/ISR benefits
  */
 
-export default function ShoppePage() {
-    const [products, setProducts] = useState<
-        Database['public']['Tables']['artwork']['Row'][]
-    >([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const revalidate = 3600; // Revalidate every hour (ISR)
 
-    useEffect(() => {
-        const loadProducts = async () => {
-            try {
-                const { data, error: queryError } = await getAllArtwork();
-                if (queryError) {
-                    setError(queryError.message);
-                } else if (data) {
-                    // Filter to only items with inventory > 0
-                    setProducts(
-                        data.filter((item) => item.inventory_count > 0)
-                    );
-                }
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load products'
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadProducts();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <div className="bg-white text-black min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-xl font-semibold">Loading shoppe...</p>
-                </div>
-            </div>
-        );
-    }
+export default async function ShoppePage() {
+    const { data: allArtwork, error } = await getAllArtwork();
+    // Filter to only items with inventory > 0
+    const products =
+        allArtwork?.filter((item) => item.inventory_count > 0) || [];
 
     return (
         <div className="bg-white text-black">
@@ -70,7 +33,7 @@ export default function ShoppePage() {
 
                 {error && (
                     <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-8">
-                        <p>Error loading products: {error}</p>
+                        <p>Error loading products: {error.message}</p>
                     </div>
                 )}
 

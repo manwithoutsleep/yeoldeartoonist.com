@@ -51,13 +51,16 @@ export async function getAllEvents(
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getAllEvents query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load events. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -96,13 +99,17 @@ export async function getUpcomingEvents(limit: number = 10): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getUpcomingEvents query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message:
+                    'Failed to load upcoming events. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -138,13 +145,16 @@ export async function getEventBySlug(slug: string): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error(`getEventBySlug query failed for slug "${slug}":`, err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load event. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }

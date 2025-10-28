@@ -49,13 +49,16 @@ export async function getAllArtwork(
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getAllArtwork query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load artwork. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -92,13 +95,17 @@ export async function getFeaturedArtwork(limit: number = 6): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getFeaturedArtwork query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message:
+                    'Failed to load featured artwork. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -134,13 +141,16 @@ export async function getArtworkBySlug(slug: string): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error(`getArtworkBySlug query failed for slug "${slug}":`, err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message: 'Failed to load artwork. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }
@@ -174,13 +184,17 @@ export async function getAllArtworkSlugs(): Promise<{
 
         return { data, error: null };
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
+        console.error('getAllArtworkSlugs query failed:', err);
         return {
             data: null,
             error: {
                 code: 'fetch_error',
-                message: errorMessage,
+                message:
+                    'Failed to load artwork slugs. Please try again later.',
+                ...(process.env.NODE_ENV === 'development' && {
+                    details:
+                        err instanceof Error ? err.message : 'Unknown error',
+                }),
             },
         };
     }

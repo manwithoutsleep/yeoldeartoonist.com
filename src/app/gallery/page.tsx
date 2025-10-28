@@ -1,10 +1,6 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { getAllArtwork } from '@/lib/db/artwork';
-import type { Database } from '@/types/database';
 
 /**
  * Gallery page - Display all published artwork in a grid
@@ -13,46 +9,13 @@ import type { Database } from '@/types/database';
  * - White background with black text
  * - Responsive grid layout
  * - Clickable artwork cards linking to detail pages
+ * - Server-side rendering for SSG/ISR benefits
  */
 
-export default function GalleryPage() {
-    const [artwork, setArtwork] = useState<
-        Database['public']['Tables']['artwork']['Row'][]
-    >([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const revalidate = 3600; // Revalidate every hour (ISR)
 
-    useEffect(() => {
-        const loadArtwork = async () => {
-            try {
-                const { data, error: queryError } = await getAllArtwork();
-                if (queryError) {
-                    setError(queryError.message);
-                } else if (data) {
-                    setArtwork(data);
-                }
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load artwork'
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadArtwork();
-    }, []);
-
-    if (isLoading) {
-        return (
-            <div className="bg-white text-black min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-xl font-semibold">Loading gallery...</p>
-                </div>
-            </div>
-        );
-    }
+export default async function GalleryPage() {
+    const { data: artwork, error } = await getAllArtwork();
 
     return (
         <div className="bg-white text-black">
@@ -65,11 +28,11 @@ export default function GalleryPage() {
 
                 {error && (
                     <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-8">
-                        <p>Error loading gallery: {error}</p>
+                        <p>Error loading gallery: {error.message}</p>
                     </div>
                 )}
 
-                {artwork.length === 0 ? (
+                {!artwork || artwork.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-xl text-gray-600">
                             No artwork available yet

@@ -1,10 +1,7 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { getArtworkBySlug } from '@/lib/db/artwork';
-import type { Database } from '@/types/database';
+import { notFound } from 'next/navigation';
+import { getArtworkBySlug, getAllArtworkSlugs } from '@/lib/db/artwork';
 
 /**
  * Gallery detail page - Individual artwork view
@@ -14,78 +11,28 @@ import type { Database } from '@/types/database';
  * - Full description
  * - Back link to gallery
  * - Responsive design
+ * - Server-side rendering with static generation
  */
 
 interface GalleryDetailPageProps {
     params: Promise<{ slug: string }>;
 }
 
-export default function GalleryDetailPage({ params }: GalleryDetailPageProps) {
-    const [slug, setSlug] = useState<string | null>(null);
-    const [artwork, setArtwork] = useState<
-        Database['public']['Tables']['artwork']['Row'] | null
-    >(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export const revalidate = 3600; // Revalidate every hour (ISR)
 
-    useEffect(() => {
-        params.then((p) => setSlug(p.slug));
-    }, [params]);
+export async function generateStaticParams() {
+    const { data: slugs } = await getAllArtworkSlugs();
+    return (slugs || []).map((item) => ({ slug: item.slug }));
+}
 
-    useEffect(() => {
-        if (!slug) return;
-
-        const loadArtwork = async () => {
-            try {
-                const { data, error: queryError } =
-                    await getArtworkBySlug(slug);
-                if (queryError) {
-                    setError(queryError.message);
-                } else if (data) {
-                    setArtwork(data);
-                } else {
-                    setError('Artwork not found');
-                }
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load artwork'
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadArtwork();
-    }, [slug]);
-
-    if (isLoading) {
-        return (
-            <div className="bg-white text-black min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-xl font-semibold">Loading artwork...</p>
-                </div>
-            </div>
-        );
-    }
+export default async function GalleryDetailPage({
+    params,
+}: GalleryDetailPageProps) {
+    const { slug } = await params;
+    const { data: artwork, error } = await getArtworkBySlug(slug);
 
     if (error || !artwork) {
-        return (
-            <div className="bg-white text-black min-h-screen">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <Link
-                        href="/gallery"
-                        className="inline-block text-blue-600 hover:underline mb-8"
-                    >
-                        ← Back to Gallery
-                    </Link>
-                    <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded">
-                        <p>{error || 'Artwork not found'}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        notFound();
     }
 
     return (

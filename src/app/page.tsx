@@ -30,7 +30,7 @@ export default async function Home() {
                     className="object-contain absolute inset-0"
                     priority
                 />
-                <div className="relative z-10 text-center px-4 max-w-xl ml-32 mr-12">
+                <div className="relative z-10 text-center px-4 max-w-xl ml-32 mr-12 pl-16 pr-16">
                     <h1 className="text-5xl md:text-7xl font-bold mb-4">
                         HUZZAHH!!
                     </h1>

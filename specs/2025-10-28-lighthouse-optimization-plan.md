@@ -1,7 +1,7 @@
 # Lighthouse Performance Optimization Plan
 
 **Date:** 2025-10-28
-**Status:** Phase A ✓ COMPLETE
+**Status:** Phase A ✓ COMPLETE, Phase B ✓ COMPLETE
 **Final Scores (Desktop):** Performance 100/100, Accessibility 100/100, Best Practices 100/100, SEO 100/100
 **Final Scores (Mobile):** Performance 88/100 ✓, Accessibility 96/100, Best Practices 100/100, SEO 100/100
 
@@ -61,27 +61,27 @@ The site is performing well overall but needs optimization to reach the 90+ targ
 
 #### B.1 Code Splitting Strategy
 
-- [ ] Identify cart/checkout code dependencies
-- [ ] Create dynamic imports for:
-    - `src/context/CartContext.tsx` (Phase 3)
-    - `src/hooks/useCart.ts` (Phase 3)
-    - Stripe components (Phase 3)
-- [ ] Split checkout form components from main bundle
-- [ ] Expected savings: ~40-50 KiB on homepage
+- [x] Identify cart/checkout code dependencies
+- [x] Create dynamic imports for:
+    - [x] `src/context/CartContext.tsx` (Phase 3)
+    - [x] `src/hooks/useCart.ts` (Phase 3)
+    - [x] Stripe components (Phase 3)
+- [x] Split checkout form components from main bundle
+- [x] Expected savings: ~40-50 KiB on homepage
 
 #### B.2 Dependency Analysis
 
-- [ ] Audit what's included in homepage bundle
-- [ ] Check if Stripe JS is being loaded (should be lazy)
-- [ ] Check if Supabase client is optimized
-- [ ] Consider tree-shaking unused utilities
-- [ ] Expected savings: ~20-30 KiB
+- [x] Audit what's included in homepage bundle
+- [x] Check if Stripe JS is being loaded (should be lazy)
+- [x] Check if Supabase client is optimized
+- [x] Consider tree-shaking unused utilities
+- [x] Expected savings: ~20-30 KiB
 
 #### B.3 Next.js Optimization
 
-- [ ] Enable `experimental.optimizePackageImports` in `next.config.js`
-- [ ] Review import statements for unnecessary dependencies
-- [ ] Remove unused dependencies from `node_modules`
+- [x] Enable `experimental.optimizePackageImports` in `next.config.js`
+- [x] Review import statements for unnecessary dependencies
+- [x] Remove unused dependencies from `node_modules`
 
 ---
 

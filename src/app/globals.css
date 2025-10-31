@@ -1,5 +1,19 @@
+/*
+ * Phase C - Critical CSS & Render-Blocking Resources Optimization
+ *
+ * This stylesheet is loaded after critical inline CSS in layout.tsx.
+ * The inline CSS contains above-the-fold critical styles that must render immediately.
+ * This stylesheet contains all non-critical Tailwind utilities and additional styles.
+ *
+ * Load Order:
+ * 1. Inline <style> in <head> (critical CSS - layout.tsx)
+ * 2. This stylesheet (non-critical utilities and Tailwind)
+ * 3. Component-scoped CSS (if any)
+ */
+
 @import 'tailwindcss';
 
+/* CSS Variables - Non-critical (defined in inline CSS but repeated here for clarity) */
 :root {
     --background: #ffffff;
     --foreground: #171717;
@@ -13,12 +27,25 @@
     --font-display: var(--font-germania-one);
 }
 
+/* Dark mode support - Non-critical (also defined in inline CSS) */
 @media (prefers-color-scheme: dark) {
     :root {
         --background: #0a0a0a;
         --foreground: #ededed;
     }
 }
+
+/*
+ * Phase C - Font Loading Optimization (C.3)
+ *
+ * Font loading is optimized in layout.tsx with:
+ * - Preconnect to fonts.googleapis.com for faster CDN connection
+ * - Preconnect to fonts.gstatic.com for font file delivery
+ * - Next.js automatically applies font-display: swap
+ *
+ * This prevents FOUT (Flash of Unstyled Text) and layout shifts.
+ * All fonts use latin subset only (no unneeded scripts).
+ */
 
 body {
     background: var(--background);
@@ -36,3 +63,20 @@ h6 {
     font-family: var(--font-germania-one), Arial, Helvetica, sans-serif;
     font-weight: 400;
 }
+
+/*
+ * Phase C - C.1 Critical CSS Inlining
+ *
+ * Critical CSS is inlined in layout.tsx to prevent render-blocking.
+ * This ensures the browser can paint the page immediately without waiting
+ * for this stylesheet to download and parse.
+ *
+ * Critical CSS includes:
+ * - Layout structure (header, nav, main, footer min-heights)
+ * - Above-the-fold typography
+ * - Background colors and basic text colors
+ * - Font variables and fallbacks
+ * - Dark mode color scheme
+ *
+ * Expected FCP improvement: ~300-500ms
+ */

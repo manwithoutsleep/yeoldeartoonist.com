@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { siteConfig } from '@/config/site';
 import { useState } from 'react';
 import { z } from 'zod';
+import { SocialMediaIcon } from '@/components/ui/SocialMediaIcon';
 
 // Form validation schema
 const contactFormSchema = z.object({
@@ -153,29 +154,19 @@ export default function ContactPage() {
                                 <h3 className="font-semibold text-white mb-4">
                                     Follow Us
                                 </h3>
-                                <div className="flex gap-4">
-                                    <span
-                                        className="text-gray-500 text-lg opacity-50"
-                                        title="Coming soon"
-                                    >
-                                        Twitter
-                                    </span>
-                                    <span
-                                        className="text-gray-500 text-lg opacity-50"
-                                        title="Coming soon"
-                                    >
-                                        Instagram
-                                    </span>
-                                    <span
-                                        className="text-gray-500 text-lg opacity-50"
-                                        title="Coming soon"
-                                    >
-                                        Facebook
-                                    </span>
+                                <div className="space-y-2">
+                                    {siteConfig.socialMedia.sites.map(
+                                        (site) => (
+                                            <SocialMediaIcon
+                                                key={site.href}
+                                                title={site.title}
+                                                handle={site.handle}
+                                                href={site.href}
+                                                variant="light"
+                                            />
+                                        )
+                                    )}
                                 </div>
-                                <p className="text-sm text-gray-500 mt-2">
-                                    Social media links coming soon!
-                                </p>
                             </div>
 
                             {/* Response Time */}

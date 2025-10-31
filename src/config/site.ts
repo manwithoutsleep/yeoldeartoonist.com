@@ -62,9 +62,9 @@ export const siteConfig = {
     socialMedia: {
         sites: [
             {
-                title: 'instagram',
+                title: 'Instagram',
+                handle: '@ye_olde_artoonist',
                 href: 'https://www.instagram.com/ye_olde_artoonist',
-                logo: 'instagram-logo-black.png',
             },
             // Future social media links can be added here
         ],

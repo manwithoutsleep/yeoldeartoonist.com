@@ -1,5 +1,6 @@
 import { siteConfig } from '@/config/site';
 import Link from 'next/link';
+import { SocialMediaIcon } from '@/components/ui/SocialMediaIcon';
 
 /**
  * Footer component - displays contact info, copyright, and social links
@@ -68,20 +69,16 @@ export function Footer() {
                         <h3 className="text-lg font-bold text-black mb-4">
                             Follow Us
                         </h3>
-                        <div className="text-black text-sm space-y-2">
+                        <div className="space-y-2">
                             {siteConfig.socialMedia.sites.map((site) => (
-                                <Link
+                                <SocialMediaIcon
                                     key={site.href}
+                                    title={site.title}
+                                    handle={site.handle}
                                     href={site.href}
-                                    className="block hover:underline"
-                                    target="_blank"
-                                >
-                                    {site.title}
-                                </Link>
+                                    variant="dark"
+                                />
                             ))}
-                            <p className="text-xs text-gray-600 mt-3">
-                                Social media links coming soon!
-                            </p>
                         </div>
                     </div>
                 </div>

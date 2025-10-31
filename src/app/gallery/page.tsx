@@ -45,7 +45,7 @@ export default async function GalleryPage() {
                                 href={`/gallery/${item.slug}`}
                                 className="group block"
                             >
-                                <div className="relative w-full h-64 overflow-hidden rounded border-2 border-black mb-4 bg-gray-100">
+                                <div className="relative w-full aspect-square overflow-hidden rounded border-2 border-black mb-4 bg-gray-100">
                                     {item.image_thumbnail_url ? (
                                         <Image
                                             src={item.image_thumbnail_url}

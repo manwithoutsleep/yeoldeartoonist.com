@@ -28,22 +28,22 @@ export function Navigation() {
     ];
 
     return (
-        <nav className="w-full bg-white border-b border-black">
+        <nav className="w-full bg-white border-b-2 border-black">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Desktop Navigation - Image buttons */}
-                <div className="hidden md:flex justify-center gap-4 py-4">
+                <div className="hidden md:flex justify-center gap-4 py-4 min-h-[120px] items-center">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="overflow-hidden rounded transition-transform hover:scale-105"
+                            className="relative overflow-hidden rounded transition-transform hover:scale-105 w-[200px] aspect-[200/100]"
                         >
                             <Image
                                 src={`/images/navigation/${item.image}`}
                                 alt={item.label}
-                                width={200}
-                                height={100}
-                                className="h-auto w-auto"
+                                fill
+                                sizes="200px"
+                                className="object-contain"
                                 loading="lazy"
                             />
                         </Link>
@@ -51,7 +51,7 @@ export function Navigation() {
                 </div>
 
                 {/* Mobile Navigation Toggle */}
-                <div className="md:hidden flex items-center justify-between py-4">
+                <div className="md:hidden flex items-center justify-between py-4 min-h-[50px]">
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
                         className="text-black text-2xl font-bold"

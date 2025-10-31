@@ -21,7 +21,10 @@ export default async function Home() {
     return (
         <div className="bg-black text-white">
             {/* Hero Section with Scroll Background */}
-            <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black mt-6">
+            <div
+                className="relative w-full aspect-video flex items-center justify-center overflow-hidden bg-black mt-6"
+                style={{ minHeight: '50vh' }}
+            >
                 <Image
                     src="/images/pages/scroll.webp"
                     alt="Scroll background"
@@ -88,7 +91,7 @@ export default async function Home() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                             {featured[0]?.image_large_url && (
-                                <div className="relative w-full h-96">
+                                <div className="relative w-full aspect-square">
                                     <Image
                                         src={featured[0].image_large_url}
                                         alt={featured[0].title}

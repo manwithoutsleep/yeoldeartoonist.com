@@ -60,12 +60,17 @@ export default async function Home() {
                                 href={card.href}
                                 className="group block overflow-hidden rounded border-4 border-black hover:shadow-xl transition-shadow"
                             >
-                                <div className="relative w-full overflow-hidden aspect-video">
+                                <div
+                                    className="relative w-full overflow-hidden"
+                                    style={{ aspectRatio: card.aspectRatio }}
+                                >
                                     <Image
                                         src={`/images/section-headers/${card.image}`}
                                         alt={`${card.title}: ${card.description}`}
                                         width={1152}
-                                        height={800}
+                                        height={parseInt(
+                                            card.aspectRatio.split(':')[1]
+                                        )}
                                         className="w-full h-auto object-contain group-hover:scale-105 transition-transform"
                                         loading="lazy"
                                     />

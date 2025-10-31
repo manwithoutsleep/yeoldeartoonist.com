@@ -1,23 +1,26 @@
 {
     "permissions": {
         "allow": [
-            "Bash(npm run build:*)",
-            "Bash(npm run dev:*)",
-            "Bash(npm run lint)",
-            "Bash(git log:*)",
-            "Bash(npm run format:check:*)",
-            "Bash(npx tsc:*)",
-            "Bash(test -f C:srcgithubmwsyeoldeartoonist.com.env.example)",
             "Bash(cat:*)",
             "Bash(gh pr comment:*)",
-            "Bash(gh pr view:*)",
-            "Bash(npm run format:*)",
-            "Bash(git add:*)",
             "Bash(gh pr comments:*)",
             "Bash(gh pr review:*)",
+            "Bash(gh pr view:*)",
+            "Bash(git add:*)",
+            "Bash(git log:*)",
             "Bash(jq:*)",
             "Bash(node --version:*)",
-            "Bash(npx lighthouse:*)"
+            "Bash(npm audit:*)",
+            "Bash(npm ls:*)",
+            "Bash(npm run build:*)",
+            "Bash(npm run dev:*)",
+            "Bash(npm run format:*)",
+            "Bash(npm run format:check:*)",
+            "Bash(npm run lint)",
+            "Bash(npm view:*)",
+            "Bash(npx lighthouse:*)",
+            "Bash(npx tsc:*)",
+            "Bash(test -f C:srcgithubmwsyeoldeartoonist.com.env.example)"
         ],
         "deny": [],
         "ask": []

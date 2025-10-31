@@ -15,8 +15,6 @@
         "db:reset": "supabase db reset",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lighthouse": "lhci autorun",
-        "lighthouse:single": "lhci collect --url=http://localhost:3000",
         "prepare": "husky"
     },
     "dependencies": {
@@ -34,7 +32,6 @@
         "zod": "^4.1.12"
     },
     "devDependencies": {
-        "@lhci/cli": "^0.12.0",
         "@tailwindcss/postcss": "^4",
         "@types/node": "^20",
         "@types/react": "^19",

@@ -28,10 +28,10 @@ export function Navigation() {
     ];
 
     return (
-        <nav className="w-full bg-white border-b border-black">
+        <nav className="w-full bg-white border-b-2 border-black">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Desktop Navigation - Image buttons */}
-                <div className="hidden md:flex justify-center gap-4 py-4">
+                <div className="hidden md:flex justify-center gap-4 py-4 min-h-[120px] items-center">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
@@ -43,7 +43,10 @@ export function Navigation() {
                                 alt={item.label}
                                 width={200}
                                 height={100}
-                                className="h-auto w-auto"
+                                style={{
+                                    width: 'auto',
+                                    height: 'auto',
+                                }}
                                 loading="lazy"
                             />
                         </Link>
@@ -51,7 +54,7 @@ export function Navigation() {
                 </div>
 
                 {/* Mobile Navigation Toggle */}
-                <div className="md:hidden flex items-center justify-between py-4">
+                <div className="md:hidden flex items-center justify-between py-4 min-h-[50px]">
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
                         className="text-black text-2xl font-bold"

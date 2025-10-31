@@ -50,7 +50,7 @@ export default async function ShoppePage() {
                                 className="border-2 border-black rounded overflow-hidden hover:shadow-lg transition-shadow"
                             >
                                 {/* Product Image */}
-                                <div className="relative w-full h-64 overflow-hidden bg-gray-100">
+                                <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
                                     {product.image_thumbnail_url ? (
                                         <Image
                                             src={product.image_thumbnail_url}

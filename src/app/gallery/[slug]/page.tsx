@@ -47,9 +47,9 @@ export default async function GalleryDetailPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {/* Image */}
-                    <div className="flex items-center justify-center bg-gray-100 rounded border-2 border-black p-4 min-h-96">
+                    <div className="flex items-center justify-center bg-gray-100 rounded border-2 border-black p-4 aspect-square">
                         {artwork.image_large_url ? (
-                            <div className="relative w-full h-96">
+                            <div className="relative w-full h-full">
                                 <Image
                                     src={artwork.image_large_url}
                                     alt={artwork.alt_text || artwork.title}
@@ -58,7 +58,7 @@ export default async function GalleryDetailPage({
                                 />
                             </div>
                         ) : artwork.image_url ? (
-                            <div className="relative w-full h-96">
+                            <div className="relative w-full h-full">
                                 <Image
                                     src={artwork.image_url}
                                     alt={artwork.alt_text || artwork.title}

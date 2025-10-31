@@ -36,17 +36,14 @@ export function Navigation() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="overflow-hidden rounded transition-transform hover:scale-105"
+                            className="relative overflow-hidden rounded transition-transform hover:scale-105 w-[200px] aspect-[200/100]"
                         >
                             <Image
                                 src={`/images/navigation/${item.image}`}
                                 alt={item.label}
-                                width={200}
-                                height={100}
-                                style={{
-                                    width: 'auto',
-                                    height: 'auto',
-                                }}
+                                fill
+                                sizes="200px"
+                                className="object-contain"
                                 loading="lazy"
                             />
                         </Link>

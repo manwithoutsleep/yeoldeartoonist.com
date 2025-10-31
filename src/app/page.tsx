@@ -23,7 +23,7 @@ export default async function Home() {
             {/* Hero Section with Scroll Background */}
             <div
                 className="relative w-full aspect-video flex items-center justify-center overflow-hidden bg-black mt-6"
-                style={{ aspectRatio: '16 / 9', minHeight: '50vh' }}
+                style={{ minHeight: '50vh' }}
             >
                 <Image
                     src="/images/pages/scroll.webp"

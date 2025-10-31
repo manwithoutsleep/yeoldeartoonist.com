@@ -34,7 +34,7 @@ export default async function GalleryPage() {
                 {!artwork || artwork.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-xl text-gray-600">
-                            No artwork available yet
+                            Artwork is on its way!
                         </p>
                     </div>
                 ) : (

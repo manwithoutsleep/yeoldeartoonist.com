@@ -1,3 +1,4 @@
+import { siteConfig } from '@/config/site';
 import Link from 'next/link';
 
 /**
@@ -25,15 +26,19 @@ export function Footer() {
                         <div className="text-black text-sm space-y-2">
                             <p>
                                 <a
-                                    href="mailto:joe@yeoldeartoonist.com"
+                                    href={`mailto:${siteConfig.artist.email}`}
                                     className="hover:underline"
                                 >
-                                    joe@yeoldeartoonist.com
+                                    {siteConfig.artist.email}
                                 </a>
                             </p>
-                            <p>PO Box 123</p>
-                            <p>Columbia, MO 65201</p>
-                            <p>United States</p>
+                            <p>{siteConfig.artist.mailingAddress.poBox}</p>
+                            <p>
+                                {siteConfig.artist.mailingAddress.city},{' '}
+                                {siteConfig.artist.mailingAddress.state}{' '}
+                                {siteConfig.artist.mailingAddress.zip}
+                            </p>
+                            <p>{siteConfig.artist.mailingAddress.country}</p>
                         </div>
                     </div>
 
@@ -46,30 +51,15 @@ export function Footer() {
                             <Link href="/" className="block hover:underline">
                                 Home
                             </Link>
-                            <Link
-                                href="/gallery"
-                                className="block hover:underline"
-                            >
-                                Gallery
-                            </Link>
-                            <Link
-                                href="/shoppe"
-                                className="block hover:underline"
-                            >
-                                Shoppe
-                            </Link>
-                            <Link
-                                href="/in-the-works"
-                                className="block hover:underline"
-                            >
-                                In The Works
-                            </Link>
-                            <Link
-                                href="/contact"
-                                className="block hover:underline"
-                            >
-                                Contact
-                            </Link>
+                            {siteConfig.navigation.cards.map((card) => (
+                                <Link
+                                    key={card.href}
+                                    href={card.href}
+                                    className="block hover:underline"
+                                >
+                                    {card.title}
+                                </Link>
+                            ))}
                         </nav>
                     </div>
 
@@ -79,27 +69,16 @@ export function Footer() {
                             Follow Us
                         </h3>
                         <div className="text-black text-sm space-y-2">
-                            <span
-                                className="block opacity-50"
-                                title="Coming soon"
-                                aria-label="Twitter - Coming soon"
-                            >
-                                Twitter
-                            </span>
-                            <span
-                                className="block opacity-50"
-                                title="Coming soon"
-                                aria-label="Instagram - Coming soon"
-                            >
-                                Instagram
-                            </span>
-                            <span
-                                className="block opacity-50"
-                                title="Coming soon"
-                                aria-label="Facebook - Coming soon"
-                            >
-                                Facebook
-                            </span>
+                            {siteConfig.socialMedia.sites.map((site) => (
+                                <Link
+                                    key={site.href}
+                                    href={site.href}
+                                    className="block hover:underline"
+                                    target="_blank"
+                                >
+                                    {site.title}
+                                </Link>
+                            ))}
                             <p className="text-xs text-gray-600 mt-3">
                                 Social media links coming soon!
                             </p>
@@ -110,8 +89,8 @@ export function Footer() {
                 {/* Copyright */}
                 <div className="border-t border-gray-300 mt-8 pt-8 text-center text-black text-sm">
                     <p>
-                        &copy; {currentYear} Ye Olde Artoonist. All rights
-                        reserved.
+                        &copy; {currentYear} {siteConfig.artist.name}. All
+                        rights reserved.
                     </p>
                 </div>
             </div>

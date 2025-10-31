@@ -39,7 +39,7 @@ export default async function ShoppePage() {
                 {products.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-xl text-gray-600">
-                            No products available at the moment
+                            New products coming soon!
                         </p>
                     </div>
                 ) : (

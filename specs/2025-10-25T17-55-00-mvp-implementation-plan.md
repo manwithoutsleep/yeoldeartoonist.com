@@ -412,6 +412,10 @@ Add comprehensive test coverage for all features implemented in Phases 1-2 (foun
 
 ### Tasks
 
+#### 2.5.0 Prep
+
+- [ ] Create branch `phase-2.5-testing`
+
 #### 2.5.1 Testing Setup & Infrastructure
 
 - [ ] Install testing dependencies:

@@ -25,10 +25,10 @@ export function Footer() {
                         <div className="text-black text-sm space-y-2">
                             <p>
                                 <a
-                                    href="mailto:contact@yeoldeartoonist.com"
+                                    href="mailto:joe@yeoldeartoonist.com"
                                     className="hover:underline"
                                 >
-                                    contact@yeoldeartoonist.com
+                                    joe@yeoldeartoonist.com
                                 </a>
                             </p>
                             <p>PO Box 123</p>

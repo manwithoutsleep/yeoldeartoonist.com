@@ -36,13 +36,13 @@ export function Navigation() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="relative overflow-hidden rounded transition-transform hover:scale-105 w-[200px] aspect-[200/100]"
+                            className="relative overflow-hidden rounded transition-transform hover:scale-105 w-[250px] aspect-[250/100]"
                         >
                             <Image
                                 src={`/images/navigation/${item.image}`}
                                 alt={item.label}
                                 fill
-                                sizes="200px"
+                                sizes="250px"
                                 className="object-contain"
                                 loading="lazy"
                             />

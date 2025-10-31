@@ -598,169 +598,7 @@ Starting with Phase 3, all new features will follow TDD:
 
 ---
 
-## Phase 3: Shopping Cart & Checkout (Week 3-4)
-
-### Goal
-
-Implement complete shopping cart with localStorage persistence, checkout form, and Stripe payment integration.
-
-### Tasks
-
-#### 3.1 Cart State Management
-
-- [ ] Create `src/lib/cart/storage.ts` - localStorage cart management
-- [ ] Create `src/hooks/useCart.ts` - Cart hook for components
-- [ ] Create `src/context/CartContext.tsx` - React Context for global cart state
-- [ ] Implement cart operations:
-    - Add item to cart
-    - Remove item from cart
-    - Update quantity
-    - Clear cart
-    - Calculate subtotal
-
-#### 3.2 Cart UI Components
-
-- [ ] Create `src/components/cart/CartButton.tsx` - Header cart icon with count
-- [ ] Create `src/components/cart/CartDrawer.tsx` - Slide-out cart panel
-- [ ] Create `src/components/cart/CartItem.tsx` - Individual item in cart
-- [ ] Create `src/components/cart/CartSummary.tsx` - Cart totals summary
-- [ ] Add "Add to Cart" functionality on Shoppe page
-- [ ] Add cart drawer to header (visible on all pages)
-- [ ] Implement smooth animations for drawer open/close
-
-#### 3.3 Cart Page
-
-- [ ] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
-- [ ] Display all cart items with:
-    - Item thumbnail
-    - Title and price
-    - Quantity editor
-    - Remove button
-    - Line subtotal
-- [ ] Display cart summary (subtotal, shipping estimate, tax estimate)
-- [ ] "Continue Shopping" and "Checkout" buttons
-- [ ] Empty cart state message
-- [ ] Responsive design
-
-#### 3.4 Checkout Form
-
-- [ ] Create `src/app/shoppe/checkout/page.tsx` - Checkout page
-- [ ] Create `src/components/checkout/CheckoutForm.tsx` - Main form
-- [ ] Create `src/components/checkout/AddressForm.tsx` - Address fields
-- [ ] Create `src/components/checkout/PaymentForm.tsx` - Stripe payment element
-- [ ] Form fields:
-    - Customer name and email
-    - Shipping address (address line 1, line 2, city, state, zip, country)
-    - Billing address (with "Same as shipping" option)
-    - Order notes (optional)
-- [ ] Form validation with Zod schema
-- [ ] Show order summary on right side
-
-#### 3.5 Stripe Integration
-
-- [ ] Create `src/lib/payments/stripe.ts` - Stripe client setup
-- [ ] Create `src/app/api/checkout/route.ts` - POST endpoint to create payment intent
-- [ ] Install Stripe Elements components
-- [ ] Implement Stripe Payment Element in checkout form
-- [ ] Handle payment submission and client secret
-- [ ] Add error handling for payment failures
-- [ ] Add loading states during payment processing
-
-#### 3.6 Cart Validation
-
-- [ ] Create `src/lib/cart/validation.ts` - Server-side cart validation
-- [ ] Validate cart items against database before checkout:
-    - Verify items exist and are published
-    - Verify prices match (catch tampering)
-    - Verify inventory available
-    - Check quantities
-- [ ] Calculate accurate totals:
-    - Subtotal from item prices
-    - Shipping ($5.00 flat rate)
-    - Tax via Stripe Tax API
-- [ ] Return validated cart or error
-
-#### 3.7 Order Creation
-
-- [ ] Create `src/lib/db/orders.ts` - Order database functions
-- [ ] Create order in database on successful payment intent
-- [ ] Store order with:
-    - Order number (auto-generated)
-    - Customer info
-    - Shipping/billing addresses
-    - Cart items as order_items
-    - Totals (subtotal, shipping, tax)
-    - Payment intent ID
-    - Order status (pending)
-- [ ] Decrement inventory on successful payment
-
-#### 3.8 Stripe Webhook
-
-- [ ] Create `src/app/api/checkout/webhook/route.ts` - Webhook handler
-- [ ] Listen for `payment_intent.succeeded` event
-- [ ] Verify webhook signature
-- [ ] Update order status to "paid" when payment succeeds
-- [ ] Handle `payment_intent.payment_failed` for failed payments
-- [ ] Log all webhook events for debugging
-
-#### 3.9 Order Confirmation
-
-- [ ] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
-- [ ] Display:
-    - Order confirmation message
-    - Order number
-    - Order total
-    - Shipping address
-    - Note: Email sent (when Resend integrated)
-    - Link back to gallery
-- [ ] Send confirmation email via Resend (integrate later)
-- [ ] Clear cart after successful payment
-
-#### 3.10 Error Handling
-
-- [ ] Create `src/app/shoppe/checkout/cancelled/page.tsx` - Cancelled page
-- [ ] Handle payment cancellation
-- [ ] Handle validation errors
-- [ ] Handle Stripe errors
-- [ ] Add user-friendly error messages
-- [ ] Log errors for admin review
-
-#### 3.11 Testing
-
-- [ ] Test complete checkout flow with Stripe test card
-- [ ] Test add to cart functionality
-- [ ] Test cart persistence across sessions
-- [ ] Test inventory validation
-- [ ] Test price tampering prevention
-- [ ] Test payment success/failure flows
-- [ ] Test order creation in database
-- [ ] Test webhook signature verification
-
-### Deliverables
-
-- ✅ Complete shopping cart with persistence
-- ✅ Checkout form with validation
-- ✅ Stripe payment integration
-- ✅ Order database storage
-- ✅ Webhook handling for payment confirmation
-- ✅ Order confirmation page
-
-### Verification Checklist
-
-- [ ] Add item to cart from Shoppe page
-- [ ] Cart persists when refreshing page
-- [ ] Cart drawer shows correct count
-- [ ] Checkout form validates addresses
-- [ ] Stripe payment element appears in checkout
-- [ ] Test payment succeeds with Stripe test card
-- [ ] Order created in database with correct totals
-- [ ] Webhook confirms payment
-- [ ] Success page shows order details
-- [ ] Inventory decremented after payment
-
----
-
-## Phase 4: Admin System (Week 4-5)
+## Phase 3: Admin System (Week 4)
 
 ### Goal
 
@@ -768,7 +606,7 @@ Build complete admin dashboard for content management, order management, and ima
 
 ### Tasks
 
-#### 4.1 Admin Authentication
+#### 3.1 Admin Authentication
 
 - [ ] Set up Supabase Auth in dashboard
 - [ ] Create first admin user in administrators table
@@ -790,7 +628,7 @@ Build complete admin dashboard for content management, order management, and ima
     - [ ] Clear application state
     - [ ] Redirect to login page
 
-#### 4.2 Admin Middleware & Protection
+#### 3.2 Admin Middleware & Protection
 
 - [ ] Implement middleware to protect `/admin` routes
     - [ ] Add environment-aware error logging (development vs production)
@@ -813,7 +651,7 @@ Build complete admin dashboard for content management, order management, and ima
     - [ ] Store role in session cache for use in components
     - [ ] Use role to determine which features are available
 
-#### 4.3 Admin Layout
+#### 3.3 Admin Layout
 
 - [ ] Create `src/app/admin/layout.tsx` - Admin page layout
 - [ ] Create `src/components/admin/AdminSidebar.tsx` - Navigation sidebar
@@ -828,7 +666,7 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Display current admin name
 - [ ] Responsive layout (mobile sidebar collapse)
 
-#### 4.4 Admin Dashboard
+#### 3.4 Admin Dashboard
 
 - [ ] Create `src/app/admin/page.tsx` - Main dashboard
 - [ ] Display key metrics:
@@ -840,7 +678,7 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Recent orders list (last 10)
 - [ ] System status indicators
 
-#### 4.5 Artwork Management
+#### 3.5 Artwork Management
 
 - [ ] Create `src/app/admin/artwork/page.tsx` - Artwork list
 - [ ] Create `src/app/admin/artwork/new/page.tsx` - New artwork form
@@ -856,7 +694,7 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Validation with Zod
 - [ ] Success/error messages
 
-#### 4.6 Image Upload
+#### 3.6 Image Upload
 
 - [ ] Create `src/lib/utils/image.ts` - Image optimization functions
 - [ ] Create `src/app/api/admin/upload/route.ts` - Upload endpoint
@@ -871,7 +709,7 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Show upload progress
 - [ ] Display image preview
 
-#### 4.7 Order Management
+#### 3.7 Order Management
 
 - [ ] Create `src/app/admin/orders/page.tsx` - Orders list
 - [ ] Create `src/app/admin/orders/[id]/page.tsx` - Order detail
@@ -893,7 +731,7 @@ Build complete admin dashboard for content management, order management, and ima
     - Update order status dropdown
     - Add shipping tracking number
 
-#### 4.8 Projects & Events Management
+#### 3.8 Projects & Events Management
 
 - [ ] Create `src/app/admin/projects/page.tsx` - Projects list
 - [ ] Create project form with:
@@ -912,7 +750,7 @@ Build complete admin dashboard for content management, order management, and ima
     - Is published
     - Image upload
 
-#### 4.9 Settings & Admin Users (Super Admin Only)
+#### 3.9 Settings & Admin Users (Super Admin Only)
 
 - [ ] Create `src/app/admin/settings/page.tsx` - Settings page
 - [ ] Implement admin user management:
@@ -927,7 +765,7 @@ Build complete admin dashboard for content management, order management, and ima
     - Social media links
     - Contact email
 
-#### 4.10 API Routes for Admin
+#### 3.10 API Routes for Admin
 
 - [ ] Create `/api/admin/artwork/*` routes for CRUD
 - [ ] Create `/api/admin/orders/*` routes for reading/updating
@@ -937,7 +775,7 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] All routes protected by admin auth middleware
 - [ ] Add proper error handling and validation
 
-#### 4.11 Caching & Revalidation
+#### 3.11 Caching & Revalidation
 
 - [ ] Create `src/app/api/admin/revalidate/route.ts` - On-demand revalidation
 - [ ] Trigger revalidation when content changes:
@@ -946,7 +784,7 @@ Build complete admin dashboard for content management, order management, and ima
     - After pages updated
 - [ ] Use Next.js `revalidatePath` and `revalidateTag`
 
-#### 4.12 Testing
+#### 3.12 Testing
 
 - [ ] Test admin login and logout
 - [ ] Test creating new artwork with image upload
@@ -981,7 +819,169 @@ Build complete admin dashboard for content management, order management, and ima
 
 ---
 
-## Phase 5: Email & Polish (Week 5-6)
+## Phase 4: Shopping Cart & Checkout (Week 5)
+
+### Goal
+
+Implement complete shopping cart with localStorage persistence, checkout form, and Stripe payment integration.
+
+### Tasks
+
+#### 4.1 Cart State Management
+
+- [ ] Create `src/lib/cart/storage.ts` - localStorage cart management
+- [ ] Create `src/hooks/useCart.ts` - Cart hook for components
+- [ ] Create `src/context/CartContext.tsx` - React Context for global cart state
+- [ ] Implement cart operations:
+    - Add item to cart
+    - Remove item from cart
+    - Update quantity
+    - Clear cart
+    - Calculate subtotal
+
+#### 4.2 Cart UI Components
+
+- [ ] Create `src/components/cart/CartButton.tsx` - Header cart icon with count
+- [ ] Create `src/components/cart/CartDrawer.tsx` - Slide-out cart panel
+- [ ] Create `src/components/cart/CartItem.tsx` - Individual item in cart
+- [ ] Create `src/components/cart/CartSummary.tsx` - Cart totals summary
+- [ ] Add "Add to Cart" functionality on Shoppe page
+- [ ] Add cart drawer to header (visible on all pages)
+- [ ] Implement smooth animations for drawer open/close
+
+#### 4.3 Cart Page
+
+- [ ] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
+- [ ] Display all cart items with:
+    - Item thumbnail
+    - Title and price
+    - Quantity editor
+    - Remove button
+    - Line subtotal
+- [ ] Display cart summary (subtotal, shipping estimate, tax estimate)
+- [ ] "Continue Shopping" and "Checkout" buttons
+- [ ] Empty cart state message
+- [ ] Responsive design
+
+#### 4.4 Checkout Form
+
+- [ ] Create `src/app/shoppe/checkout/page.tsx` - Checkout page
+- [ ] Create `src/components/checkout/CheckoutForm.tsx` - Main form
+- [ ] Create `src/components/checkout/AddressForm.tsx` - Address fields
+- [ ] Create `src/components/checkout/PaymentForm.tsx` - Stripe payment element
+- [ ] Form fields:
+    - Customer name and email
+    - Shipping address (address line 1, line 2, city, state, zip, country)
+    - Billing address (with "Same as shipping" option)
+    - Order notes (optional)
+- [ ] Form validation with Zod schema
+- [ ] Show order summary on right side
+
+#### 4.5 Stripe Integration
+
+- [ ] Create `src/lib/payments/stripe.ts` - Stripe client setup
+- [ ] Create `src/app/api/checkout/route.ts` - POST endpoint to create payment intent
+- [ ] Install Stripe Elements components
+- [ ] Implement Stripe Payment Element in checkout form
+- [ ] Handle payment submission and client secret
+- [ ] Add error handling for payment failures
+- [ ] Add loading states during payment processing
+
+#### 4.6 Cart Validation
+
+- [ ] Create `src/lib/cart/validation.ts` - Server-side cart validation
+- [ ] Validate cart items against database before checkout:
+    - Verify items exist and are published
+    - Verify prices match (catch tampering)
+    - Verify inventory available
+    - Check quantities
+- [ ] Calculate accurate totals:
+    - Subtotal from item prices
+    - Shipping ($5.00 flat rate)
+    - Tax via Stripe Tax API
+- [ ] Return validated cart or error
+
+#### 4.7 Order Creation
+
+- [ ] Create `src/lib/db/orders.ts` - Order database functions
+- [ ] Create order in database on successful payment intent
+- [ ] Store order with:
+    - Order number (auto-generated)
+    - Customer info
+    - Shipping/billing addresses
+    - Cart items as order_items
+    - Totals (subtotal, shipping, tax)
+    - Payment intent ID
+    - Order status (pending)
+- [ ] Decrement inventory on successful payment
+
+#### 4.8 Stripe Webhook
+
+- [ ] Create `src/app/api/checkout/webhook/route.ts` - Webhook handler
+- [ ] Listen for `payment_intent.succeeded` event
+- [ ] Verify webhook signature
+- [ ] Update order status to "paid" when payment succeeds
+- [ ] Handle `payment_intent.payment_failed` for failed payments
+- [ ] Log all webhook events for debugging
+
+#### 4.9 Order Confirmation
+
+- [ ] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
+- [ ] Display:
+    - Order confirmation message
+    - Order number
+    - Order total
+    - Shipping address
+    - Note: Email sent (when Resend integrated)
+    - Link back to gallery
+- [ ] Send confirmation email via Resend (integrate later)
+- [ ] Clear cart after successful payment
+
+#### 4.10 Error Handling
+
+- [ ] Create `src/app/shoppe/checkout/cancelled/page.tsx` - Cancelled page
+- [ ] Handle payment cancellation
+- [ ] Handle validation errors
+- [ ] Handle Stripe errors
+- [ ] Add user-friendly error messages
+- [ ] Log errors for admin review
+
+#### 4.11 Testing
+
+- [ ] Test complete checkout flow with Stripe test card
+- [ ] Test add to cart functionality
+- [ ] Test cart persistence across sessions
+- [ ] Test inventory validation
+- [ ] Test price tampering prevention
+- [ ] Test payment success/failure flows
+- [ ] Test order creation in database
+- [ ] Test webhook signature verification
+
+### Deliverables
+
+- ✅ Complete shopping cart with persistence
+- ✅ Checkout form with validation
+- ✅ Stripe payment integration
+- ✅ Order database storage
+- ✅ Webhook handling for payment confirmation
+- ✅ Order confirmation page
+
+### Verification Checklist
+
+- [ ] Add item to cart from Shoppe page
+- [ ] Cart persists when refreshing page
+- [ ] Cart drawer shows correct count
+- [ ] Checkout form validates addresses
+- [ ] Stripe payment element appears in checkout
+- [ ] Test payment succeeds with Stripe test card
+- [ ] Order created in database with correct totals
+- [ ] Webhook confirms payment
+- [ ] Success page shows order details
+- [ ] Inventory decremented after payment
+
+---
+
+## Phase 5: Email & Polish (Week 6)
 
 ### Goal
 
@@ -1137,7 +1137,7 @@ Integrate Resend for transactional emails, optimize performance, and prepare for
 
 ## Post-Launch Roadmap
 
-### Phase 6: Analytics & Monitoring (Week 7-8)
+### Phase 6: Analytics & Monitoring (Week 7)
 
 Optional but recommended features:
 
@@ -1192,9 +1192,9 @@ Based on feedback from Phase 1-5:
 | Phase 1   | Week 1-2 | Foundation & Database       | ✅ COMPLETE (PR #6) |
 | Phase 2   | Week 2-3 | Public Pages                | ✅ COMPLETE (PR #7) |
 | Phase 2.5 | Week 3   | Comprehensive Testing (TDD) | Ready to start      |
-| Phase 3   | Week 4   | Cart & Checkout             | Ready for Phase 2.5 |
-| Phase 4   | Week 5   | Admin System                | Ready for Phase 3   |
-| Phase 5   | Week 6   | Email & Launch              | Ready for Phase 4   |
+| Phase 3   | Week 4   | Admin System                |                     |
+| Phase 4   | Week 5   | Cart & Checkout             |                     |
+| Phase 5   | Week 6   | Email & Launch              |                     |
 
 **Total MVP Time:** 6 weeks for one developer
 **Realistic Timeline:** 7-8 weeks (with buffer for surprises)

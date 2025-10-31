@@ -4,6 +4,7 @@
             "Bash(cat:*)",
             "Bash(find:*)",
             "Bash(findstr:*)",
+            "Bash(gh issue view:*)",
             "Bash(gh pr comment:*)",
             "Bash(gh pr comments:*)",
             "Bash(gh pr review:*)",

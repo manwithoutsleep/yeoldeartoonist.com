@@ -22,41 +22,6 @@ const mockCreateClient = createClient as jest.MockedFunction<
     typeof createClient
 >;
 
-/**
- * Normalized error type that matches the AuthError type from useAuth hook
- */
-interface AuthError {
-    message: string;
-}
-
-/**
- * Mock Supabase client type for testing
- */
-interface MockSupabaseClient {
-    auth: {
-        signInWithPassword: jest.Mock;
-        signUp: jest.Mock;
-        signOut: jest.Mock;
-    };
-}
-
-/**
- * Result types from auth operations
- */
-interface SignInResult {
-    data: { session: Record<string, unknown> } | null;
-    error: AuthError | null;
-}
-
-interface SignUpResult {
-    data: { user: Record<string, unknown> } | null;
-    error: AuthError | null;
-}
-
-interface SignOutResult {
-    error: AuthError | null;
-}
-
 describe('useAuth Hook', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -64,16 +29,13 @@ describe('useAuth Hook', () => {
 
     describe('Hook Initialization', () => {
         it('should return hook with all required methods and state', () => {
-            const mockSupabase: MockSupabaseClient = {
+            mockCreateClient.mockReturnValue({
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
-            };
-            mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
-            );
+            } as unknown as ReturnType<typeof createClient>);
 
             const { result } = renderHook(() => useAuth());
 
@@ -85,16 +47,13 @@ describe('useAuth Hook', () => {
         });
 
         it('should initialize with loading false and error null', () => {
-            const mockSupabase: MockSupabaseClient = {
+            mockCreateClient.mockReturnValue({
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
-            };
-            mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
-            );
+            } as unknown as ReturnType<typeof createClient>);
 
             const { result } = renderHook(() => useAuth());
 
@@ -103,16 +62,13 @@ describe('useAuth Hook', () => {
         });
 
         it('should return memoized callback functions', () => {
-            const mockSupabase: MockSupabaseClient = {
+            mockCreateClient.mockReturnValue({
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
-            };
-            mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
-            );
+            } as unknown as ReturnType<typeof createClient>);
 
             const { result, rerender } = renderHook(() => useAuth());
 
@@ -151,7 +107,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: SignInResult | undefined;
+                let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -159,8 +115,8 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signInResult.data).toEqual(mockData);
-                expect(signInResult.error).toBeNull();
+                expect(signInResult!.data).toEqual(mockData);
+                expect(signInResult!.error).toBeNull();
             });
 
             it('should call signInWithPassword with correct email and password', async () => {
@@ -268,7 +224,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: SignInResult | undefined;
+                let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -276,8 +232,8 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signInResult.data).toBeNull();
-                expect(signInResult.error).toEqual({
+                expect(signInResult!.data).toBeNull();
+                expect(signInResult!.error).toEqual({
                     message: 'Invalid login credentials',
                 });
             });
@@ -354,7 +310,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: SignInResult | undefined;
+                let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -362,8 +318,8 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signInResult.data).toBeNull();
-                expect(signInResult.error).toEqual({
+                expect(signInResult!.data).toBeNull();
+                expect(signInResult!.error).toEqual({
                     message: 'Network error',
                 });
             });
@@ -429,7 +385,7 @@ describe('useAuth Hook', () => {
                     );
                     // Resolve after a brief delay to allow state to update
                     await new Promise((resolve) => setTimeout(resolve, 0));
-                    resolveSignIn({ data: { session: {} }, error: null });
+                    resolveSignIn!({ data: { session: {} }, error: null });
                     return promise;
                 });
 
@@ -533,7 +489,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: SignUpResult | undefined;
+                let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'new@example.com',
@@ -541,8 +497,8 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signUpResult.data).toEqual(mockData);
-                expect(signUpResult.error).toBeNull();
+                expect(signUpResult!.data).toEqual(mockData);
+                expect(signUpResult!.error).toBeNull();
             });
 
             it('should call signUp with correct email and password', async () => {
@@ -648,7 +604,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: SignUpResult | undefined;
+                let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'existing@example.com',
@@ -656,8 +612,8 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signUpResult.data).toBeNull();
-                expect(signUpResult.error).toEqual({
+                expect(signUpResult!.data).toBeNull();
+                expect(signUpResult!.error).toEqual({
                     message: 'User already exists',
                 });
             });
@@ -729,7 +685,7 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: SignUpResult | undefined;
+                let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'user@example.com',
@@ -737,8 +693,10 @@ describe('useAuth Hook', () => {
                     );
                 });
 
-                expect(signUpResult.data).toBeNull();
-                expect(signUpResult.error).toEqual({ message: 'Server error' });
+                expect(signUpResult!.data).toBeNull();
+                expect(signUpResult!.error).toEqual({
+                    message: 'Server error',
+                });
             });
 
             it('should normalize error and set error state on exception', async () => {
@@ -800,7 +758,7 @@ describe('useAuth Hook', () => {
                     );
                     // Resolve after a brief delay to allow state to update
                     await new Promise((resolve) => setTimeout(resolve, 0));
-                    resolveSignUp({ data: { user: {} }, error: null });
+                    resolveSignUp!({ data: { user: {} }, error: null });
                     return promise;
                 });
 
@@ -851,12 +809,12 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: SignOutResult | undefined;
+                let signOutResult;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
 
-                expect(signOutResult.error).toBeNull();
+                expect(signOutResult!.error).toBeNull();
             });
 
             it('should call signOut on Supabase auth', async () => {
@@ -940,12 +898,12 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: SignOutResult | undefined;
+                let signOutResult;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
 
-                expect(signOutResult.error).toEqual({
+                expect(signOutResult!.error).toEqual({
                     message: 'Sign out failed',
                 });
             });
@@ -1015,12 +973,12 @@ describe('useAuth Hook', () => {
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: SignOutResult | undefined;
+                let signOutResult;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
 
-                expect(signOutResult.error).toEqual({
+                expect(signOutResult!.error).toEqual({
                     message: 'Network error',
                 });
             });
@@ -1078,7 +1036,7 @@ describe('useAuth Hook', () => {
                     const promise = result.current.signOut();
                     // Resolve after a brief delay to allow state to update
                     await new Promise((resolve) => setTimeout(resolve, 0));
-                    resolveSignOut({ error: null });
+                    resolveSignOut!({ error: null });
                     return promise;
                 });
 
@@ -1113,7 +1071,7 @@ describe('useAuth Hook', () => {
     describe('Error Normalization', () => {
         it('should normalize Error instance', async () => {
             const testError = new Error('Something went wrong');
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
@@ -1126,7 +1084,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1134,15 +1092,15 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'Something went wrong',
             });
-            expect(signInResult.error).toHaveProperty('message');
+            expect(signInResult!.error).toHaveProperty('message');
         });
 
         it('should normalize object with message property', async () => {
             const testError = { message: 'Custom error message' };
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
@@ -1155,7 +1113,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1163,14 +1121,14 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'Custom error message',
             });
         });
 
         it('should handle unexpected error types', async () => {
             const testError = 'String error';
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
@@ -1183,7 +1141,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1191,13 +1149,13 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'An unexpected error occurred',
             });
         });
 
         it('should handle null error', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(null),
                     signUp: jest.fn(),
@@ -1210,7 +1168,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1218,13 +1176,13 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'An unexpected error occurred',
             });
         });
 
         it('should handle undefined error', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(undefined),
                     signUp: jest.fn(),
@@ -1237,7 +1195,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1245,13 +1203,13 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'An unexpected error occurred',
             });
         });
 
         it('should handle number as error', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(404),
                     signUp: jest.fn(),
@@ -1264,7 +1222,7 @@ describe('useAuth Hook', () => {
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: SignInResult | undefined;
+            let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1272,7 +1230,7 @@ describe('useAuth Hook', () => {
                 );
             });
 
-            expect(signInResult.error).toEqual({
+            expect(signInResult!.error).toEqual({
                 message: 'An unexpected error occurred',
             });
         });
@@ -1280,7 +1238,7 @@ describe('useAuth Hook', () => {
 
     describe('State Persistence', () => {
         it('should persist loading state across multiple operations', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockResolvedValue({
                         data: { session: {} },
@@ -1318,7 +1276,7 @@ describe('useAuth Hook', () => {
         });
 
         it('should persist error state across multiple operations', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest
                         .fn()
@@ -1362,7 +1320,7 @@ describe('useAuth Hook', () => {
 
     describe('Multiple Simultaneous Operations', () => {
         it('should handle sequential auth operations correctly', async () => {
-            const mockSupabase: MockSupabaseClient = {
+            const mockSupabase = {
                 auth: {
                     signInWithPassword: jest.fn().mockResolvedValue({
                         data: { session: {} },

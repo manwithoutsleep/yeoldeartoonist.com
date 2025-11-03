@@ -58,22 +58,20 @@ jest.mock('next/font/google', () => ({
 }));
 
 import { metadata } from '@/app/layout';
-import type { Mock } from 'jest';
 
 // Type the mocked font modules for use in tests
-const mockFontGoogle = jest.mocked(
-    jest.requireMock('next/font/google'),
-    true
-) as unknown as {
-    Geist: Mock;
-    Geist_Mono: Mock;
-    Germania_One: Mock;
+const mockFontGoogle = jest.mocked(jest.requireMock('next/font/google'), {
+    shallow: true,
+}) as {
+    Geist: jest.Mock<{ variable: string }>;
+    Geist_Mono: jest.Mock<{ variable: string }>;
+    Germania_One: jest.Mock<{ variable: string }>;
 };
 
 // Extract mocked functions with proper typing for use in tests
-const mockGeist = mockFontGoogle.Geist as Mock;
-const mockGeistMono = mockFontGoogle.Geist_Mono as Mock;
-const mockGermaniaOne = mockFontGoogle.Germania_One as Mock;
+const mockGeist = mockFontGoogle.Geist;
+const mockGeistMono = mockFontGoogle.Geist_Mono;
+const mockGermaniaOne = mockFontGoogle.Germania_One;
 
 describe('Root Layout', () => {
     describe('Metadata Configuration', () => {

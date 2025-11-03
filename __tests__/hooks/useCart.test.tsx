@@ -22,7 +22,9 @@ const UseCartTestComponent = () => {
             <div data-testid="hook-exists">Hook loaded</div>
             <div data-testid="has-addItem">{typeof cart.addItem}</div>
             <div data-testid="has-removeItem">{typeof cart.removeItem}</div>
-            <div data-testid="has-updateQuantity">{typeof cart.updateQuantity}</div>
+            <div data-testid="has-updateQuantity">
+                {typeof cart.updateQuantity}
+            </div>
             <div data-testid="has-clearCart">{typeof cart.clearCart}</div>
             <div data-testid="has-getTotal">{typeof cart.getTotal}</div>
             <div data-testid="has-getItemCount">{typeof cart.getItemCount}</div>
@@ -59,7 +61,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('hook-exists')).toHaveTextContent('Hook loaded');
+            expect(screen.getByTestId('hook-exists')).toHaveTextContent(
+                'Hook loaded'
+            );
         });
 
         it('should provide addItem function', () => {
@@ -69,7 +73,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-addItem')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-addItem')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide removeItem function', () => {
@@ -79,7 +85,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-removeItem')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-removeItem')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide updateQuantity function', () => {
@@ -89,7 +97,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-updateQuantity')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-updateQuantity')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide clearCart function', () => {
@@ -99,7 +109,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-clearCart')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-clearCart')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide getTotal function', () => {
@@ -109,7 +121,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-getTotal')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-getTotal')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide getItemCount function', () => {
@@ -119,7 +133,9 @@ describe('useCart Hook', () => {
                 </CartProvider>
             );
 
-            expect(screen.getByTestId('has-getItemCount')).toHaveTextContent('function');
+            expect(screen.getByTestId('has-getItemCount')).toHaveTextContent(
+                'function'
+            );
         });
 
         it('should provide cart object', () => {
@@ -144,7 +160,11 @@ describe('useCart Hook', () => {
                     typeof cart.getTotal === 'function' &&
                     typeof cart.getItemCount === 'function';
 
-                return <div data-testid="result">{hasAll ? 'complete' : 'incomplete'}</div>;
+                return (
+                    <div data-testid="result">
+                        {hasAll ? 'complete' : 'incomplete'}
+                    </div>
+                );
             };
 
             render(
@@ -234,7 +254,9 @@ describe('useCart Hook', () => {
 
             const Component2 = () => {
                 const cart = useCart();
-                return <div data-testid="comp2">{cart.getTotal().toFixed(2)}</div>;
+                return (
+                    <div data-testid="comp2">{cart.getTotal().toFixed(2)}</div>
+                );
             };
 
             render(
@@ -265,7 +287,9 @@ describe('useCart Hook', () => {
                     'getItemCount' in cart;
 
                 return (
-                    <div data-testid="valid">{isValidStructure ? 'yes' : 'no'}</div>
+                    <div data-testid="valid">
+                        {isValidStructure ? 'yes' : 'no'}
+                    </div>
                 );
             };
 

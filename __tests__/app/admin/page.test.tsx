@@ -31,7 +31,9 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>;
+const mockCreateClient = createClient as jest.MockedFunction<
+    typeof createClient
+>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 describe('Admin Page', () => {
@@ -110,11 +112,15 @@ describe('Admin Page', () => {
             render(<AdminPage />);
 
             await waitFor(() => {
-                expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+                expect(
+                    screen.queryByText('Loading...')
+                ).not.toBeInTheDocument();
             });
 
             expect(screen.getByText('Admin Panel')).toBeInTheDocument();
-            expect(screen.getByText('Welcome to Admin Panel')).toBeInTheDocument();
+            expect(
+                screen.getByText('Welcome to Admin Panel')
+            ).toBeInTheDocument();
         });
     });
 
@@ -240,7 +246,9 @@ describe('Admin Page', () => {
 
             // After session loads, should not show loading
             await waitFor(() => {
-                expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+                expect(
+                    screen.queryByText('Loading...')
+                ).not.toBeInTheDocument();
             });
         });
     });
@@ -374,10 +382,13 @@ describe('Admin Page', () => {
         it('should redirect to login after successful sign out', async () => {
             let signOutLoading = false;
 
-            mockUseAuth.mockImplementation(() => ({
-                signOut: mockSignOut,
-                loading: signOutLoading,
-            } as any));
+            mockUseAuth.mockImplementation(
+                () =>
+                    ({
+                        signOut: mockSignOut,
+                        loading: signOutLoading,
+                    }) as any
+            );
 
             mockSignOut.mockResolvedValue({ error: null });
 

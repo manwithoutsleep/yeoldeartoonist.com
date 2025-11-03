@@ -295,7 +295,9 @@ describe('Contact Page', () => {
             await new Promise((resolve) => setTimeout(resolve, 100));
 
             // Form should still be visible (not submitted)
-            expect(screen.getByRole('button', { name: /Send Message/i })).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: /Send Message/i })
+            ).toBeInTheDocument();
         });
 
         it('should have required attribute on all form fields', () => {
@@ -369,105 +371,97 @@ describe('Contact Page', () => {
                     /Thank you for your message/i
                 );
                 // Success message container has the classes, not the p tag
-                expect(
-                    successMessage.closest('div')
-                ).toHaveClass('bg-green-500');
+                expect(successMessage.closest('div')).toHaveClass(
+                    'bg-green-500'
+                );
             });
         });
 
-        it(
-            'should clear form after successful submission',
-            async () => {
-                // Use real timers for this test to allow proper async handling
-                render(<ContactPage />);
-                const nameInput = screen.getByPlaceholderText(
-                    'Your name'
-                ) as HTMLInputElement;
-                const emailInput = screen.getByPlaceholderText(
-                    'your@email.com'
-                ) as HTMLInputElement;
-                const messageInput = screen.getByPlaceholderText(
-                    'Your message here...'
-                ) as HTMLTextAreaElement;
-                const submitButton = screen.getByRole('button', {
-                    name: /Send Message/i,
-                });
+        it('should clear form after successful submission', async () => {
+            // Use real timers for this test to allow proper async handling
+            render(<ContactPage />);
+            const nameInput = screen.getByPlaceholderText(
+                'Your name'
+            ) as HTMLInputElement;
+            const emailInput = screen.getByPlaceholderText(
+                'your@email.com'
+            ) as HTMLInputElement;
+            const messageInput = screen.getByPlaceholderText(
+                'Your message here...'
+            ) as HTMLTextAreaElement;
+            const submitButton = screen.getByRole('button', {
+                name: /Send Message/i,
+            });
 
-                await userEvent.type(nameInput, 'Test User');
-                await userEvent.type(emailInput, 'test@example.com');
-                await userEvent.type(messageInput, 'This is a valid test message');
-                fireEvent.click(submitButton);
+            await userEvent.type(nameInput, 'Test User');
+            await userEvent.type(emailInput, 'test@example.com');
+            await userEvent.type(messageInput, 'This is a valid test message');
+            fireEvent.click(submitButton);
 
-                // Wait for success message to appear
-                await waitFor(() => {
-                    expect(
-                        screen.getByText(/Thank you for your message/i)
-                    ).toBeInTheDocument();
-                });
-
-                // Wait for form to be cleared after success message disappears
-                await waitFor(
-                    () => {
-                        expect(nameInput.value).toBe('');
-                        expect(emailInput.value).toBe('');
-                        expect(messageInput.value).toBe('');
-                    },
-                    { timeout: 4000 }
-                );
-            },
-            10000
-        );
-
-        it(
-            'should clear success message after 3 seconds',
-            async () => {
-                jest.useFakeTimers();
-
-                render(<ContactPage />);
-                const nameInput = screen.getByPlaceholderText(
-                    'Your name'
-                ) as HTMLInputElement;
-                const emailInput = screen.getByPlaceholderText(
-                    'your@email.com'
-                ) as HTMLInputElement;
-                const messageInput = screen.getByPlaceholderText(
-                    'Your message here...'
-                ) as HTMLTextAreaElement;
-                const submitButton = screen.getByRole('button', {
-                    name: /Send Message/i,
-                });
-
-                // Use fireEvent for typing with fake timers
-                fireEvent.change(nameInput, {
-                    target: { value: 'Test User' },
-                });
-                fireEvent.change(emailInput, {
-                    target: { value: 'test@example.com' },
-                });
-                fireEvent.change(messageInput, {
-                    target: { value: 'This is a valid test message' },
-                });
-                fireEvent.click(submitButton);
-
-                // Success message should appear immediately
+            // Wait for success message to appear
+            await waitFor(() => {
                 expect(
                     screen.getByText(/Thank you for your message/i)
                 ).toBeInTheDocument();
+            });
 
-                // Advance timers by 3100ms and run pending timers
-                jest.advanceTimersByTime(3100);
-                jest.runAllTimers();
+            // Wait for form to be cleared after success message disappears
+            await waitFor(
+                () => {
+                    expect(nameInput.value).toBe('');
+                    expect(emailInput.value).toBe('');
+                    expect(messageInput.value).toBe('');
+                },
+                { timeout: 4000 }
+            );
+        }, 10000);
 
-                // After advancing timers, success message should be gone
-                await waitFor(() => {
-                    expect(
-                        screen.queryByText(/Thank you for your message/i)
-                    ).not.toBeInTheDocument();
-                });
+        it('should clear success message after 3 seconds', async () => {
+            jest.useFakeTimers();
 
-                jest.useRealTimers();
-            },
-            10000
-        );
+            render(<ContactPage />);
+            const nameInput = screen.getByPlaceholderText(
+                'Your name'
+            ) as HTMLInputElement;
+            const emailInput = screen.getByPlaceholderText(
+                'your@email.com'
+            ) as HTMLInputElement;
+            const messageInput = screen.getByPlaceholderText(
+                'Your message here...'
+            ) as HTMLTextAreaElement;
+            const submitButton = screen.getByRole('button', {
+                name: /Send Message/i,
+            });
+
+            // Use fireEvent for typing with fake timers
+            fireEvent.change(nameInput, {
+                target: { value: 'Test User' },
+            });
+            fireEvent.change(emailInput, {
+                target: { value: 'test@example.com' },
+            });
+            fireEvent.change(messageInput, {
+                target: { value: 'This is a valid test message' },
+            });
+            fireEvent.click(submitButton);
+
+            // Success message should appear immediately
+            expect(
+                screen.getByText(/Thank you for your message/i)
+            ).toBeInTheDocument();
+
+            // Advance timers by 3100ms and run pending timers
+            jest.advanceTimersByTime(3100);
+            jest.runAllTimers();
+
+            // After advancing timers, success message should be gone
+            await waitFor(() => {
+                expect(
+                    screen.queryByText(/Thank you for your message/i)
+                ).not.toBeInTheDocument();
+            });
+
+            jest.useRealTimers();
+        }, 10000);
     });
 });

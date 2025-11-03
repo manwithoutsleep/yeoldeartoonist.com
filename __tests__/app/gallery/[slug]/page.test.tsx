@@ -157,7 +157,9 @@ describe('Gallery Detail Page ([slug])', () => {
             });
             render(result);
 
-            expect(screen.getByText('Sunset Over Mountains')).toBeInTheDocument();
+            expect(
+                screen.getByText('Sunset Over Mountains')
+            ).toBeInTheDocument();
         });
 
         it('should render artwork description', async () => {
@@ -189,7 +191,9 @@ describe('Gallery Detail Page ([slug])', () => {
             });
             render(result);
 
-            const backLink = screen.getByRole('link', { name: /Back to Gallery/i });
+            const backLink = screen.getByRole('link', {
+                name: /Back to Gallery/i,
+            });
             expect(backLink).toBeInTheDocument();
             expect(backLink).toHaveAttribute('href', '/gallery');
         });
@@ -714,7 +718,9 @@ describe('Gallery Detail Page ([slug])', () => {
             render(result);
 
             // Header
-            expect(screen.getByText('Sunset Over Mountains')).toBeInTheDocument();
+            expect(
+                screen.getByText('Sunset Over Mountains')
+            ).toBeInTheDocument();
             expect(screen.getByText(/Back to Gallery/i)).toBeInTheDocument();
 
             // Image
@@ -783,7 +789,9 @@ describe('Gallery Detail Page ([slug])', () => {
             render(result);
 
             // Essential elements should be present
-            expect(screen.getByText('Sunset Over Mountains')).toBeInTheDocument();
+            expect(
+                screen.getByText('Sunset Over Mountains')
+            ).toBeInTheDocument();
             expect(
                 screen.getByAltText('Sunset over mountain range')
             ).toBeInTheDocument();

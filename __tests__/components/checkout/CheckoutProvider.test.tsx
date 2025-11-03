@@ -75,7 +75,9 @@ describe('CheckoutProvider Component', () => {
         });
 
         it('should render empty children gracefully', () => {
-            const { container } = render(<CheckoutProvider></CheckoutProvider>);
+            const { container } = render(
+                <CheckoutProvider>{null}</CheckoutProvider>
+            );
             // When CheckoutProvider has no children, it renders an empty fragment
             // which means firstChild might be null, but the container itself is still rendered
             expect(container).toBeInTheDocument();
@@ -150,9 +152,11 @@ describe('CheckoutProvider Component', () => {
         });
 
         it('should render function as child (render props pattern)', () => {
-            const TestComponent = ({ children }: { children: React.ReactNode }) => (
-                <CheckoutProvider>{children}</CheckoutProvider>
-            );
+            const TestComponent = ({
+                children,
+            }: {
+                children: React.ReactNode;
+            }) => <CheckoutProvider>{children}</CheckoutProvider>;
 
             const renderPropChild = (
                 <TestComponent>
@@ -161,17 +165,13 @@ describe('CheckoutProvider Component', () => {
             );
 
             render(renderPropChild);
-            expect(
-                screen.getByText('Render prop content')
-            ).toBeInTheDocument();
+            expect(screen.getByText('Render prop content')).toBeInTheDocument();
         });
     });
 
     describe('Type Safety', () => {
         it('should accept CheckoutProviderProps interface', () => {
-            const validProps: React.ComponentProps<
-                typeof CheckoutProvider
-            > = {
+            const validProps: React.ComponentProps<typeof CheckoutProvider> = {
                 children: <div>Content</div>,
             };
 
@@ -187,9 +187,7 @@ describe('CheckoutProvider Component', () => {
                     <div>Required children</div>
                 </CheckoutProvider>
             );
-            expect(
-                screen.getByText('Required children')
-            ).toBeInTheDocument();
+            expect(screen.getByText('Required children')).toBeInTheDocument();
         });
     });
 
@@ -211,9 +209,8 @@ describe('CheckoutProvider Component', () => {
     describe('Dynamic Import Compatibility', () => {
         it('should be compatible with dynamic imports', async () => {
             // Simulate dynamic import pattern from Next.js
-            const DynamicallyImportedProvider = await Promise.resolve(
-                CheckoutProvider
-            );
+            const DynamicallyImportedProvider =
+                await Promise.resolve(CheckoutProvider);
 
             expect(DynamicallyImportedProvider).toBe(CheckoutProvider);
             render(
@@ -473,7 +470,11 @@ describe('CheckoutProvider Component', () => {
 
         it('should have proper structure for provider composition', () => {
             // Demonstrates that CheckoutProvider can be composed with other providers
-            const ComposedProviders = ({ children }: { children: React.ReactNode }) => (
+            const ComposedProviders = ({
+                children,
+            }: {
+                children: React.ReactNode;
+            }) => (
                 <CheckoutProvider>
                     <div>{children}</div>
                 </CheckoutProvider>
@@ -500,7 +501,7 @@ describe('CheckoutProvider Component', () => {
             // );
 
             // Verify it's compatible with such usage
-            expect(CheckoutProvider.displayName || CheckoutProvider.name).toBeDefined();
+            expect(CheckoutProvider.name).toBeDefined();
         });
     });
 });

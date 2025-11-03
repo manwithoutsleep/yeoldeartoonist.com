@@ -183,9 +183,7 @@ describe('In The Works Page', () => {
             expect(
                 screen.getByText(/Expected completion:/i)
             ).toBeInTheDocument();
-            expect(
-                screen.getByText(/February 28, 2025/i)
-            ).toBeInTheDocument();
+            expect(screen.getByText(/February 28, 2025/i)).toBeInTheDocument();
         });
 
         it('should display project image', async () => {

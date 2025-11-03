@@ -17,7 +17,11 @@ import { CartItem } from '@/types/cart';
 /**
  * Test component that uses the useCart hook
  */
-const CartConsumer = ({ onCartUpdate }: { onCartUpdate?: (cart: ReturnType<typeof useCart>) => void }) => {
+const CartConsumer = ({
+    onCartUpdate,
+}: {
+    onCartUpdate?: (cart: ReturnType<typeof useCart>) => void;
+}) => {
     const cart = useCart();
 
     React.useEffect(() => {
@@ -49,10 +53,7 @@ const CartConsumer = ({ onCartUpdate }: { onCartUpdate?: (cart: ReturnType<typeo
             >
                 Remove Item
             </button>
-            <button
-                data-testid="clear-cart"
-                onClick={() => cart.clearCart()}
-            >
+            <button data-testid="clear-cart" onClick={() => cart.clearCart()}>
                 Clear Cart
             </button>
             <button
@@ -107,9 +108,7 @@ describe('CartContext', () => {
 
             expect(() => {
                 render(<InvalidComponent />);
-            }).toThrow(
-                'useCart must be used within CartProvider'
-            );
+            }).toThrow('useCart must be used within CartProvider');
 
             consoleSpy.mockRestore();
         });
@@ -189,7 +188,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
                 expect(screen.getByTestId('item-count')).toHaveTextContent('1');
                 expect(screen.getByTestId('total')).toHaveTextContent('100.00');
             });
@@ -216,7 +217,9 @@ describe('CartContext', () => {
 
             await waitFor(() => {
                 expect(screen.getByTestId('item-count')).toHaveTextContent('2');
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
                 expect(screen.getByTestId('total')).toHaveTextContent('200.00');
             });
         });
@@ -313,7 +316,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
             });
 
             act(() => {
@@ -321,7 +326,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('0');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '0'
+                );
                 expect(screen.getByTestId('item-count')).toHaveTextContent('0');
                 expect(screen.getByTestId('total')).toHaveTextContent('0.00');
             });
@@ -340,7 +347,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('0');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '0'
+                );
             });
         });
 
@@ -370,9 +379,7 @@ describe('CartContext', () => {
                         >
                             Add Items
                         </button>
-                        <button
-                            onClick={() => cart.removeItem('art-1')}
-                        >
+                        <button onClick={() => cart.removeItem('art-1')}>
                             Remove Art 1
                         </button>
                         <div data-testid="count">{cart.getItemCount()}</div>
@@ -415,7 +422,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
             });
 
             act(() => {
@@ -758,7 +767,9 @@ describe('CartContext', () => {
                         >
                             Add Items
                         </button>
-                        <div data-testid="total">{cart.getTotal().toFixed(2)}</div>
+                        <div data-testid="total">
+                            {cart.getTotal().toFixed(2)}
+                        </div>
                     </div>
                 );
             };
@@ -834,7 +845,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
             });
 
             act(() => {
@@ -842,7 +855,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('0');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '0'
+                );
                 expect(screen.getByTestId('item-count')).toHaveTextContent('0');
                 expect(screen.getByTestId('total')).toHaveTextContent('0.00');
             });
@@ -860,7 +875,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('items-length')).toHaveTextContent('1');
+                expect(screen.getByTestId('items-length')).toHaveTextContent(
+                    '1'
+                );
             });
 
             act(() => {
@@ -894,12 +911,10 @@ describe('CartContext', () => {
                         >
                             Add
                         </button>
-                        <button
-                            onClick={() => cart.clearCart()}
-                        >
-                            Clear
-                        </button>
-                        <div data-testid="timestamp">{cart.cart.lastUpdated}</div>
+                        <button onClick={() => cart.clearCart()}>Clear</button>
+                        <div data-testid="timestamp">
+                            {cart.cart.lastUpdated}
+                        </div>
                     </div>
                 );
             };
@@ -915,13 +930,16 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                const timestampBefore = screen.getByTestId('timestamp').textContent;
+                const timestampBefore =
+                    screen.getByTestId('timestamp').textContent;
 
                 act(() => {
                     screen.getByText('Clear').click();
                 });
 
-                expect(screen.getByTestId('timestamp').textContent).toBeDefined();
+                expect(
+                    screen.getByTestId('timestamp').textContent
+                ).toBeDefined();
             });
         });
     });
@@ -930,7 +948,8 @@ describe('CartContext', () => {
         it('should update lastUpdated when adding item', async () => {
             const TestComponent = () => {
                 const cart = useCart();
-                const [initialTimestamp, setInitialTimestamp] = React.useState(0);
+                const [initialTimestamp, setInitialTimestamp] =
+                    React.useState(0);
 
                 return (
                     <div>
@@ -948,7 +967,9 @@ describe('CartContext', () => {
                         >
                             Add
                         </button>
-                        <div data-testid="current-timestamp">{cart.cart.lastUpdated}</div>
+                        <div data-testid="current-timestamp">
+                            {cart.cart.lastUpdated}
+                        </div>
                     </div>
                 );
             };
@@ -964,7 +985,8 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                const timestamp = screen.getByTestId('current-timestamp').textContent;
+                const timestamp =
+                    screen.getByTestId('current-timestamp').textContent;
                 expect(timestamp).toBeTruthy();
                 expect(Number(timestamp)).toBeGreaterThan(0);
             });
@@ -1134,7 +1156,9 @@ describe('CartContext', () => {
                         >
                             Add Expensive
                         </button>
-                        <div data-testid="total">{cart.getTotal().toFixed(2)}</div>
+                        <div data-testid="total">
+                            {cart.getTotal().toFixed(2)}
+                        </div>
                     </div>
                 );
             };
@@ -1150,7 +1174,9 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByTestId('total')).toHaveTextContent('999999.99');
+                expect(screen.getByTestId('total')).toHaveTextContent(
+                    '999999.99'
+                );
             });
         });
 

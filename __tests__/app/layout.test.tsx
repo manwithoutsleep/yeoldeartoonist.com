@@ -21,7 +21,9 @@ jest.mock('@/components/layout/Header', () => {
 
 jest.mock('@/components/layout/Navigation', () => {
     return {
-        Navigation: () => <nav data-testid="navigation">Navigation Component</nav>,
+        Navigation: () => (
+            <nav data-testid="navigation">Navigation Component</nav>
+        ),
     };
 });
 
@@ -35,7 +37,8 @@ jest.mock('@/config/site', () => ({
     siteConfig: {
         site: {
             title: 'Ye Olde Artoonist',
-            description: 'Explore original artwork, prints, and more from Joe Schlottach',
+            description:
+                'Explore original artwork, prints, and more from Joe Schlottach',
             url: 'https://yeoldeartoonist.com',
         },
     },
@@ -80,9 +83,7 @@ describe('Root Layout', () => {
 
         it('should use NEXT_PUBLIC_SITE_URL or default to localhost for metadataBase', () => {
             const baseUrl = metadata.metadataBase?.toString() || '';
-            expect(baseUrl).toMatch(
-                /^(https?:\/\/|http:\/\/localhost:3000)/
-            );
+            expect(baseUrl).toMatch(/^(https?:\/\/|http:\/\/localhost:3000)/);
         });
 
         it('should export OpenGraph metadata configuration', () => {
@@ -104,7 +105,10 @@ describe('Root Layout', () => {
         });
 
         it('should set OpenGraph type to website', () => {
-            expect(metadata.openGraph?.type).toBe('website');
+            const ogWebsite = metadata.openGraph as
+                | { type: string }
+                | undefined;
+            expect(ogWebsite?.type).toBe('website');
         });
 
         it('should configure OpenGraph images array', () => {
@@ -132,7 +136,10 @@ describe('Root Layout', () => {
         });
 
         it('should configure Twitter card type to summary_large_image', () => {
-            expect(metadata.twitter?.card).toBe('summary_large_image');
+            const twitterCard = metadata.twitter as
+                | { card: string }
+                | undefined;
+            expect(twitterCard?.card).toBe('summary_large_image');
         });
 
         it('should configure Twitter title', () => {
@@ -148,9 +155,9 @@ describe('Root Layout', () => {
         it('should configure Twitter image array', () => {
             expect(metadata.twitter?.images).toBeDefined();
             expect(Array.isArray(metadata.twitter?.images)).toBe(true);
-            expect((metadata.twitter?.images as string[]).includes('/og-image.jpg')).toBe(
-                true
-            );
+            expect(
+                (metadata.twitter?.images as string[]).includes('/og-image.jpg')
+            ).toBe(true);
         });
 
         it('should have complete metadata structure for SEO', () => {
@@ -179,7 +186,11 @@ describe('Root Layout', () => {
 
         it('should use Google Fonts modules', () => {
             // This is verified through jest.mock which confirms the imports are called
-            const { Geist, Geist_Mono, Germania_One } = require('next/font/google');
+            const {
+                Geist,
+                Geist_Mono,
+                Germania_One,
+            } = require('next/font/google');
             expect(Geist).toHaveBeenCalled();
             expect(Geist_Mono).toHaveBeenCalled();
             expect(Germania_One).toHaveBeenCalled();
@@ -326,7 +337,10 @@ describe('Root Layout', () => {
 
         it('should include Twitter Card markup for Twitter sharing', () => {
             expect(metadata.twitter).toBeDefined();
-            expect(metadata.twitter?.card).toBe('summary_large_image');
+            const twitterCard = metadata.twitter as
+                | { card: string }
+                | undefined;
+            expect(twitterCard?.card).toBe('summary_large_image');
         });
 
         it('should have image assets for social sharing', () => {
@@ -356,7 +370,11 @@ describe('Root Layout', () => {
         it('should assign font CSS variables to body for global application', () => {
             // The layout adds geistSans.variable, geistMono.variable, germaniaOne.variable
             // to the body className for global font application
-            const { Geist, Geist_Mono, Germania_One } = require('next/font/google');
+            const {
+                Geist,
+                Geist_Mono,
+                Germania_One,
+            } = require('next/font/google');
 
             const geist = Geist();
             const geistMono = Geist_Mono();

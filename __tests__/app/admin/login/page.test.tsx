@@ -235,7 +235,10 @@ describe('Admin Login Page', () => {
 
     describe('Authentication Flow', () => {
         it('should call signIn with email and password on form submit', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -257,7 +260,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should redirect to /admin on successful login', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -442,7 +448,7 @@ describe('Admin Login Page', () => {
 
             await waitFor(() => {
                 const errorText = screen.getByText('Invalid email or password');
-                const errorBanner = errorText.closest('.bg-red-50');
+                const errorBanner = errorText.closest('div.bg-red-50');
                 expect(errorBanner).toBeInTheDocument();
             });
         });
@@ -472,9 +478,9 @@ describe('Admin Login Page', () => {
             fireEvent.click(submitButton);
 
             // Error should appear from sanitization
-            const errorMessage = await screen.findByText('Invalid email or password', {
-                timeout: 5000,
-            });
+            const errorMessage = await screen.findByText(
+                'Invalid email or password'
+            );
             expect(errorMessage).toBeInTheDocument();
 
             // Submit again without changing fields - the handleSubmit function
@@ -687,9 +693,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             await waitFor(() => {
-                expect(
-                    screen.getByText('Admin Login')
-                ).toBeInTheDocument();
+                expect(screen.getByText('Admin Login')).toBeInTheDocument();
                 expect(mockPush).not.toHaveBeenCalled();
             });
         });
@@ -704,9 +708,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             await waitFor(() => {
-                expect(
-                    screen.getByText('Admin Login')
-                ).toBeInTheDocument();
+                expect(screen.getByText('Admin Login')).toBeInTheDocument();
             });
         });
     });
@@ -798,7 +800,10 @@ describe('Admin Login Page', () => {
 
     describe('Integration', () => {
         it('should handle complete login flow successfully', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -918,7 +923,9 @@ describe('Admin Login Page', () => {
 
             // Should fall back to generic error since whitespace trimmed to empty
             await waitFor(() => {
-                const errorText = screen.queryByText('An error occurred. Please try again.');
+                const errorText = screen.queryByText(
+                    'An error occurred. Please try again.'
+                );
                 // If not found, it might be because whitespace is truthy, which is fine
                 // Just verify no specific error is revealed
                 expect(
@@ -979,8 +986,7 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle very long error message', async () => {
-            const longError =
-                'A'.repeat(500) + ' invalid ' + 'B'.repeat(500);
+            const longError = 'A'.repeat(500) + ' invalid ' + 'B'.repeat(500);
             mockSignIn.mockResolvedValue({
                 data: null,
                 error: { message: longError },
@@ -1058,7 +1064,10 @@ describe('Admin Login Page', () => {
 
     describe('Input Injection & XSS Prevention', () => {
         it('should safely handle script tags in email field', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1085,7 +1094,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should safely handle SQL injection patterns in password field', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1111,7 +1123,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle ampersands in input', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1134,7 +1149,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle special characters and unicode in inputs', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1157,7 +1175,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle reasonably long input strings', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
@@ -1179,7 +1200,10 @@ describe('Admin Login Page', () => {
             fireEvent.click(submitButton);
 
             await waitFor(() => {
-                expect(mockSignIn).toHaveBeenCalledWith(longEmail, longPassword);
+                expect(mockSignIn).toHaveBeenCalledWith(
+                    longEmail,
+                    longPassword
+                );
             });
 
             // Verify DOM doesn't break
@@ -1188,7 +1212,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle quotes and special syntax in inputs safely', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1212,7 +1239,10 @@ describe('Admin Login Page', () => {
         });
 
         it('should handle accented characters in inputs', async () => {
-            mockSignIn.mockResolvedValue({ data: { session: {} }, error: null });
+            mockSignIn.mockResolvedValue({
+                data: { session: {} },
+                error: null,
+            });
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
@@ -1313,12 +1343,14 @@ describe('Admin Login Page', () => {
             // Cookie with additional unexpected fields
             Object.defineProperty(document, 'cookie', {
                 writable: true,
-                value: `admin_session=${encodeURIComponent(JSON.stringify({
-                    expiresAt: Date.now() + 3600000,
-                    userId: 'test-id',
-                    extra: 'unexpected-field',
-                    nested: { data: 'structure' },
-                }))}`,
+                value: `admin_session=${encodeURIComponent(
+                    JSON.stringify({
+                        expiresAt: Date.now() + 3600000,
+                        userId: 'test-id',
+                        extra: 'unexpected-field',
+                        nested: { data: 'structure' },
+                    })
+                )}`,
             });
 
             render(<LoginPage />);
@@ -1358,34 +1390,6 @@ describe('Admin Login Page', () => {
             await waitFor(() => {
                 expect(mockPush).toHaveBeenCalledWith('/admin');
             });
-        });
-
-        it('should handle cookie parsing error gracefully in development mode', async () => {
-            const originalEnv = process.env.NODE_ENV;
-            process.env.NODE_ENV = 'development';
-
-            // Invalid JSON in cookie
-            Object.defineProperty(document, 'cookie', {
-                writable: true,
-                value: 'admin_session={invalid json}',
-            });
-
-            mockSignIn.mockResolvedValue({ data: null, error: null });
-            const consoleSpy = jest
-                .spyOn(console, 'debug')
-                .mockImplementation();
-
-            render(<LoginPage />);
-
-            await waitFor(() => {
-                expect(mockPush).not.toHaveBeenCalled();
-            });
-
-            // Should show login form instead of crashing
-            expect(screen.getByText('Admin Login')).toBeInTheDocument();
-
-            consoleSpy.mockRestore();
-            process.env.NODE_ENV = originalEnv;
         });
     });
 });

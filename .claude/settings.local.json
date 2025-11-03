@@ -32,7 +32,8 @@
             "Bash(npx supabase status:*)",
             "Bash(npx tsc:*)",
             "Bash(test -f C:srcgithubmwsyeoldeartoonist.com.env.example)",
-            "Bash(xargs grep:*)"
+            "Bash(xargs grep:*)",
+            "Bash(gh pr list:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

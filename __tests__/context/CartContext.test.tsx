@@ -12,7 +12,6 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { CartProvider, useCart } from '@/context/CartContext';
-import { CartItem } from '@/types/cart';
 
 /**
  * Test component that uses the useCart hook
@@ -929,17 +928,24 @@ describe('CartContext', () => {
                 screen.getByText('Add').click();
             });
 
+            let timestampBefore = 0;
+
             await waitFor(() => {
-                const timestampBefore =
-                    screen.getByTestId('timestamp').textContent;
+                timestampBefore = Number(
+                    screen.getByTestId('timestamp').textContent
+                );
+                expect(timestampBefore).toBeGreaterThan(0);
 
                 act(() => {
                     screen.getByText('Clear').click();
                 });
+            });
 
-                expect(
+            await waitFor(() => {
+                const timestampAfter = Number(
                     screen.getByTestId('timestamp').textContent
-                ).toBeDefined();
+                );
+                expect(timestampAfter).toBeGreaterThanOrEqual(timestampBefore);
             });
         });
     });
@@ -949,7 +955,7 @@ describe('CartContext', () => {
             const TestComponent = () => {
                 const cart = useCart();
                 const [initialTimestamp, setInitialTimestamp] =
-                    React.useState(0);
+                    React.useState<number>(0);
 
                 return (
                     <div>
@@ -970,6 +976,9 @@ describe('CartContext', () => {
                         <div data-testid="current-timestamp">
                             {cart.cart.lastUpdated}
                         </div>
+                        <div data-testid="initial-timestamp">
+                            {initialTimestamp}
+                        </div>
                     </div>
                 );
             };
@@ -985,10 +994,17 @@ describe('CartContext', () => {
             });
 
             await waitFor(() => {
-                const timestamp =
-                    screen.getByTestId('current-timestamp').textContent;
-                expect(timestamp).toBeTruthy();
-                expect(Number(timestamp)).toBeGreaterThan(0);
+                const currentTimestamp = Number(
+                    screen.getByTestId('current-timestamp').textContent
+                );
+                const storedInitialTimestamp = Number(
+                    screen.getByTestId('initial-timestamp').textContent
+                );
+                expect(currentTimestamp).toBeTruthy();
+                expect(currentTimestamp).toBeGreaterThan(0);
+                expect(currentTimestamp).toBeGreaterThanOrEqual(
+                    storedInitialTimestamp
+                );
             });
         });
     });

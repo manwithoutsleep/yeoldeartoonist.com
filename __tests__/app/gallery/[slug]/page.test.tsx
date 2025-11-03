@@ -521,7 +521,7 @@ describe('Gallery Detail Page ([slug])', () => {
                 await GalleryDetailPage({
                     params: Promise.resolve({ slug: 'nonexistent' }),
                 });
-            } catch (error) {
+            } catch {
                 // Expected to throw when notFound is called
             }
 
@@ -542,7 +542,7 @@ describe('Gallery Detail Page ([slug])', () => {
                 await GalleryDetailPage({
                     params: Promise.resolve({ slug: 'nonexistent' }),
                 });
-            } catch (error) {
+            } catch {
                 // Expected to throw when notFound is called
             }
 
@@ -563,7 +563,7 @@ describe('Gallery Detail Page ([slug])', () => {
                 await GalleryDetailPage({
                     params: Promise.resolve({ slug: 'test-slug' }),
                 });
-            } catch (error) {
+            } catch {
                 // Expected to throw when notFound is called
             }
 

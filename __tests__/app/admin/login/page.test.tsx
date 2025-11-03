@@ -540,7 +540,7 @@ describe('Admin Login Page', () => {
                     )
             );
 
-            const { rerender } = render(<LoginPage />);
+            render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText('Email address');
             const passwordInput = screen.getByPlaceholderText('Password');
@@ -923,9 +923,7 @@ describe('Admin Login Page', () => {
 
             // Should fall back to generic error since whitespace trimmed to empty
             await waitFor(() => {
-                const errorText = screen.queryByText(
-                    'An error occurred. Please try again.'
-                );
+                screen.queryByText('An error occurred. Please try again.');
                 // If not found, it might be because whitespace is truthy, which is fine
                 // Just verify no specific error is revealed
                 expect(

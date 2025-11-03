@@ -98,7 +98,7 @@ describe('CheckoutProvider Component', () => {
         });
 
         it('should not add wrapper classes or attributes', () => {
-            const { container } = render(
+            render(
                 <CheckoutProvider>
                     <span>Text</span>
                 </CheckoutProvider>
@@ -144,9 +144,11 @@ describe('CheckoutProvider Component', () => {
             expect(screen.getByText('42')).toBeInTheDocument();
         });
 
-        it('should handle children prop explicitly', () => {
+        it('should handle children through JSX nesting', () => {
             render(
-                <CheckoutProvider children={<div>Explicit children</div>} />
+                <CheckoutProvider>
+                    <div>Explicit children</div>
+                </CheckoutProvider>
             );
             expect(screen.getByText('Explicit children')).toBeInTheDocument();
         });
@@ -271,7 +273,7 @@ describe('CheckoutProvider Component', () => {
         });
 
         it('should not introduce ARIA role conflicts', () => {
-            const { container } = render(
+            render(
                 <CheckoutProvider>
                     <main role="main">Main content</main>
                 </CheckoutProvider>

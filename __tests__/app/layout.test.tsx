@@ -58,7 +58,22 @@ jest.mock('next/font/google', () => ({
 }));
 
 import { metadata } from '@/app/layout';
-import { Metadata } from 'next';
+import type { Mock } from 'jest';
+
+// Type the mocked font modules for use in tests
+const mockFontGoogle = jest.mocked(
+    jest.requireMock('next/font/google'),
+    true
+) as unknown as {
+    Geist: Mock;
+    Geist_Mono: Mock;
+    Germania_One: Mock;
+};
+
+// Extract mocked functions with proper typing for use in tests
+const mockGeist = mockFontGoogle.Geist as Mock;
+const mockGeistMono = mockFontGoogle.Geist_Mono as Mock;
+const mockGermaniaOne = mockFontGoogle.Germania_One as Mock;
 
 describe('Root Layout', () => {
     describe('Metadata Configuration', () => {
@@ -186,66 +201,54 @@ describe('Root Layout', () => {
 
         it('should use Google Fonts modules', () => {
             // This is verified through jest.mock which confirms the imports are called
-            const {
-                Geist,
-                Geist_Mono,
-                Germania_One,
-            } = require('next/font/google');
-            expect(Geist).toHaveBeenCalled();
-            expect(Geist_Mono).toHaveBeenCalled();
-            expect(Germania_One).toHaveBeenCalled();
+            expect(mockGeist).toHaveBeenCalled();
+            expect(mockGeistMono).toHaveBeenCalled();
+            expect(mockGermaniaOne).toHaveBeenCalled();
         });
     });
 
     describe('Font Configuration', () => {
         it('should configure Geist Sans font with correct CSS variable', () => {
-            const { Geist } = require('next/font/google');
-            const mockCall = Geist.mock.calls[0]?.[0];
+            const mockCall = mockGeist.mock.calls[0]?.[0];
 
             expect(mockCall).toBeDefined();
             expect(mockCall.variable).toBe('--font-geist-sans');
         });
 
         it('should configure Geist Sans with latin subset', () => {
-            const { Geist } = require('next/font/google');
-            const mockCall = Geist.mock.calls[0]?.[0];
+            const mockCall = mockGeist.mock.calls[0]?.[0];
 
             expect(mockCall.subsets).toContain('latin');
         });
 
         it('should configure Geist Mono font with correct CSS variable', () => {
-            const { Geist_Mono } = require('next/font/google');
-            const mockCall = Geist_Mono.mock.calls[0]?.[0];
+            const mockCall = mockGeistMono.mock.calls[0]?.[0];
 
             expect(mockCall).toBeDefined();
             expect(mockCall.variable).toBe('--font-geist-mono');
         });
 
         it('should configure Geist Mono with latin subset', () => {
-            const { Geist_Mono } = require('next/font/google');
-            const mockCall = Geist_Mono.mock.calls[0]?.[0];
+            const mockCall = mockGeistMono.mock.calls[0]?.[0];
 
             expect(mockCall.subsets).toContain('latin');
         });
 
         it('should configure Germania One font with correct CSS variable', () => {
-            const { Germania_One } = require('next/font/google');
-            const mockCall = Germania_One.mock.calls[0]?.[0];
+            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
 
             expect(mockCall).toBeDefined();
             expect(mockCall.variable).toBe('--font-germania-one');
         });
 
         it('should configure Germania One with weight 400', () => {
-            const { Germania_One } = require('next/font/google');
-            const mockCall = Germania_One.mock.calls[0]?.[0];
+            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
 
             expect(mockCall.weight).toBe('400');
         });
 
         it('should configure Germania One with latin subset', () => {
-            const { Germania_One } = require('next/font/google');
-            const mockCall = Germania_One.mock.calls[0]?.[0];
+            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
 
             expect(mockCall.subsets).toContain('latin');
         });
@@ -362,23 +365,16 @@ describe('Root Layout', () => {
     describe('Responsive Design Setup', () => {
         it('should use custom fonts that support responsive typography', () => {
             // Geist and Germania One are variable fonts
-            const { Geist, Germania_One } = require('next/font/google');
-            expect(Geist).toHaveBeenCalled();
-            expect(Germania_One).toHaveBeenCalled();
+            expect(mockGeist).toHaveBeenCalled();
+            expect(mockGermaniaOne).toHaveBeenCalled();
         });
 
         it('should assign font CSS variables to body for global application', () => {
             // The layout adds geistSans.variable, geistMono.variable, germaniaOne.variable
             // to the body className for global font application
-            const {
-                Geist,
-                Geist_Mono,
-                Germania_One,
-            } = require('next/font/google');
-
-            const geist = Geist();
-            const geistMono = Geist_Mono();
-            const germania = Germania_One();
+            const geist = mockGeist();
+            const geistMono = mockGeistMono();
+            const germania = mockGermaniaOne();
 
             expect(geist.variable).toBe('--font-geist-sans');
             expect(geistMono.variable).toBe('--font-geist-mono');

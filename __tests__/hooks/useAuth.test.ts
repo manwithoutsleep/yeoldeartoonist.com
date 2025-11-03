@@ -11,7 +11,7 @@
  * All errors are normalized to AuthError type with guaranteed message property
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 
@@ -22,6 +22,41 @@ const mockCreateClient = createClient as jest.MockedFunction<
     typeof createClient
 >;
 
+/**
+ * Normalized error type that matches the AuthError type from useAuth hook
+ */
+interface AuthError {
+    message: string;
+}
+
+/**
+ * Mock Supabase client type for testing
+ */
+interface MockSupabaseClient {
+    auth: {
+        signInWithPassword: jest.Mock;
+        signUp: jest.Mock;
+        signOut: jest.Mock;
+    };
+}
+
+/**
+ * Result types from auth operations
+ */
+interface SignInResult {
+    data: { session: Record<string, unknown> } | null;
+    error: AuthError | null;
+}
+
+interface SignUpResult {
+    data: { user: Record<string, unknown> } | null;
+    error: AuthError | null;
+}
+
+interface SignOutResult {
+    error: AuthError | null;
+}
+
 describe('useAuth Hook', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -29,14 +64,16 @@ describe('useAuth Hook', () => {
 
     describe('Hook Initialization', () => {
         it('should return hook with all required methods and state', () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
@@ -48,14 +85,16 @@ describe('useAuth Hook', () => {
         });
 
         it('should initialize with loading false and error null', () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
@@ -64,14 +103,16 @@ describe('useAuth Hook', () => {
         });
 
         it('should return memoized callback functions', () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn(),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result, rerender } = renderHook(() => useAuth());
 
@@ -104,11 +145,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: any;
+                let signInResult: SignInResult | undefined;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -123,17 +166,17 @@ describe('useAuth Hook', () => {
             it('should call signInWithPassword with correct email and password', async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { session: {} },
-                                error: null,
-                            }),
+                        signInWithPassword: jest.fn().mockResolvedValue({
+                            data: { session: {} },
+                            error: null,
+                        }),
                         signUp: jest.fn(),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -155,17 +198,17 @@ describe('useAuth Hook', () => {
             it('should set loading to false after successful sign in', async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { session: {} },
-                                error: null,
-                            }),
+                        signInWithPassword: jest.fn().mockResolvedValue({
+                            data: { session: {} },
+                            error: null,
+                        }),
                         signUp: jest.fn(),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -182,17 +225,17 @@ describe('useAuth Hook', () => {
             it('should set error to null after successful sign in', async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { session: {} },
-                                error: null,
-                            }),
+                        signInWithPassword: jest.fn().mockResolvedValue({
+                            data: { session: {} },
+                            error: null,
+                        }),
                         signUp: jest.fn(),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -219,11 +262,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: any;
+                let signInResult: SignInResult | undefined;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -248,7 +293,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -275,7 +322,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -299,11 +348,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signInResult: any;
+                let signInResult: SignInResult | undefined;
                 await act(async () => {
                     signInResult = await result.current.signIn(
                         'user@example.com',
@@ -328,7 +379,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -344,7 +397,12 @@ describe('useAuth Hook', () => {
 
         describe('Loading State', () => {
             it('should set loading to true during sign in', async () => {
-                let resolveSignIn: any;
+                let resolveSignIn:
+                    | ((value: {
+                          data: { session: Record<string, unknown> };
+                          error: null;
+                      }) => void)
+                    | undefined;
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn().mockImplementation(
@@ -357,7 +415,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -381,17 +441,17 @@ describe('useAuth Hook', () => {
             it('should set loading to false after sign in completes', async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { session: {} },
-                                error: null,
-                            }),
+                        signInWithPassword: jest.fn().mockResolvedValue({
+                            data: { session: {} },
+                            error: null,
+                        }),
                         signUp: jest.fn(),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -421,7 +481,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -465,11 +527,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: any;
+                let signUpResult: SignUpResult | undefined;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'new@example.com',
@@ -485,16 +549,16 @@ describe('useAuth Hook', () => {
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
-                        signUp: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { user: {} },
-                                error: null,
-                            }),
+                        signUp: jest.fn().mockResolvedValue({
+                            data: { user: {} },
+                            error: null,
+                        }),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -515,16 +579,16 @@ describe('useAuth Hook', () => {
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
-                        signUp: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { user: {} },
-                                error: null,
-                            }),
+                        signUp: jest.fn().mockResolvedValue({
+                            data: { user: {} },
+                            error: null,
+                        }),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -542,16 +606,16 @@ describe('useAuth Hook', () => {
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
-                        signUp: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { user: {} },
-                                error: null,
-                            }),
+                        signUp: jest.fn().mockResolvedValue({
+                            data: { user: {} },
+                            error: null,
+                        }),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -578,11 +642,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: any;
+                let signUpResult: SignUpResult | undefined;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'existing@example.com',
@@ -607,7 +673,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -631,7 +699,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -653,11 +723,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signUpResult: any;
+                let signUpResult: SignUpResult | undefined;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
                         'user@example.com',
@@ -678,7 +750,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -694,7 +768,12 @@ describe('useAuth Hook', () => {
 
         describe('Loading State', () => {
             it('should set loading to true during sign up', async () => {
-                let resolveSignUp: any;
+                let resolveSignUp:
+                    | ((value: {
+                          data: { user: Record<string, unknown> };
+                          error: null;
+                      }) => void)
+                    | undefined;
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
@@ -707,7 +786,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -732,16 +813,16 @@ describe('useAuth Hook', () => {
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
-                        signUp: jest
-                            .fn()
-                            .mockResolvedValue({
-                                data: { user: {} },
-                                error: null,
-                            }),
+                        signUp: jest.fn().mockResolvedValue({
+                            data: { user: {} },
+                            error: null,
+                        }),
                         signOut: jest.fn(),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -764,11 +845,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockResolvedValue({ error: null }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: any;
+                let signOutResult: SignOutResult | undefined;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
@@ -784,7 +867,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockResolvedValue({ error: null }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -803,7 +888,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockResolvedValue({ error: null }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -822,7 +909,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockResolvedValue({ error: null }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -845,11 +934,13 @@ describe('useAuth Hook', () => {
                         }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: any;
+                let signOutResult: SignOutResult | undefined;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
@@ -869,7 +960,9 @@ describe('useAuth Hook', () => {
                         }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -892,7 +985,9 @@ describe('useAuth Hook', () => {
                         }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -914,11 +1009,13 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockRejectedValue(testError),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
-                let signOutResult: any;
+                let signOutResult: SignOutResult | undefined;
                 await act(async () => {
                     signOutResult = await result.current.signOut();
                 });
@@ -937,7 +1034,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockRejectedValue(testError),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -953,7 +1052,9 @@ describe('useAuth Hook', () => {
 
         describe('Loading State', () => {
             it('should set loading to true during sign out', async () => {
-                let resolveSignOut: any;
+                let resolveSignOut:
+                    | ((value: { error: null }) => void)
+                    | undefined;
                 const mockSupabase = {
                     auth: {
                         signInWithPassword: jest.fn(),
@@ -966,7 +1067,9 @@ describe('useAuth Hook', () => {
                         ),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -992,7 +1095,9 @@ describe('useAuth Hook', () => {
                         signOut: jest.fn().mockResolvedValue({ error: null }),
                     },
                 };
-                mockCreateClient.mockReturnValue(mockSupabase as any);
+                mockCreateClient.mockReturnValue(
+                    mockSupabase as unknown as ReturnType<typeof createClient>
+                );
 
                 const { result } = renderHook(() => useAuth());
 
@@ -1008,18 +1113,20 @@ describe('useAuth Hook', () => {
     describe('Error Normalization', () => {
         it('should normalize Error instance', async () => {
             const testError = new Error('Something went wrong');
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1035,18 +1142,20 @@ describe('useAuth Hook', () => {
 
         it('should normalize object with message property', async () => {
             const testError = { message: 'Custom error message' };
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1061,18 +1170,20 @@ describe('useAuth Hook', () => {
 
         it('should handle unexpected error types', async () => {
             const testError = 'String error';
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(testError),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1086,18 +1197,20 @@ describe('useAuth Hook', () => {
         });
 
         it('should handle null error', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(null),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1111,18 +1224,20 @@ describe('useAuth Hook', () => {
         });
 
         it('should handle undefined error', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(undefined),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1136,18 +1251,20 @@ describe('useAuth Hook', () => {
         });
 
         it('should handle number as error', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest.fn().mockRejectedValue(404),
                     signUp: jest.fn(),
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
-            let signInResult: any;
+            let signInResult: SignInResult | undefined;
             await act(async () => {
                 signInResult = await result.current.signIn(
                     'user@example.com',
@@ -1163,21 +1280,21 @@ describe('useAuth Hook', () => {
 
     describe('State Persistence', () => {
         it('should persist loading state across multiple operations', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
-                    signInWithPassword: jest
-                        .fn()
-                        .mockResolvedValue({
-                            data: { session: {} },
-                            error: null,
-                        }),
+                    signInWithPassword: jest.fn().mockResolvedValue({
+                        data: { session: {} },
+                        error: null,
+                    }),
                     signUp: jest
                         .fn()
                         .mockResolvedValue({ data: { user: {} }, error: null }),
                     signOut: jest.fn().mockResolvedValue({ error: null }),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
@@ -1201,7 +1318,7 @@ describe('useAuth Hook', () => {
         });
 
         it('should persist error state across multiple operations', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
                     signInWithPassword: jest
                         .fn()
@@ -1217,7 +1334,9 @@ describe('useAuth Hook', () => {
                     signOut: jest.fn(),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 
@@ -1243,21 +1362,21 @@ describe('useAuth Hook', () => {
 
     describe('Multiple Simultaneous Operations', () => {
         it('should handle sequential auth operations correctly', async () => {
-            const mockSupabase = {
+            const mockSupabase: MockSupabaseClient = {
                 auth: {
-                    signInWithPassword: jest
-                        .fn()
-                        .mockResolvedValue({
-                            data: { session: {} },
-                            error: null,
-                        }),
+                    signInWithPassword: jest.fn().mockResolvedValue({
+                        data: { session: {} },
+                        error: null,
+                    }),
                     signUp: jest
                         .fn()
                         .mockResolvedValue({ data: { user: {} }, error: null }),
                     signOut: jest.fn().mockResolvedValue({ error: null }),
                 },
             };
-            mockCreateClient.mockReturnValue(mockSupabase as any);
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>
+            );
 
             const { result } = renderHook(() => useAuth());
 

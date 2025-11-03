@@ -10,6 +10,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CartProvider, useCart } from '@/context/CartContext';
+import type { CartContextType } from '@/context/CartContext';
 
 /**
  * Test component that uses the useCart hook to verify it works correctly
@@ -40,13 +41,6 @@ describe('useCart Hook', () => {
     });
 
     describe('Hook Re-export', () => {
-        it('should successfully import useCart from @/hooks/useCart', () => {
-            // This test verifies the hook can be imported from the expected location
-            const { useCart: importedHook } = require('@/context/CartContext');
-            expect(importedHook).toBeDefined();
-            expect(typeof importedHook).toBe('function');
-        });
-
         it('should export useCart as a function', () => {
             // Verify it's the correct export
             expect(typeof useCart).toBe('function');
@@ -222,7 +216,7 @@ describe('useCart Hook', () => {
 
     describe('Hook Consistency', () => {
         it('should return the same cart reference across renders', () => {
-            const references: any[] = [];
+            const references: CartContextType[] = [];
 
             const TestComponent = () => {
                 const cart = useCart();

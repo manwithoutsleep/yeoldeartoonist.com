@@ -11,9 +11,30 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import AdminPage from '@/app/admin/page';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
+
+// Type definitions for mocks
+interface MockAuthHookReturn {
+    signOut: jest.Mock;
+    loading: boolean;
+}
+
+interface MockSupabaseSession {
+    user?: {
+        id: string;
+        email: string;
+    };
+}
+
+interface MockSupabaseClient extends Pick<SupabaseClient, 'auth'> {
+    auth: {
+        getSession: jest.Mock;
+    };
+}
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -44,23 +65,27 @@ describe('Admin Page', () => {
         jest.clearAllMocks();
         mockUseRouter.mockReturnValue({
             push: mockPush,
-        } as any);
+        } as AppRouterInstance);
     });
 
     describe('Authentication & Session', () => {
         it('should redirect to login when no session exists', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
                         data: { session: null },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -70,18 +95,22 @@ describe('Admin Page', () => {
         });
 
         it('should display loading state while fetching session', () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockImplementation(
                         () => new Promise(() => {}) // Never resolves
                     ),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -89,25 +118,29 @@ describe('Admin Page', () => {
         });
 
         it('should render admin page when session exists', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -126,25 +159,29 @@ describe('Admin Page', () => {
 
     describe('User Display', () => {
         it('should display user email in header', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'testuser@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'testuser@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -155,25 +192,29 @@ describe('Admin Page', () => {
         });
 
         it('should display user email in welcome message', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'john@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'john@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -184,25 +225,29 @@ describe('Admin Page', () => {
         });
 
         it('should display correct welcome message content', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -219,25 +264,29 @@ describe('Admin Page', () => {
 
     describe('Loading State', () => {
         it('should clear loading state after user data loads', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -255,25 +304,29 @@ describe('Admin Page', () => {
 
     describe('Sign Out Functionality', () => {
         it('should display sign out button when authenticated', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -284,27 +337,31 @@ describe('Admin Page', () => {
         });
 
         it('should be able to click sign out button', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
             mockSignOut.mockResolvedValue({ error: null });
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -321,25 +378,29 @@ describe('Admin Page', () => {
         });
 
         it('should disable sign out button while signing out', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: true, // Simulate loading state
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -352,25 +413,29 @@ describe('Admin Page', () => {
         });
 
         it('should show "Signing out..." text while signing out', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: true,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -380,32 +445,33 @@ describe('Admin Page', () => {
         });
 
         it('should redirect to login after successful sign out', async () => {
-            let signOutLoading = false;
+            const signOutLoading = false;
 
-            mockUseAuth.mockImplementation(
-                () =>
-                    ({
-                        signOut: mockSignOut,
-                        loading: signOutLoading,
-                    }) as any
-            );
+            const mockAuthReturn: MockAuthHookReturn = {
+                signOut: mockSignOut,
+                loading: signOutLoading,
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
             mockSignOut.mockResolvedValue({ error: null });
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -427,29 +493,33 @@ describe('Admin Page', () => {
         });
 
         it('should handle sign out errors gracefully', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
             mockSignOut.mockResolvedValue({
                 error: { message: 'Sign out failed' },
             });
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -471,25 +541,29 @@ describe('Admin Page', () => {
 
     describe('UI Elements', () => {
         it('should have admin panel heading', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -499,25 +573,29 @@ describe('Admin Page', () => {
         });
 
         it('should have white background for nav', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             const { container } = render(<AdminPage />);
 
@@ -528,25 +606,29 @@ describe('Admin Page', () => {
         });
 
         it('should have gray background for main area', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             const { container } = render(<AdminPage />);
 
@@ -557,25 +639,29 @@ describe('Admin Page', () => {
         });
 
         it('should have white content card', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-123',
+                    email: 'admin@example.com',
+                },
+            };
+
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: {
-                                    id: 'user-123',
-                                    email: 'admin@example.com',
-                                },
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             const { container } = render(<AdminPage />);
 
@@ -592,16 +678,20 @@ describe('Admin Page', () => {
                 data: { session: null },
             });
 
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            mockCreateClient.mockReturnValue({
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: mockGetSession,
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
@@ -611,32 +701,35 @@ describe('Admin Page', () => {
         });
 
         it('should set user from session data', async () => {
-            mockUseAuth.mockReturnValue({
+            const mockAuthReturn: MockAuthHookReturn = {
                 signOut: mockSignOut,
                 loading: false,
-            } as any);
+            };
+            mockUseAuth.mockReturnValue(mockAuthReturn);
 
-            const testUser = {
-                id: 'user-456',
-                email: 'test@example.com',
+            const testEmail = 'test@example.com';
+            const mockSession: MockSupabaseSession = {
+                user: {
+                    id: 'user-456',
+                    email: testEmail,
+                },
             };
 
-            mockCreateClient.mockReturnValue({
+            const mockClient: MockSupabaseClient = {
                 auth: {
                     getSession: jest.fn().mockResolvedValue({
-                        data: {
-                            session: {
-                                user: testUser,
-                            },
-                        },
+                        data: { session: mockSession },
                     }),
                 },
-            } as any);
+            };
+            mockCreateClient.mockReturnValue(
+                mockClient as unknown as ReturnType<typeof createClient>
+            );
 
             render(<AdminPage />);
 
             await waitFor(() => {
-                const emails = screen.getAllByText(testUser.email);
+                const emails = screen.getAllByText(testEmail);
                 expect(emails.length).toBeGreaterThan(0);
             });
         });

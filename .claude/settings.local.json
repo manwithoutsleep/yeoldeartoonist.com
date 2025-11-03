@@ -21,17 +21,20 @@
             "Bash(npm run format:*)",
             "Bash(npm run format:check:*)",
             "Bash(npm run lint)",
+            "Bash(npm run lint:*)",
+            "Bash(npm run test:*)",
+            "Bash(npm run test:coverage:*)",
+            "Bash(npm run test:watch:*)",
+            "Bash(npm test:*)",
             "Bash(npm view:*)",
+            "Bash(npx jest:*)",
             "Bash(npx lighthouse:*)",
             "Bash(npx supabase status:*)",
             "Bash(npx tsc:*)",
             "Bash(test -f C:srcgithubmwsyeoldeartoonist.com.env.example)",
-            "Bash(xargs grep:*)",
-            "Bash(npm test:*)",
-            "Bash(npm run test:coverage:*)",
-            "Bash(npm run lint:*)"
+            "Bash(xargs grep:*)"
         ],
-        "deny": [],
+        "deny": ["Bash(rm:*)"],
         "ask": []
     }
 }

@@ -35,8 +35,7 @@ jest.mock('next/navigation', () => ({
 // Suppress console errors in tests (optional, remove if you want to see them)
 const originalError = console.error;
 beforeAll(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.error = (...args: any[]) => {
+    console.error = (...args: Parameters<typeof console.error>) => {
         if (
             typeof args[0] === 'string' &&
             (args[0].includes('Warning: ReactDOM.render') ||

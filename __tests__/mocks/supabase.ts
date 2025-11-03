@@ -19,8 +19,10 @@ export const createMockSupabaseClient = () => ({
     },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createMockQueryBuilder = (data: any, error: any = null) => ({
+export const createMockQueryBuilder = <T, E = null>(
+    data: T,
+    error: E = null as unknown as E
+) => ({
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     neq: jest.fn().mockReturnThis(),

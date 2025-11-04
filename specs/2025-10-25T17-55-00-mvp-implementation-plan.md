@@ -604,9 +604,123 @@ Starting with Phase 3, all new features will follow TDD:
 
 Build complete admin dashboard for content management, order management, and image uploads.
 
+### 3.0 Critical Testing Infrastructure Gaps
+
+Phase 3 features will be developed using Test Driven Development (TDD) using the Red/Green/Refactor pattern. Features will not be added until a failing test exists describing the feature. Where existing testing gaps are discovered, add tests for those features.
+
+Before implementing Phase 3 features, review the following testing infrastructure issues from Phase 2.5. Determine if they will be addressed in the course of implementing the Phase 3 features. If not, we must address them prior to beginning work on Phase 3 to ensure those features can be reasonably tested.
+
+#### 3.0.1 Page Component Tests Missing
+
+**Issue**: Phase 2.5 specification requires tests for all public pages (Home, Gallery, Shoppe, In The Works, Contact), but **no page tests are implemented**.
+
+**Blockers for Phase 3**:
+
+- Cannot test admin pages without establishing page testing patterns in public pages
+- Integration tests are placeholders and provide no real validation
+
+**Required Before Phase 3**:
+
+- Create `__tests__/app/page.test.tsx` - Home page tests
+- Create `__tests__/app/gallery/page.test.tsx` - Gallery listing tests
+- Create `__tests__/app/gallery/[slug]/page.test.tsx` - Gallery detail tests
+- Create `__tests__/app/shoppe/page.test.tsx` - Shoppe listing tests
+- Create `__tests__/app/in-the-works/page.test.tsx` - Projects/events tests
+- Create `__tests__/app/contact/page.test.tsx` - Contact page tests
+- Replace placeholder integration tests with real patterns
+
+#### 3.0.2 Database Query Tests Insufficient
+
+**Issue**: Database query tests only verify function existence and signatures, not actual behavior. Tests like `expect(true).toBe(true)` provide false confidence.
+
+**Blockers for Phase 3**:
+
+- Admin system heavily relies on database queries for content management
+- Cannot confidently refactor or add query functions without real tests
+- Phase 3 developers won't catch broken filters (e.g., accidentally including unpublished items)
+
+**Required Before Phase 3**:
+
+- Implement mock Supabase client for testing
+- Add real tests for `src/lib/db/artwork.ts`:
+    - Verify `is_published` filter is applied
+    - Test pagination (limit/offset)
+    - Test error handling and null responses
+    - Test sorting and ordering
+- Add tests for `src/lib/db/projects.ts`, `src/lib/db/events.ts`, `src/lib/db/pages.ts`
+- Achieve >80% coverage on `lib/db/` module
+
+#### 3.0.3 Middleware Tests Missing
+
+**Issue**: Phase 2.5 specification requires middleware tests, but none are implemented.
+
+**Blockers for Phase 3**:
+
+- Admin routes depend entirely on middleware for security
+- Untested middleware could leak admin features to unauthorized users
+- Cannot safely test admin authentication without middleware tests
+
+**Required Before Phase 3**:
+
+- Create `__tests__/middleware.test.ts` with tests for:
+    - Admin authentication checks
+    - Session validation and caching
+    - Unauthorized access rejection
+    - Proper redirects for unauthenticated users
+    - Cookie-based session cache validation
+
+#### 3.0.4 useCart Hook Has 0% Test Coverage
+
+**Issue**: `hooks/useCart.ts` is critical Phase 3/4 logic but has 0% test coverage.
+
+**Blockers for Phase 3**:
+
+- Phase 4 depends on cart functionality
+- Cannot test checkout without understanding cart behavior
+- Edge cases (duplicate items, overflow, etc.) are untested
+
+**Required Before Phase 3**:
+
+- Add tests for `hooks/useCart.ts`:
+    - Add/remove items from cart
+    - Update quantities
+    - Cart persistence in localStorage
+    - Clear cart
+    - Calculate totals
+    - Edge cases (duplicate items, large quantities)
+    - localStorage quota exceeded handling
+
+#### 3.0.5 Supabase Client Tests Too Simple
+
+**Issue**: Tests only verify the client factory exists, not actual functionality.
+
+**Blockers for Phase 3**:
+
+- Admin system requires reliable Supabase connection
+- Cannot test database operations without validating client initialization
+- Missing environment variable handling tests
+
+**Required Before Phase 3**:
+
+- Add tests for `src/lib/supabase/client.ts`:
+    - Proper initialization with environment variables
+    - Error handling for missing NEXT_PUBLIC_SUPABASE_URL
+    - Correct anon key usage
+- Add tests for `src/lib/supabase/server.ts`:
+    - Service role key initialization
+    - Error handling for missing SUPABASE_SERVICE_ROLE_KEY
+
+### Summary
+
+**Phase 3 cannot proceed until these testing gaps are filled.** The admin system and Phase 4 checkout are complex features that require solid test infrastructure to maintain. Adding tests now prevents quality degradation in later phases.
+
 ### Tasks
 
+Phase 3 features will be developed using Test Driven Development (TDD) using the Red/Green/Refactor pattern. Features will not be added until a failing test exists describing the feature. Where existing testing gaps are discovered, add tests for those features.
+
 #### 3.1 Admin Authentication
+
+Using TDD, implement these features:
 
 - [ ] Set up Supabase Auth in dashboard
 - [ ] Create first admin user in administrators table
@@ -629,6 +743,8 @@ Build complete admin dashboard for content management, order management, and ima
     - [ ] Redirect to login page
 
 #### 3.2 Admin Middleware & Protection
+
+Using TDD, implement these features:
 
 - [ ] Implement middleware to protect `/admin` routes
     - [ ] Add environment-aware error logging (development vs production)
@@ -653,6 +769,8 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.3 Admin Layout
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/admin/layout.tsx` - Admin page layout
 - [ ] Create `src/components/admin/AdminSidebar.tsx` - Navigation sidebar
 - [ ] Add navigation links:
@@ -668,6 +786,8 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.4 Admin Dashboard
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/admin/page.tsx` - Main dashboard
 - [ ] Display key metrics:
     - Total orders (all time)
@@ -679,6 +799,8 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] System status indicators
 
 #### 3.5 Artwork Management
+
+Using TDD, implement these features:
 
 - [ ] Create `src/app/admin/artwork/page.tsx` - Artwork list
 - [ ] Create `src/app/admin/artwork/new/page.tsx` - New artwork form
@@ -696,6 +818,8 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.6 Image Upload
 
+Using TDD, implement these features:
+
 - [ ] Create `src/lib/utils/image.ts` - Image optimization functions
 - [ ] Create `src/app/api/admin/upload/route.ts` - Upload endpoint
 - [ ] Create `src/components/admin/ImageUploader.tsx` - File upload component
@@ -710,6 +834,8 @@ Build complete admin dashboard for content management, order management, and ima
 - [ ] Display image preview
 
 #### 3.7 Order Management
+
+Using TDD, implement these features:
 
 - [ ] Create `src/app/admin/orders/page.tsx` - Orders list
 - [ ] Create `src/app/admin/orders/[id]/page.tsx` - Order detail
@@ -733,6 +859,8 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.8 Projects & Events Management
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/admin/projects/page.tsx` - Projects list
 - [ ] Create project form with:
     - Title, slug, description
@@ -741,6 +869,11 @@ Build complete admin dashboard for content management, order management, and ima
     - Expected completion date
     - Is published, display order
     - Image upload
+
+#### 3.9 Events Management
+
+Using TDD, implement these features:
+
 - [ ] Create `src/app/admin/events/page.tsx` - Events list
 - [ ] Create event form with:
     - Title, slug, description
@@ -751,6 +884,8 @@ Build complete admin dashboard for content management, order management, and ima
     - Image upload
 
 #### 3.9 Settings & Admin Users (Super Admin Only)
+
+Using TDD, implement these features:
 
 - [ ] Create `src/app/admin/settings/page.tsx` - Settings page
 - [ ] Implement admin user management:
@@ -767,6 +902,8 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.10 API Routes for Admin
 
+Using TDD, implement these features:
+
 - [ ] Create `/api/admin/artwork/*` routes for CRUD
 - [ ] Create `/api/admin/orders/*` routes for reading/updating
 - [ ] Create `/api/admin/projects/*` routes for CRUD
@@ -777,23 +914,14 @@ Build complete admin dashboard for content management, order management, and ima
 
 #### 3.11 Caching & Revalidation
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/api/admin/revalidate/route.ts` - On-demand revalidation
 - [ ] Trigger revalidation when content changes:
     - After artwork created/updated
     - After projects/events updated
     - After pages updated
 - [ ] Use Next.js `revalidatePath` and `revalidateTag`
-
-#### 3.12 Testing
-
-- [ ] Test admin login and logout
-- [ ] Test creating new artwork with image upload
-- [ ] Test editing artwork
-- [ ] Test creating projects and events
-- [ ] Test order management (view, update status)
-- [ ] Test content changes trigger revalidation
-- [ ] Test role-based access (super_admin only features)
-- [ ] Test form validation
 
 ### Deliverables
 
@@ -825,9 +953,181 @@ Build complete admin dashboard for content management, order management, and ima
 
 Implement complete shopping cart with localStorage persistence, checkout form, and Stripe payment integration.
 
+### Critical Testing Infrastructure Gaps
+
+Phase 4 features will be developed using Test Driven Development (TDD) using the Red/Green/Refactor pattern. Features will not be added until a failing test exists describing the feature. Where existing testing gaps are discovered, add tests for those features.
+
+Before implementing Phase 4 features, review the following testing infrastructure issues from Phase 2.5. Determine if they will be addressed in the course of implementing the Phase 4 features. If not, we must address them prior to beginning work on Phase 4 to ensure those features can be reasonably tested.
+
+#### 4.0.1 Cart Hook Tests Missing
+
+**Issue**: `hooks/useCart.ts` has 0% test coverage but is critical Phase 4 logic.
+
+**Blockers for Phase 4**:
+
+- Cannot test checkout flow without understanding cart behavior
+- Cannot verify cart persistence across sessions
+- Edge cases and error handling untested
+
+**Required Before Phase 4**:
+
+- Add comprehensive tests for `hooks/useCart.ts`:
+    - Adding items to cart
+    - Removing items from cart
+    - Updating quantities
+    - Clearing cart
+    - Calculating totals (subtotal, shipping, tax)
+    - Cart persistence in localStorage
+    - Edge cases: duplicate items, large quantities, inventory limits
+    - localStorage quota exceeded handling
+    - Malformed localStorage data recovery
+    - Session expiry and cache invalidation
+
+#### 4.0.2 CartContext Tests Missing
+
+**Issue**: `src/context/CartContext.tsx` has 0% test coverage.
+
+**Blockers for Phase 4**:
+
+- Cart context provides global state for all cart operations
+- Cannot safely refactor cart logic without tests
+- Race conditions and state management edge cases untested
+
+**Required Before Phase 4**:
+
+- Add tests for `src/context/CartContext.tsx`:
+    - Context provider initialization
+    - Adding items to cart (new and duplicate)
+    - Removing items from cart
+    - Updating quantities
+    - Clearing cart
+    - Provider hook (useCart) works correctly
+    - Multiple component subscribers stay in sync
+    - Edge cases: concurrent updates, rapid add/remove cycles
+
+#### 4.0.3 Cart Components Lack Real Tests
+
+**Issue**: Cart UI components (CartButton, CartDrawer, CartItem, CartSummary) need tests but may be insufficient.
+
+**Blockers for Phase 4**:
+
+- Cannot test checkout UI without validating cart display
+- Drawer open/close animations untested
+- Item quantity editor behavior untested
+
+**Required Before Phase 4**:
+
+- Add tests for cart components:
+    - CartButton displays correct item count
+    - CartDrawer opens/closes correctly
+    - CartItem shows correct item details
+    - CartItem quantity editor works
+    - CartItem remove button deletes item
+    - CartSummary calculates totals correctly
+    - Integration: components work together
+
+#### 4.0.4 Stripe Integration Tests Missing
+
+**Issue**: Stripe payment integration tests likely missing or insufficient.
+
+**Blockers for Phase 4**:
+
+- Cannot test payment flow without Stripe tests
+- Card validation, error handling untested
+- Webhook handling untested
+- Payment intent creation untested
+
+**Required Before Phase 4**:
+
+- Add tests for Stripe integration:
+    - Payment intent creation with correct amounts
+    - Stripe Elements rendering and validation
+    - Card error handling
+    - Payment submission flow
+    - Webhook signature verification
+    - Failed payment handling
+    - Idempotency key handling (prevent duplicate charges)
+
+#### 4.0.5 Checkout Form Validation Tests
+
+**Issue**: Checkout form validation (address, email, etc.) needs real tests.
+
+**Blockers for Phase 4**:
+
+- Cannot trust form submission without validation tests
+- Price tampering vulnerability untested
+- Inventory validation untested
+
+**Required Before Phase 4**:
+
+- Add tests for checkout form:
+    - Address validation (required fields, format)
+    - Email validation
+    - Billing vs shipping address toggle
+    - Price display matches cart
+    - Inventory checks before submission
+    - Cart validation (published items, inventory)
+    - Form error messages
+    - Success/error state handling
+
+#### 4.0.6 Order Creation & Database Tests
+
+**Issue**: Order creation and database queries for orders untested.
+
+**Blockers for Phase 4**:
+
+- Cannot verify orders are created correctly
+- Inventory decrement untested
+- Order numbering untested
+- Order history untested
+
+**Required Before Phase 4**:
+
+- Add tests for `src/lib/db/orders.ts`:
+    - Create order with correct data
+    - Order number generation and uniqueness
+    - Inventory decrement on order creation
+    - Error handling for invalid orders
+    - Retrieve order by ID
+    - Update order status
+    - List orders with pagination/filtering
+- Mock Supabase for realistic testing
+
+#### 4.0.7 E2E Checkout Flow Tests
+
+**Issue**: End-to-end checkout flow (cart → checkout → payment → confirmation) untested.
+
+**Blockers for Phase 4**:
+
+- Cannot verify complete user journey
+- Race conditions between cart and payment untested
+- Session persistence during checkout untested
+
+**Required Before Phase 4**:
+
+- Add E2E tests for complete checkout flow:
+    - Add items to cart
+    - Navigate to cart page
+    - Update quantities
+    - Proceed to checkout
+    - Fill form with valid data
+    - Submit payment
+    - Verify success page
+    - Verify order in database
+    - Verify inventory decremented
+    - Verify email sent (mock)
+
+### Summary
+
+**Phase 4 cannot proceed until these testing gaps are filled.** Shopping cart and checkout are mission-critical features handling payments and customer data. Thorough testing is essential to prevent lost sales and security issues.
+
 ### Tasks
 
+Phase 4 features will be developed using Test Driven Development (TDD) using the Red/Green/Refactor pattern. Features will not be added until a failing test exists describing the feature. Where existing testing gaps are discovered, add tests for those features.
+
 #### 4.1 Cart State Management
+
+Using TDD, implement these features:
 
 - [ ] Create `src/lib/cart/storage.ts` - localStorage cart management
 - [ ] Create `src/hooks/useCart.ts` - Cart hook for components
@@ -841,6 +1141,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.2 Cart UI Components
 
+Using TDD, implement these features:
+
 - [ ] Create `src/components/cart/CartButton.tsx` - Header cart icon with count
 - [ ] Create `src/components/cart/CartDrawer.tsx` - Slide-out cart panel
 - [ ] Create `src/components/cart/CartItem.tsx` - Individual item in cart
@@ -850,6 +1152,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Implement smooth animations for drawer open/close
 
 #### 4.3 Cart Page
+
+Using TDD, implement these features:
 
 - [ ] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
 - [ ] Display all cart items with:
@@ -865,6 +1169,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.4 Checkout Form
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/shoppe/checkout/page.tsx` - Checkout page
 - [ ] Create `src/components/checkout/CheckoutForm.tsx` - Main form
 - [ ] Create `src/components/checkout/AddressForm.tsx` - Address fields
@@ -879,6 +1185,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.5 Stripe Integration
 
+Using TDD, implement these features:
+
 - [ ] Create `src/lib/payments/stripe.ts` - Stripe client setup
 - [ ] Create `src/app/api/checkout/route.ts` - POST endpoint to create payment intent
 - [ ] Install Stripe Elements components
@@ -888,6 +1196,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Add loading states during payment processing
 
 #### 4.6 Cart Validation
+
+Using TDD, implement these features:
 
 - [ ] Create `src/lib/cart/validation.ts` - Server-side cart validation
 - [ ] Validate cart items against database before checkout:
@@ -903,6 +1213,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.7 Order Creation
 
+Using TDD, implement these features:
+
 - [ ] Create `src/lib/db/orders.ts` - Order database functions
 - [ ] Create order in database on successful payment intent
 - [ ] Store order with:
@@ -917,6 +1229,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.8 Stripe Webhook
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/api/checkout/webhook/route.ts` - Webhook handler
 - [ ] Listen for `payment_intent.succeeded` event
 - [ ] Verify webhook signature
@@ -925,6 +1239,8 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 - [ ] Log all webhook events for debugging
 
 #### 4.9 Order Confirmation
+
+Using TDD, implement these features:
 
 - [ ] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
 - [ ] Display:
@@ -939,23 +1255,14 @@ Implement complete shopping cart with localStorage persistence, checkout form, a
 
 #### 4.10 Error Handling
 
+Using TDD, implement these features:
+
 - [ ] Create `src/app/shoppe/checkout/cancelled/page.tsx` - Cancelled page
 - [ ] Handle payment cancellation
 - [ ] Handle validation errors
 - [ ] Handle Stripe errors
 - [ ] Add user-friendly error messages
 - [ ] Log errors for admin review
-
-#### 4.11 Testing
-
-- [ ] Test complete checkout flow with Stripe test card
-- [ ] Test add to cart functionality
-- [ ] Test cart persistence across sessions
-- [ ] Test inventory validation
-- [ ] Test price tampering prevention
-- [ ] Test payment success/failure flows
-- [ ] Test order creation in database
-- [ ] Test webhook signature verification
 
 ### Deliverables
 

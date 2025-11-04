@@ -13,6 +13,20 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '@/app/admin/login/page';
+import { randomUUID } from 'node:crypto';
+
+// Test constants - form field selectors
+const TEST_EMAIL_PLACEHOLDER = 'Email address';
+const TEST_PASSWORD_PLACEHOLDER = 'Password';
+const TEST_SUBMIT_BUTTON_TEXT = /Sign in/i;
+
+// Test constants - credentials (using random GUID-like strings for test passwords)
+const TEST_EMAIL = 'admin@example.com';
+const TEST_PASSWORD = randomUUID();
+const ALTERNATIVE_EMAIL = TEST_EMAIL;
+const ALTERNATIVE_PASSWORD = randomUUID();
+const NO_USER_EMAIL = 'nouser@example.com';
+const NO_USER_PASSWORD = randomUUID();
 
 // Mock useRouter
 const mockPush = jest.fn();
@@ -87,7 +101,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             expect(emailInput).toBeInTheDocument();
             expect(emailInput.type).toBe('email');
@@ -99,7 +113,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
             expect(passwordInput).toBeInTheDocument();
             expect(passwordInput.type).toBe('password');
@@ -111,7 +125,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
             expect(submitButton).toBeInTheDocument();
             expect(submitButton.getAttribute('type')).toBe('submit');
@@ -122,7 +136,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             expect(emailInput.getAttribute('autoComplete')).toBe('email');
         });
@@ -132,7 +146,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
             expect(passwordInput.getAttribute('autoComplete')).toBe(
                 'current-password'
@@ -145,12 +159,14 @@ describe('Admin Login Page', () => {
             mockSignIn.mockResolvedValue({ data: null, error: null });
             render(<LoginPage />);
 
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -162,12 +178,14 @@ describe('Admin Login Page', () => {
             mockSignIn.mockResolvedValue({ data: null, error: null });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'user@example.com');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -182,15 +200,19 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
             // First submission with error - must have both email and password
-            await userEvent.type(emailInput, 'test@example.com');
-            await userEvent.type(passwordInput, 'wrongpass');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
+            await userEvent.type(passwordInput, ALTERNATIVE_PASSWORD);
             fireEvent.click(submitButton);
 
             // Error should appear from sanitization
@@ -222,7 +244,7 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
             fireEvent.click(submitButton);
@@ -241,20 +263,24 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'admin@example.com',
-                    'password123'
+                    TEST_EMAIL,
+                    TEST_PASSWORD
                 );
             });
         });
@@ -266,14 +292,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -285,14 +315,18 @@ describe('Admin Login Page', () => {
             mockSignIn.mockResolvedValue({ data: null, error: null });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -309,14 +343,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'invalid@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -333,14 +371,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'nonexistent@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -357,14 +399,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -383,14 +429,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -407,14 +457,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'test@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -436,14 +490,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -462,18 +520,18 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
             // First submission with error - provide both email and password
-            await userEvent.type(emailInput, 'test@example.com');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
-            await userEvent.type(passwordInput, 'wrongpass');
+            await userEvent.type(passwordInput, ALTERNATIVE_PASSWORD);
 
             fireEvent.click(submitButton);
 
@@ -542,14 +600,18 @@ describe('Admin Login Page', () => {
 
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             }) as HTMLButtonElement;
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
 
             expect(submitButton.disabled).toBe(false);
 
@@ -578,14 +640,18 @@ describe('Admin Login Page', () => {
 
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
 
             fireEvent.click(submitButton);
 
@@ -595,10 +661,7 @@ describe('Admin Login Page', () => {
             });
 
             // Verify only called once - signIn is called with proper credentials
-            expect(mockSignIn).toHaveBeenCalledWith(
-                'admin@example.com',
-                'password123'
-            );
+            expect(mockSignIn).toHaveBeenCalledWith(TEST_EMAIL, TEST_PASSWORD);
 
             // Wait for redirect
             await waitFor(() => {
@@ -614,14 +677,18 @@ describe('Admin Login Page', () => {
 
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             }) as HTMLButtonElement;
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -632,7 +699,7 @@ describe('Admin Login Page', () => {
 
             // Button should be clickable again
             const newButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             }) as HTMLButtonElement;
             expect(newButton.disabled).toBe(false);
         });
@@ -718,8 +785,8 @@ describe('Admin Login Page', () => {
             mockSignIn.mockResolvedValue({ data: null, error: null });
             render(<LoginPage />);
 
-            const emailLabel = screen.getByText('Email address');
-            const passwordLabel = screen.getByText('Password');
+            const emailLabel = screen.getByText(TEST_EMAIL_PLACEHOLDER);
+            const passwordLabel = screen.getByText(TEST_PASSWORD_PLACEHOLDER);
 
             expect(emailLabel).toBeInTheDocument();
             expect(passwordLabel).toBeInTheDocument();
@@ -730,10 +797,10 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailLabel = screen.getByLabelText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             const passwordLabel = screen.getByLabelText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
 
             expect(emailLabel).toBeInTheDocument();
@@ -745,7 +812,9 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             // Find form by checking if it contains the email input
-            const emailInput = screen.getByPlaceholderText('Email address');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
             const form = emailInput.closest('form');
             expect(form).toBeInTheDocument();
             expect(form).toHaveClass('mt-8');
@@ -758,12 +827,12 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
 
-            await userEvent.type(emailInput, 'test@example.com');
+            await userEvent.type(emailInput, ALTERNATIVE_EMAIL);
 
-            expect(emailInput.value).toBe('test@example.com');
+            expect(emailInput.value).toBe(ALTERNATIVE_EMAIL);
         });
 
         it('should update password input value on user input', async () => {
@@ -771,12 +840,12 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
 
-            await userEvent.type(passwordInput, 'mypassword');
+            await userEvent.type(passwordInput, TEST_PASSWORD);
 
-            expect(passwordInput.value).toBe('mypassword');
+            expect(passwordInput.value).toBe(TEST_PASSWORD);
         });
 
         it('should maintain form values until cleared', async () => {
@@ -784,17 +853,17 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
 
-            expect(emailInput.value).toBe('admin@example.com');
-            expect(passwordInput.value).toBe('password123');
+            expect(emailInput.value).toBe(TEST_EMAIL);
+            expect(passwordInput.value).toBe(TEST_PASSWORD);
         });
     });
 
@@ -806,15 +875,19 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
             // User enters credentials
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'securepassword123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
 
             // User submits form
             fireEvent.click(submitButton);
@@ -822,8 +895,8 @@ describe('Admin Login Page', () => {
             // Verify signIn was called with correct credentials
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'admin@example.com',
-                    'securepassword123'
+                    TEST_EMAIL,
+                    TEST_PASSWORD
                 );
             });
 
@@ -842,18 +915,18 @@ describe('Admin Login Page', () => {
             render(<LoginPage />);
 
             const emailInput = screen.getByPlaceholderText(
-                'Email address'
+                TEST_EMAIL_PLACEHOLDER
             ) as HTMLInputElement;
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
             // First attempt - with email that will fail
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'wrongpassword');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, ALTERNATIVE_PASSWORD);
             fireEvent.click(submitButton);
 
             // Error should be shown
@@ -887,14 +960,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -911,14 +988,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             // Should fall back to generic error since whitespace trimmed to empty
@@ -939,14 +1020,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -965,14 +1050,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -991,14 +1080,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -1016,14 +1109,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
-                name: /Sign in/i,
+                name: TEST_SUBMIT_BUTTON_TEXT,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -1042,14 +1139,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
 
-            await userEvent.type(emailInput, 'admin@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, NO_USER_EMAIL);
+            await userEvent.type(passwordInput, NO_USER_PASSWORD);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -1068,27 +1169,31 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
 
             // Attempt XSS via email field - use simple tag syntax
-            await userEvent.type(emailInput, 'test@example.com');
-            await userEvent.type(passwordInput, 'password123');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
             // Verify signIn is called and component doesn't crash
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'test@example.com',
-                    'password123'
+                    TEST_EMAIL,
+                    TEST_PASSWORD
                 );
             });
 
             // Verify input fields maintain their values
-            expect(emailInput).toHaveValue('test@example.com');
+            expect(emailInput).toHaveValue(TEST_EMAIL);
         });
 
         it('should safely handle SQL injection patterns in password field', async () => {
@@ -1098,23 +1203,25 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
 
             // Attempt SQL injection via password field
-            await userEvent.type(emailInput, 'admin@example.com');
+            await userEvent.type(emailInput, TEST_EMAIL);
             await userEvent.type(passwordInput, "' OR '1'='1");
             fireEvent.click(submitButton);
 
             // Verify signIn receives the literal string
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'admin@example.com',
+                    TEST_EMAIL,
                     "' OR '1'='1"
                 );
             });
@@ -1127,21 +1234,26 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
+            const expectedPassword = randomUUID() + '&' + randomUUID();
 
-            await userEvent.type(emailInput, 'user@example.com');
-            await userEvent.type(passwordInput, 'pass&word');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, expectedPassword);
             fireEvent.click(submitButton);
 
             // Verify strings are passed correctly
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'user@example.com',
-                    'pass&word'
+                    TEST_EMAIL,
+                    expectedPassword
                 );
             });
         });
@@ -1153,21 +1265,27 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
+            const expectedEmail = 'user+' + TEST_EMAIL;
+            const expectedPassword = randomUUID() + '@$$!#💻' + randomUUID();
 
             // Test with emoji and special chars
-            await userEvent.type(emailInput, 'user+test@example.com');
-            await userEvent.type(passwordInput, 'p@$$w0rd!#💻');
+            await userEvent.type(emailInput, expectedEmail);
+            await userEvent.type(passwordInput, expectedPassword);
             fireEvent.click(submitButton);
 
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'user+test@example.com',
-                    'p@$$w0rd!#💻'
+                    expectedEmail,
+                    expectedPassword
                 );
             });
         });
@@ -1183,7 +1301,7 @@ describe('Admin Login Page', () => {
                 'Email address'
             ) as HTMLInputElement;
             const passwordInput = screen.getByPlaceholderText(
-                'Password'
+                TEST_PASSWORD_PLACEHOLDER
             ) as HTMLInputElement;
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
@@ -1216,22 +1334,27 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
+            const expectedPassword = randomUUID() + '"' + randomUUID();
 
             // Test with quotes and special chars
-            await userEvent.type(emailInput, 'test@example.com');
-            await userEvent.type(passwordInput, 'pass"word');
+            await userEvent.type(emailInput, TEST_EMAIL);
+            await userEvent.type(passwordInput, expectedPassword);
             fireEvent.click(submitButton);
 
             // Verify signIn receives literal string
             await waitFor(() => {
                 expect(mockSignIn).toHaveBeenCalledWith(
-                    'test@example.com',
-                    'pass"word'
+                    TEST_EMAIL,
+                    expectedPassword
                 );
             });
         });
@@ -1243,14 +1366,18 @@ describe('Admin Login Page', () => {
             });
             render(<LoginPage />);
 
-            const emailInput = screen.getByPlaceholderText('Email address');
-            const passwordInput = screen.getByPlaceholderText('Password');
+            const emailInput = screen.getByPlaceholderText(
+                TEST_EMAIL_PLACEHOLDER
+            );
+            const passwordInput = screen.getByPlaceholderText(
+                TEST_PASSWORD_PLACEHOLDER
+            );
             const submitButton = screen.getByRole('button', {
                 name: /Sign in/i,
             });
 
             // Test with common accented characters
-            const accentEmail = 'user@example.com';
+            const accentEmail = TEST_EMAIL;
             const accentPassword = 'password123';
 
             await userEvent.type(emailInput, accentEmail);

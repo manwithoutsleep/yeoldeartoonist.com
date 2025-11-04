@@ -18,7 +18,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Cart, CartItem } from '@/types/cart';
 
-interface CartContextType {
+export interface CartContextType {
     cart: Cart;
     addItem: (item: CartItem) => void;
     removeItem: (artworkId: string) => void;

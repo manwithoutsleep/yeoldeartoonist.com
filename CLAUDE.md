@@ -25,6 +25,36 @@ npm run db:create-migration   # Create new migration file
 npm run db:reset        # Reset local database from scratch
 ```
 
+## Editing
+
+This app conforms to standards set by formatting, linting, and build tools. A git pre-commit hook enforce all of these standards, preventing code from being pushed to production only to fail the build there.
+
+All formatting, linting, and build conventions must be enforced during editing to avoid problems later.
+
+### Formatting: Prettier
+
+All TypeScript, JavaScript, and Markdown files must be formatted with Prettier. This will be done automatically as part of the Git pre-commit hook.
+
+### Linting: ESLint
+
+Standard ESLint configuration applies. All errors and warnings must be resolved prior to attempting to build the project.
+
+After editing a file, always run this command to discover linting errors and warnings:
+
+```bash
+npx eslint {path/to/recently-edited-file.ts} --max-warning 0
+```
+
+If that command reveals linting errors or warnings, you must fix them prior to proceeding. Do not add `eslint-disable` statements to resolve issues, fix the code properly.
+
+### TypeScript: tsc
+
+Standard TypeScript checks apply to this codebase. All TypeScript issues must be resolved prior to committing.
+
+### Tests: vitest
+
+The code will not be deployable if any tests fail. All tests must pass prior to committing.
+
 ## Project Architecture
 
 ### Tech Stack

@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for Admin Page
  *
  * The admin page is a client component that:
@@ -25,32 +26,30 @@ interface MockSupabaseSession {
 }
 
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
-    useRouter: jest.fn(),
+vi.mock('next/navigation', () => ({
+    useRouter: vi.fn(),
 }));
 
 // Mock Supabase client
-jest.mock('@/lib/supabase/client', () => ({
-    createClient: jest.fn(),
+vi.mock('@/lib/supabase/client', () => ({
+    createClient: vi.fn(),
 }));
 
 // Mock useAuth hook
-jest.mock('@/lib/hooks/useAuth', () => ({
-    useAuth: jest.fn(),
+vi.mock('@/lib/hooks/useAuth', () => ({
+    useAuth: vi.fn(),
 }));
 
-const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockCreateClient = createClient as jest.MockedFunction<
-    typeof createClient
->;
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockUseRouter = vi.mocked(useRouter);
+const mockCreateClient = vi.mocked(createClient);
+const mockUseAuth = vi.mocked(useAuth);
 
 describe('Admin Page', () => {
-    const mockPush = jest.fn();
-    const mockSignOut = jest.fn();
+    const mockPush = vi.fn();
+    const mockSignOut = vi.fn();
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         mockUseRouter.mockReturnValue({
             push: mockPush,
         } as unknown as AppRouterInstance);
@@ -68,7 +67,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: null },
                     }),
                 },
@@ -92,7 +91,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockImplementation(
+                    getSession: vi.fn().mockImplementation(
                         () => new Promise(() => {}) // Never resolves
                     ),
                 },
@@ -121,7 +120,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -161,7 +160,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -193,7 +192,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -225,7 +224,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -263,7 +262,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -302,7 +301,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -336,7 +335,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -374,7 +373,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -408,7 +407,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -443,7 +442,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -490,7 +489,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -533,7 +532,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -564,7 +563,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -596,7 +595,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -628,7 +627,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },
@@ -645,7 +644,7 @@ describe('Admin Page', () => {
 
     describe('Session Retrieval', () => {
         it('should call getSession on component mount', async () => {
-            const mockGetSession = jest.fn().mockResolvedValue({
+            const mockGetSession = vi.fn().mockResolvedValue({
                 data: { session: null },
             });
 
@@ -689,7 +688,7 @@ describe('Admin Page', () => {
 
             mockCreateClient.mockReturnValue({
                 auth: {
-                    getSession: jest.fn().mockResolvedValue({
+                    getSession: vi.fn().mockResolvedValue({
                         data: { session: mockSession },
                     }),
                 },

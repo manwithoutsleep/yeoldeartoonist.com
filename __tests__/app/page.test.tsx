@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 /**
  * Tests for Home Page
  *
@@ -12,34 +13,12 @@ import { render, screen } from '@testing-library/react';
 import Home from '@/app/page';
 
 // Mock the database query function
-jest.mock('@/lib/db/artwork', () => ({
-    getFeaturedArtwork: jest.fn(),
+vi.mock('@/lib/db/artwork', () => ({
+    getFeaturedArtwork: vi.fn(),
 }));
-
-// Mock Next.js Image component
-jest.mock('next/image', () => ({
-    __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-        return <img {...props} />;
-    },
-}));
-
-// Mock Next.js Link component
-jest.mock('next/link', () => {
-    return function DynamicLink({
-        children,
-        href,
-    }: {
-        children: React.ReactNode;
-        href: string;
-    }) {
-        return <a href={href}>{children}</a>;
-    };
-});
 
 // Mock site config
-jest.mock('@/config/site', () => ({
+vi.mock('@/config/site', () => ({
     siteConfig: {
         navigation: {
             cards: [
@@ -65,9 +44,7 @@ jest.mock('@/config/site', () => ({
 import { getFeaturedArtwork, ArtworkQueryError } from '@/lib/db/artwork';
 import { Database } from '@/types/database';
 
-const mockGetFeaturedArtwork = getFeaturedArtwork as jest.MockedFunction<
-    typeof getFeaturedArtwork
->;
+const mockGetFeaturedArtwork = vi.mocked(getFeaturedArtwork);
 
 type ArtworkRow = Database['public']['Tables']['artwork']['Row'];
 
@@ -100,7 +77,7 @@ const mockArtworkItem: ArtworkRow = {
 
 describe('Home Page', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should render the home page with hero section', async () => {

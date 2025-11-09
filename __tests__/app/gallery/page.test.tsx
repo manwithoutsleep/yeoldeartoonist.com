@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for Gallery Page
  *
  * The gallery page is a server component that:
@@ -12,38 +13,14 @@ import { render, screen } from '@testing-library/react';
 import GalleryPage from '@/app/gallery/page';
 
 // Mock the database query function
-jest.mock('@/lib/db/artwork', () => ({
-    getAllArtwork: jest.fn(),
+vi.mock('@/lib/db/artwork', () => ({
+    getAllArtwork: vi.fn(),
 }));
-
-// Mock Next.js Image component
-jest.mock('next/image', () => ({
-    __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-        return <img {...props} />;
-    },
-}));
-
-// Mock Next.js Link component
-jest.mock('next/link', () => {
-    return function DynamicLink({
-        children,
-        href,
-    }: {
-        children: React.ReactNode;
-        href: string;
-    }) {
-        return <a href={href}>{children}</a>;
-    };
-});
 
 import { getAllArtwork, ArtworkQueryError } from '@/lib/db/artwork';
 import { Database } from '@/types/database';
 
-const mockGetAllArtwork = getAllArtwork as jest.MockedFunction<
-    typeof getAllArtwork
->;
+const mockGetAllArtwork = vi.mocked(getAllArtwork);
 
 type ArtworkRow = Database['public']['Tables']['artwork']['Row'];
 
@@ -76,7 +53,7 @@ const mockArtworkItem: ArtworkRow = {
 
 describe('Gallery Page', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should render gallery page with title', async () => {

@@ -51,9 +51,17 @@ If that command reveals linting errors or warnings, you must fix them prior to p
 
 Standard TypeScript checks apply to this codebase. All TypeScript issues must be resolved prior to committing.
 
-### Tests: vitest
+### Tests: Vitest
 
 The code will not be deployable if any tests fail. All tests must pass prior to committing.
+
+After editing test files or source files, run tests to verify everything works:
+
+```bash
+npm test              # Run all tests with coverage
+npm run test:watch    # Run tests in watch mode
+npm run test:ui       # Run tests with UI interface
+```
 
 ## Project Architecture
 

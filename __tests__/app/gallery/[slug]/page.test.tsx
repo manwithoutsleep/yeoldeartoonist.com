@@ -9,53 +9,32 @@
  * - Uses static generation with ISR
  */
 
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import GalleryDetailPage from '@/app/gallery/[slug]/page';
 import { notFound } from 'next/navigation';
 
 // Mock the database query functions
-jest.mock('@/lib/db/artwork', () => ({
-    getArtworkBySlug: jest.fn(),
-    getAllArtworkSlugs: jest.fn(),
+vi.mock('@/lib/db/artwork', () => ({
+    getArtworkBySlug: vi.fn(),
+    getAllArtworkSlugs: vi.fn(),
 }));
 
-// Mock Next.js Image component
-jest.mock('next/image', () => ({
-    __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-        return <img {...props} />;
-    },
-}));
-
-// Mock Next.js Link component
-jest.mock('next/link', () => {
-    return function DynamicLink({
-        children,
-        href,
-    }: {
-        children: React.ReactNode;
-        href: string;
-    }) {
-        return <a href={href}>{children}</a>;
+// Mock next/navigation (extends the global mock to add notFound)
+vi.mock('next/navigation', async () => {
+    const actual = await vi.importActual('next/navigation');
+    return {
+        ...actual,
+        notFound: vi.fn(),
     };
 });
-
-// Mock next/navigation
-jest.mock('next/navigation', () => ({
-    notFound: jest.fn(),
-}));
 
 import { getArtworkBySlug, getAllArtworkSlugs } from '@/lib/db/artwork';
 import { Database } from '@/types/database';
 
-const mockGetArtworkBySlug = getArtworkBySlug as jest.MockedFunction<
-    typeof getArtworkBySlug
->;
-const mockGetAllArtworkSlugs = getAllArtworkSlugs as jest.MockedFunction<
-    typeof getAllArtworkSlugs
->;
-const mockNotFound = notFound as jest.MockedFunction<typeof notFound>;
+const mockGetArtworkBySlug = vi.mocked(getArtworkBySlug);
+const mockGetAllArtworkSlugs = vi.mocked(getAllArtworkSlugs);
+const mockNotFound = vi.mocked(notFound);
 
 type ArtworkRow = Database['public']['Tables']['artwork']['Row'];
 
@@ -88,7 +67,7 @@ const mockArtworkDetail: ArtworkRow = {
 
 describe('Gallery Detail Page ([slug])', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     // Static Generation Tests

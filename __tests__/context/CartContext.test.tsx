@@ -11,6 +11,7 @@
 
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CartProvider, useCart } from '@/context/CartContext';
 
 /**
@@ -69,7 +70,7 @@ describe('CartContext', () => {
     beforeEach(() => {
         // Clear localStorage before each test
         localStorage.clear();
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Context Provider Setup', () => {
@@ -96,7 +97,7 @@ describe('CartContext', () => {
 
         it('should throw error when useCart is used outside CartProvider', () => {
             // Suppress console.error for this test
-            const consoleSpy = jest
+            const consoleSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
 
@@ -156,7 +157,7 @@ describe('CartContext', () => {
         it('should handle corrupted localStorage gracefully', () => {
             localStorage.setItem('cart', 'invalid json {]');
 
-            const consoleSpy = jest
+            const consoleSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
 

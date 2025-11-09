@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for Root Layout
  *
  * The root layout is a server component that:
@@ -13,13 +14,13 @@
  */
 
 // Mock Next.js components and modules
-jest.mock('@/components/layout/Header', () => {
+vi.mock('@/components/layout/Header', () => {
     return {
         Header: () => <header data-testid="header">Header Component</header>,
     };
 });
 
-jest.mock('@/components/layout/Navigation', () => {
+vi.mock('@/components/layout/Navigation', () => {
     return {
         Navigation: () => (
             <nav data-testid="navigation">Navigation Component</nav>
@@ -27,13 +28,13 @@ jest.mock('@/components/layout/Navigation', () => {
     };
 });
 
-jest.mock('@/components/layout/Footer', () => {
+vi.mock('@/components/layout/Footer', () => {
     return {
         Footer: () => <footer data-testid="footer">Footer Component</footer>,
     };
 });
 
-jest.mock('@/config/site', () => ({
+vi.mock('@/config/site', () => ({
     siteConfig: {
         site: {
             title: 'Ye Olde Artoonist',
@@ -45,14 +46,14 @@ jest.mock('@/config/site', () => ({
 }));
 
 // Mock the next/font/google imports to avoid loading actual fonts in tests
-jest.mock('next/font/google', () => ({
-    Geist: jest.fn(() => ({
+vi.mock('next/font/google', () => ({
+    Geist: vi.fn(() => ({
         variable: '--font-geist-sans',
     })),
-    Geist_Mono: jest.fn(() => ({
+    Geist_Mono: vi.fn(() => ({
         variable: '--font-geist-mono',
     })),
-    Germania_One: jest.fn(() => ({
+    Germania_One: vi.fn(() => ({
         variable: '--font-germania-one',
     })),
 }));
@@ -60,18 +61,21 @@ jest.mock('next/font/google', () => ({
 import { metadata } from '@/app/layout';
 
 // Type the mocked font modules for use in tests
-const mockFontGoogle = jest.mocked(jest.requireMock('next/font/google'), {
-    shallow: true,
-}) as {
-    Geist: jest.Mock<{ variable: string }>;
-    Geist_Mono: jest.Mock<{ variable: string }>;
-    Germania_One: jest.Mock<{ variable: string }>;
-};
+import * as fontGoogle from 'next/font/google';
+import type { MockedFunction } from 'vitest';
 
-// Extract mocked functions with proper typing for use in tests
-const mockGeist = mockFontGoogle.Geist;
-const mockGeistMono = mockFontGoogle.Geist_Mono;
-const mockGermaniaOne = mockFontGoogle.Germania_One;
+const mockFontGoogle = vi.mocked(fontGoogle);
+
+const mockGeist = mockFontGoogle.Geist as unknown as MockedFunction<
+    (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+>;
+const mockGeistMono = mockFontGoogle.Geist_Mono as unknown as MockedFunction<
+    (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+>;
+const mockGermaniaOne =
+    mockFontGoogle.Germania_One as unknown as MockedFunction<
+        (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+    >;
 
 describe('Root Layout', () => {
     describe('Metadata Configuration', () => {
@@ -198,7 +202,7 @@ describe('Root Layout', () => {
         });
 
         it('should use Google Fonts modules', () => {
-            // This is verified through jest.mock which confirms the imports are called
+            // This is verified through vi.mock which confirms the imports are called
             expect(mockGeist).toHaveBeenCalled();
             expect(mockGeistMono).toHaveBeenCalled();
             expect(mockGermaniaOne).toHaveBeenCalled();

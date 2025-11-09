@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
 
 /**
@@ -20,7 +21,7 @@ describe('Supabase Client', () => {
         delete process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         // Clear the module cache to force re-require
-        jest.resetModules();
+        vi.resetModules();
 
         await expect(import('@/lib/supabase/client')).rejects.toThrow(
             'Missing Supabase environment variables'
@@ -35,7 +36,7 @@ describe('Supabase Client', () => {
 
         delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-        jest.resetModules();
+        vi.resetModules();
 
         await expect(import('@/lib/supabase/client')).rejects.toThrow(
             'Missing Supabase environment variables'

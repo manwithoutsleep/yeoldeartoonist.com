@@ -9,21 +9,14 @@
  * - Uses Zod for form schema validation
  */
 
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import userEvent from '@testing-library/user-event';
 import ContactPage from '@/app/contact/page';
 
-// Mock Next.js Image component
-jest.mock('next/image', () => ({
-    __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-        return <img {...props} />;
-    },
-}));
-
 // Mock the site config
-jest.mock('@/config/site', () => ({
+vi.mock('@/config/site', () => ({
     siteConfig: {
         artist: {
             name: 'Test Artist',
@@ -56,14 +49,14 @@ jest.mock('@/config/site', () => ({
 }));
 
 // Mock the Button component
-jest.mock('@/components/ui/Button', () => ({
+vi.mock('@/components/ui/Button', () => ({
     Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
         <button {...props} />
     ),
 }));
 
 // Mock the SocialMediaIcon component
-jest.mock('@/components/ui/SocialMediaIcon', () => ({
+vi.mock('@/components/ui/SocialMediaIcon', () => ({
     SocialMediaIcon: ({
         title,
         handle,
@@ -81,7 +74,7 @@ jest.mock('@/components/ui/SocialMediaIcon', () => ({
 
 describe('Contact Page', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Page Layout', () => {
@@ -417,51 +410,54 @@ describe('Contact Page', () => {
         }, 10000);
 
         it('should clear success message after 3 seconds', async () => {
-            jest.useFakeTimers();
+            vi.useFakeTimers();
 
-            render(<ContactPage />);
-            const nameInput = screen.getByPlaceholderText(
-                'Your name'
-            ) as HTMLInputElement;
-            const emailInput = screen.getByPlaceholderText(
-                'your@email.com'
-            ) as HTMLInputElement;
-            const messageInput = screen.getByPlaceholderText(
-                'Your message here...'
-            ) as HTMLTextAreaElement;
-            const submitButton = screen.getByRole('button', {
-                name: /Send Message/i,
-            });
+            try {
+                render(<ContactPage />);
+                const nameInput = screen.getByPlaceholderText(
+                    'Your name'
+                ) as HTMLInputElement;
+                const emailInput = screen.getByPlaceholderText(
+                    'your@email.com'
+                ) as HTMLInputElement;
+                const messageInput = screen.getByPlaceholderText(
+                    'Your message here...'
+                ) as HTMLTextAreaElement;
+                const submitButton = screen.getByRole('button', {
+                    name: /Send Message/i,
+                });
 
-            // Use fireEvent for typing with fake timers
-            fireEvent.change(nameInput, {
-                target: { value: 'Test User' },
-            });
-            fireEvent.change(emailInput, {
-                target: { value: 'test@example.com' },
-            });
-            fireEvent.change(messageInput, {
-                target: { value: 'This is a valid test message' },
-            });
-            fireEvent.click(submitButton);
+                // Use fireEvent for typing with fake timers
+                act(() => {
+                    fireEvent.change(nameInput, {
+                        target: { value: 'Test User' },
+                    });
+                    fireEvent.change(emailInput, {
+                        target: { value: 'test@example.com' },
+                    });
+                    fireEvent.change(messageInput, {
+                        target: { value: 'This is a valid test message' },
+                    });
+                    fireEvent.click(submitButton);
+                });
 
-            // Success message should appear immediately
-            expect(
-                screen.getByText(/Thank you for your message/i)
-            ).toBeInTheDocument();
+                // Success message should appear immediately
+                expect(
+                    screen.getByText(/Thank you for your message/i)
+                ).toBeInTheDocument();
 
-            // Advance timers by 3100ms and run pending timers
-            jest.advanceTimersByTime(3100);
-            jest.runAllTimers();
+                // Advance timers by 3100ms to trigger the timeout
+                await act(async () => {
+                    await vi.advanceTimersByTimeAsync(3100);
+                });
 
-            // After advancing timers, success message should be gone
-            await waitFor(() => {
+                // Check message is gone
                 expect(
                     screen.queryByText(/Thank you for your message/i)
                 ).not.toBeInTheDocument();
-            });
-
-            jest.useRealTimers();
-        }, 10000);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
     });
 });

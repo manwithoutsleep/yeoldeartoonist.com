@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CartProvider, useCart } from '@/context/CartContext';
 import type { CartContextType } from '@/context/CartContext';
 
@@ -37,7 +38,7 @@ const UseCartTestComponent = () => {
 describe('useCart Hook', () => {
     beforeEach(() => {
         localStorage.clear();
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Hook Re-export', () => {
@@ -174,7 +175,7 @@ describe('useCart Hook', () => {
     describe('Error Handling', () => {
         it('should throw error when used outside CartProvider', () => {
             // Suppress console.error for this test
-            const consoleSpy = jest
+            const consoleSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
 
@@ -191,7 +192,7 @@ describe('useCart Hook', () => {
         });
 
         it('should throw error with helpful message when used outside CartProvider', () => {
-            const consoleSpy = jest
+            const consoleSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
 

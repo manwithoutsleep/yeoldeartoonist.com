@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Integration tests for Page Components
  *
  * These tests verify that multiple components and systems work together:
@@ -30,14 +31,14 @@ describe('Page Layout Integration', () => {
     it('should demonstrate testing pattern for server component pages', () => {
         // Pattern for testing server components:
         // 1. Mock @/lib/db functions (database queries)
-        // 2. Use jest.mock() at test file top level
+        // 2. Use vi.mock() at test file top level
         // 3. Render the async page component
         // 4. Query rendered output using React Testing Library
         // 5. Assert page content appears correctly
 
         // Example:
-        // jest.mock('@/lib/db/artwork', () => ({
-        //     getAllArtwork: jest.fn(),
+        // vi.mock('@/lib/db/artwork', () => ({
+        //     getAllArtwork: vi.fn(),
         // }));
         //
         // const result = await GalleryPage();

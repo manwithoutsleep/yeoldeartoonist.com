@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for useAuth Hook
  *
  * The useAuth hook provides:
@@ -11,47 +12,45 @@
  * All errors are normalized to AuthError type with guaranteed message property
  */
 
-import { act, renderHook } from '@testing-library/react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { createClient } from '@/lib/supabase/client';
+import { act, renderHook } from "@testing-library/react";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { createClient } from "@/lib/supabase/client";
 
 // Mock the Supabase client
-jest.mock('@/lib/supabase/client');
+vi.mock("@/lib/supabase/client");
 
-const mockCreateClient = createClient as jest.MockedFunction<
-    typeof createClient
->;
+const mockCreateClient = vi.mocked(createClient);
 
-describe('useAuth Hook', () => {
+describe("useAuth Hook", () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
-    describe('Hook Initialization', () => {
-        it('should return hook with all required methods and state', () => {
+    describe("Hook Initialization", () => {
+        it("should return hook with all required methods and state", () => {
             mockCreateClient.mockReturnValue({
                 auth: {
-                    signInWithPassword: jest.fn(),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn(),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             } as unknown as ReturnType<typeof createClient>);
 
             const { result } = renderHook(() => useAuth());
 
-            expect(result.current).toHaveProperty('signIn');
-            expect(result.current).toHaveProperty('signUp');
-            expect(result.current).toHaveProperty('signOut');
-            expect(result.current).toHaveProperty('loading');
-            expect(result.current).toHaveProperty('error');
+            expect(result.current).toHaveProperty("signIn");
+            expect(result.current).toHaveProperty("signUp");
+            expect(result.current).toHaveProperty("signOut");
+            expect(result.current).toHaveProperty("loading");
+            expect(result.current).toHaveProperty("error");
         });
 
-        it('should initialize with loading false and error null', () => {
+        it("should initialize with loading false and error null", () => {
             mockCreateClient.mockReturnValue({
                 auth: {
-                    signInWithPassword: jest.fn(),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn(),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             } as unknown as ReturnType<typeof createClient>);
 
@@ -61,12 +60,12 @@ describe('useAuth Hook', () => {
             expect(result.current.error).toBeNull();
         });
 
-        it('should return memoized callback functions', () => {
+        it("should return memoized callback functions", () => {
             mockCreateClient.mockReturnValue({
                 auth: {
-                    signInWithPassword: jest.fn(),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn(),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             } as unknown as ReturnType<typeof createClient>);
 
@@ -88,21 +87,21 @@ describe('useAuth Hook', () => {
         });
     });
 
-    describe('SignIn', () => {
-        describe('Success Cases', () => {
-            it('should successfully sign in with valid credentials', async () => {
-                const mockData = { session: { user: { id: '123' } } };
+    describe("SignIn", () => {
+        describe("Success Cases", () => {
+            it("should successfully sign in with valid credentials", async () => {
+                const mockData = { session: { user: { id: "123" } } };
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
+                        signInWithPassword: vitest
                             .fn()
                             .mockResolvedValue({ data: mockData, error: null }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -110,8 +109,8 @@ describe('useAuth Hook', () => {
                 let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
-                        'user@example.com',
-                        'password123'
+                        "user@example.com",
+                        "password123",
                     );
                 });
 
@@ -119,86 +118,86 @@ describe('useAuth Hook', () => {
                 expect(signInResult!.error).toBeNull();
             });
 
-            it('should call signInWithPassword with correct email and password', async () => {
+            it("should call signInWithPassword with correct email and password", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: { session: {} },
                             error: null,
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signIn(
-                        'test@example.com',
-                        'secret123'
+                        "test@example.com",
+                        "secret123",
                     );
                 });
 
                 expect(
-                    mockSupabase.auth.signInWithPassword
+                    mockSupabase.auth.signInWithPassword,
                 ).toHaveBeenCalledWith({
-                    email: 'test@example.com',
-                    password: 'secret123',
+                    email: "test@example.com",
+                    password: "secret123",
                 });
             });
 
-            it('should set loading to false after successful sign in', async () => {
+            it("should set loading to false after successful sign in", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: { session: {} },
                             error: null,
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signIn(
-                        'user@example.com',
-                        'password123'
+                        "user@example.com",
+                        "password123",
                     );
                 });
 
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set error to null after successful sign in', async () => {
+            it("should set error to null after successful sign in", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: { session: {} },
                             error: null,
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signIn(
-                        'user@example.com',
-                        'password123'
+                        "user@example.com",
+                        "password123",
                     );
                 });
 
@@ -206,20 +205,20 @@ describe('useAuth Hook', () => {
             });
         });
 
-        describe('Failure Cases - Supabase Error', () => {
-            it('should handle sign in error from Supabase', async () => {
+        describe("Failure Cases - Supabase Error", () => {
+            it("should handle sign in error from Supabase", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'Invalid login credentials' },
+                            error: { message: "Invalid login credentials" },
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -227,85 +226,85 @@ describe('useAuth Hook', () => {
                 let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
-                        'user@example.com',
-                        'wrongpassword'
+                        "user@example.com",
+                        "wrongpassword",
                     );
                 });
 
                 expect(signInResult!.data).toBeNull();
                 expect(signInResult!.error).toEqual({
-                    message: 'Invalid login credentials',
+                    message: "Invalid login credentials",
                 });
             });
 
-            it('should set error state when sign in fails', async () => {
+            it("should set error state when sign in fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'User not found' },
+                            error: { message: "User not found" },
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signIn(
-                        'nonexistent@example.com',
-                        'password'
+                        "nonexistent@example.com",
+                        "password",
                     );
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'User not found',
+                    message: "User not found",
                 });
             });
 
-            it('should set loading to false when sign in fails', async () => {
+            it("should set loading to false when sign in fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'Authentication failed' },
+                            error: { message: "Authentication failed" },
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signIn('user@example.com', 'password');
+                    await result.current.signIn("user@example.com", "password");
                 });
 
                 expect(result.current.loading).toBe(false);
             });
         });
 
-        describe('Failure Cases - Exception', () => {
-            it('should handle exception thrown during sign in', async () => {
-                const testError = new Error('Network error');
+        describe("Failure Cases - Exception", () => {
+            it("should handle exception thrown during sign in", async () => {
+                const testError = new Error("Network error");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
+                        signInWithPassword: vitest
                             .fn()
                             .mockRejectedValue(testError),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -313,66 +312,66 @@ describe('useAuth Hook', () => {
                 let signInResult;
                 await act(async () => {
                     signInResult = await result.current.signIn(
-                        'user@example.com',
-                        'password'
+                        "user@example.com",
+                        "password",
                     );
                 });
 
                 expect(signInResult!.data).toBeNull();
                 expect(signInResult!.error).toEqual({
-                    message: 'Network error',
+                    message: "Network error",
                 });
             });
 
-            it('should normalize error and set error state on exception', async () => {
-                const testError = new Error('Connection timeout');
+            it("should normalize error and set error state on exception", async () => {
+                const testError = new Error("Connection timeout");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
+                        signInWithPassword: vitest
                             .fn()
                             .mockRejectedValue(testError),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signIn('user@example.com', 'password');
+                    await result.current.signIn("user@example.com", "password");
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Connection timeout',
+                    message: "Connection timeout",
                 });
             });
         });
 
-        describe('Loading State', () => {
-            it('should set loading to true during sign in', async () => {
+        describe("Loading State", () => {
+            it("should set loading to true during sign in", async () => {
                 let resolveSignIn:
                     | ((value: {
-                          data: { session: Record<string, unknown> };
-                          error: null;
-                      }) => void)
+                        data: { session: Record<string, unknown> };
+                        error: null;
+                    }) => void)
                     | undefined;
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockImplementation(
+                        signInWithPassword: vi.fn().mockImplementation(
                             () =>
                                 new Promise((resolve) => {
                                     resolveSignIn = resolve;
-                                })
+                                }),
                         ),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -380,8 +379,8 @@ describe('useAuth Hook', () => {
                 // Start the sign in
                 const signInPromise = act(async () => {
                     const promise = result.current.signIn(
-                        'user@example.com',
-                        'password'
+                        "user@example.com",
+                        "password",
                     );
                     // Resolve after a brief delay to allow state to update
                     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -394,51 +393,51 @@ describe('useAuth Hook', () => {
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set loading to false after sign in completes', async () => {
+            it("should set loading to false after sign in completes", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn().mockResolvedValue({
                             data: { session: {} },
                             error: null,
                         }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signIn('user@example.com', 'password');
+                    await result.current.signIn("user@example.com", "password");
                 });
 
                 expect(result.current.loading).toBe(false);
             });
         });
 
-        describe('Error Clearing', () => {
-            it('should clear previous error on new sign in attempt', async () => {
+        describe("Error Clearing", () => {
+            it("should clear previous error on new sign in attempt", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest
+                        signInWithPassword: vitest
                             .fn()
                             .mockResolvedValueOnce({
                                 data: null,
-                                error: { message: 'Invalid credentials' },
+                                error: { message: "Invalid credentials" },
                             })
                             .mockResolvedValueOnce({
                                 data: { session: {} },
                                 error: null,
                             }),
-                        signUp: jest.fn(),
-                        signOut: jest.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -446,20 +445,20 @@ describe('useAuth Hook', () => {
                 // First attempt - fails
                 await act(async () => {
                     await result.current.signIn(
-                        'user@example.com',
-                        'wrongpassword'
+                        "user@example.com",
+                        "wrongpassword",
                     );
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Invalid credentials',
+                    message: "Invalid credentials",
                 });
 
                 // Second attempt - succeeds
                 await act(async () => {
                     await result.current.signIn(
-                        'user@example.com',
-                        'correctpassword'
+                        "user@example.com",
+                        "correctpassword",
                     );
                 });
 
@@ -468,23 +467,23 @@ describe('useAuth Hook', () => {
         });
     });
 
-    describe('SignUp', () => {
-        describe('Success Cases', () => {
-            it('should successfully sign up with valid credentials', async () => {
+    describe("SignUp", () => {
+        describe("Success Cases", () => {
+            it("should successfully sign up with valid credentials", async () => {
                 const mockData = {
-                    user: { id: '123', email: 'new@example.com' },
+                    user: { id: "123", email: "new@example.com" },
                 };
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest
+                        signInWithPassword: vi.fn(),
+                        signUp: vitest
                             .fn()
                             .mockResolvedValue({ data: mockData, error: null }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -492,8 +491,8 @@ describe('useAuth Hook', () => {
                 let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
-                        'new@example.com',
-                        'password123'
+                        "new@example.com",
+                        "password123",
                     );
                 });
 
@@ -501,84 +500,84 @@ describe('useAuth Hook', () => {
                 expect(signUpResult!.error).toBeNull();
             });
 
-            it('should call signUp with correct email and password', async () => {
+            it("should call signUp with correct email and password", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: { user: {} },
                             error: null,
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signUp(
-                        'test@example.com',
-                        'secret123'
+                        "test@example.com",
+                        "secret123",
                     );
                 });
 
                 expect(mockSupabase.auth.signUp).toHaveBeenCalledWith({
-                    email: 'test@example.com',
-                    password: 'secret123',
+                    email: "test@example.com",
+                    password: "secret123",
                 });
             });
 
-            it('should set loading to false after successful sign up', async () => {
+            it("should set loading to false after successful sign up", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: { user: {} },
                             error: null,
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signUp(
-                        'user@example.com',
-                        'password123'
+                        "user@example.com",
+                        "password123",
                     );
                 });
 
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set error to null after successful sign up', async () => {
+            it("should set error to null after successful sign up", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: { user: {} },
                             error: null,
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
                     await result.current.signUp(
-                        'user@example.com',
-                        'password123'
+                        "user@example.com",
+                        "password123",
                     );
                 });
 
@@ -586,20 +585,20 @@ describe('useAuth Hook', () => {
             });
         });
 
-        describe('Failure Cases - Supabase Error', () => {
-            it('should handle sign up error from Supabase', async () => {
+        describe("Failure Cases - Supabase Error", () => {
+            it("should handle sign up error from Supabase", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'User already exists' },
+                            error: { message: "User already exists" },
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -607,80 +606,80 @@ describe('useAuth Hook', () => {
                 let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
-                        'existing@example.com',
-                        'password123'
+                        "existing@example.com",
+                        "password123",
                     );
                 });
 
                 expect(signUpResult!.data).toBeNull();
                 expect(signUpResult!.error).toEqual({
-                    message: 'User already exists',
+                    message: "User already exists",
                 });
             });
 
-            it('should set error state when sign up fails', async () => {
+            it("should set error state when sign up fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'Invalid email format' },
+                            error: { message: "Invalid email format" },
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signUp('invalid-email', 'password');
+                    await result.current.signUp("invalid-email", "password");
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Invalid email format',
+                    message: "Invalid email format",
                 });
             });
 
-            it('should set loading to false when sign up fails', async () => {
+            it("should set loading to false when sign up fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: null,
-                            error: { message: 'Sign up failed' },
+                            error: { message: "Sign up failed" },
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signUp('user@example.com', 'password');
+                    await result.current.signUp("user@example.com", "password");
                 });
 
                 expect(result.current.loading).toBe(false);
             });
         });
 
-        describe('Failure Cases - Exception', () => {
-            it('should handle exception thrown during sign up', async () => {
-                const testError = new Error('Server error');
+        describe("Failure Cases - Exception", () => {
+            it("should handle exception thrown during sign up", async () => {
+                const testError = new Error("Server error");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockRejectedValue(testError),
-                        signOut: jest.fn(),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockRejectedValue(testError),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -688,64 +687,64 @@ describe('useAuth Hook', () => {
                 let signUpResult;
                 await act(async () => {
                     signUpResult = await result.current.signUp(
-                        'user@example.com',
-                        'password'
+                        "user@example.com",
+                        "password",
                     );
                 });
 
                 expect(signUpResult!.data).toBeNull();
                 expect(signUpResult!.error).toEqual({
-                    message: 'Server error',
+                    message: "Server error",
                 });
             });
 
-            it('should normalize error and set error state on exception', async () => {
-                const testError = new Error('Database connection failed');
+            it("should normalize error and set error state on exception", async () => {
+                const testError = new Error("Database connection failed");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockRejectedValue(testError),
-                        signOut: jest.fn(),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockRejectedValue(testError),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signUp('user@example.com', 'password');
+                    await result.current.signUp("user@example.com", "password");
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Database connection failed',
+                    message: "Database connection failed",
                 });
             });
         });
 
-        describe('Loading State', () => {
-            it('should set loading to true during sign up', async () => {
+        describe("Loading State", () => {
+            it("should set loading to true during sign up", async () => {
                 let resolveSignUp:
                     | ((value: {
-                          data: { user: Record<string, unknown> };
-                          error: null;
-                      }) => void)
+                        data: { user: Record<string, unknown> };
+                        error: null;
+                    }) => void)
                     | undefined;
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockImplementation(
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockImplementation(
                             () =>
                                 new Promise((resolve) => {
                                     resolveSignUp = resolve;
-                                })
+                                }),
                         ),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -753,8 +752,8 @@ describe('useAuth Hook', () => {
                 // Start the sign up
                 const signUpPromise = act(async () => {
                     const promise = result.current.signUp(
-                        'user@example.com',
-                        'password'
+                        "user@example.com",
+                        "password",
                     );
                     // Resolve after a brief delay to allow state to update
                     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -767,25 +766,25 @@ describe('useAuth Hook', () => {
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set loading to false after sign up completes', async () => {
+            it("should set loading to false after sign up completes", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn().mockResolvedValue({
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn().mockResolvedValue({
                             data: { user: {} },
                             error: null,
                         }),
-                        signOut: jest.fn(),
+                        signOut: vi.fn(),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
 
                 await act(async () => {
-                    await result.current.signUp('user@example.com', 'password');
+                    await result.current.signUp("user@example.com", "password");
                 });
 
                 expect(result.current.loading).toBe(false);
@@ -793,18 +792,18 @@ describe('useAuth Hook', () => {
         });
     });
 
-    describe('SignOut', () => {
-        describe('Success Cases', () => {
-            it('should successfully sign out', async () => {
+    describe("SignOut", () => {
+        describe("Success Cases", () => {
+            it("should successfully sign out", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({ error: null }),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({ error: null }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -817,16 +816,16 @@ describe('useAuth Hook', () => {
                 expect(signOutResult!.error).toBeNull();
             });
 
-            it('should call signOut on Supabase auth', async () => {
+            it("should call signOut on Supabase auth", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({ error: null }),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({ error: null }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -838,16 +837,16 @@ describe('useAuth Hook', () => {
                 expect(mockSupabase.auth.signOut).toHaveBeenCalled();
             });
 
-            it('should set loading to false after successful sign out', async () => {
+            it("should set loading to false after successful sign out", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({ error: null }),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({ error: null }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -859,16 +858,16 @@ describe('useAuth Hook', () => {
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set error to null after successful sign out', async () => {
+            it("should set error to null after successful sign out", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({ error: null }),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({ error: null }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -881,19 +880,19 @@ describe('useAuth Hook', () => {
             });
         });
 
-        describe('Failure Cases - Supabase Error', () => {
-            it('should handle sign out error from Supabase', async () => {
+        describe("Failure Cases - Supabase Error", () => {
+            it("should handle sign out error from Supabase", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({
-                            error: { message: 'Sign out failed' },
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({
+                            error: { message: "Sign out failed" },
                         }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -904,22 +903,22 @@ describe('useAuth Hook', () => {
                 });
 
                 expect(signOutResult!.error).toEqual({
-                    message: 'Sign out failed',
+                    message: "Sign out failed",
                 });
             });
 
-            it('should set error state when sign out fails', async () => {
+            it("should set error state when sign out fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({
-                            error: { message: 'Session termination error' },
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({
+                            error: { message: "Session termination error" },
                         }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -929,22 +928,22 @@ describe('useAuth Hook', () => {
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Session termination error',
+                    message: "Session termination error",
                 });
             });
 
-            it('should set loading to false when sign out fails', async () => {
+            it("should set loading to false when sign out fails", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({
-                            error: { message: 'Error' },
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({
+                            error: { message: "Error" },
                         }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -957,18 +956,18 @@ describe('useAuth Hook', () => {
             });
         });
 
-        describe('Failure Cases - Exception', () => {
-            it('should handle exception thrown during sign out', async () => {
-                const testError = new Error('Network error');
+        describe("Failure Cases - Exception", () => {
+            it("should handle exception thrown during sign out", async () => {
+                const testError = new Error("Network error");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockRejectedValue(testError),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockRejectedValue(testError),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -979,21 +978,21 @@ describe('useAuth Hook', () => {
                 });
 
                 expect(signOutResult!.error).toEqual({
-                    message: 'Network error',
+                    message: "Network error",
                 });
             });
 
-            it('should normalize error and set error state on exception', async () => {
-                const testError = new Error('Connection lost');
+            it("should normalize error and set error state on exception", async () => {
+                const testError = new Error("Connection lost");
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockRejectedValue(testError),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockRejectedValue(testError),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -1003,30 +1002,30 @@ describe('useAuth Hook', () => {
                 });
 
                 expect(result.current.error).toEqual({
-                    message: 'Connection lost',
+                    message: "Connection lost",
                 });
             });
         });
 
-        describe('Loading State', () => {
-            it('should set loading to true during sign out', async () => {
+        describe("Loading State", () => {
+            it("should set loading to true during sign out", async () => {
                 let resolveSignOut:
                     | ((value: { error: null }) => void)
                     | undefined;
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockImplementation(
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockImplementation(
                             () =>
                                 new Promise((resolve) => {
                                     resolveSignOut = resolve;
-                                })
+                                }),
                         ),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -1045,16 +1044,16 @@ describe('useAuth Hook', () => {
                 expect(result.current.loading).toBe(false);
             });
 
-            it('should set loading to false after sign out completes', async () => {
+            it("should set loading to false after sign out completes", async () => {
                 const mockSupabase = {
                     auth: {
-                        signInWithPassword: jest.fn(),
-                        signUp: jest.fn(),
-                        signOut: jest.fn().mockResolvedValue({ error: null }),
+                        signInWithPassword: vi.fn(),
+                        signUp: vi.fn(),
+                        signOut: vi.fn().mockResolvedValue({ error: null }),
                     },
                 };
                 mockCreateClient.mockReturnValue(
-                    mockSupabase as unknown as ReturnType<typeof createClient>
+                    mockSupabase as unknown as ReturnType<typeof createClient>,
                 );
 
                 const { result } = renderHook(() => useAuth());
@@ -1068,18 +1067,18 @@ describe('useAuth Hook', () => {
         });
     });
 
-    describe('Error Normalization', () => {
-        it('should normalize Error instance', async () => {
-            const testError = new Error('Something went wrong');
+    describe("Error Normalization", () => {
+        it("should normalize Error instance", async () => {
+            const testError = new Error("Something went wrong");
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(testError),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn().mockRejectedValue(testError),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1087,28 +1086,28 @@ describe('useAuth Hook', () => {
             let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
+                    "user@example.com",
+                    "pass",
                 );
             });
 
             expect(signInResult!.error).toEqual({
-                message: 'Something went wrong',
+                message: "Something went wrong",
             });
-            expect(signInResult!.error).toHaveProperty('message');
+            expect(signInResult!.error).toHaveProperty("message");
         });
 
-        it('should normalize object with message property', async () => {
-            const testError = { message: 'Custom error message' };
+        it("should normalize object with message property", async () => {
+            const testError = { message: "Custom error message" };
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(testError),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn().mockRejectedValue(testError),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1116,54 +1115,27 @@ describe('useAuth Hook', () => {
             let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
+                    "user@example.com",
+                    "pass",
                 );
             });
 
             expect(signInResult!.error).toEqual({
-                message: 'Custom error message',
-            });
-        });
-
-        it('should handle unexpected error types', async () => {
-            const testError = 'String error';
-            const mockSupabase = {
-                auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(testError),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
-                },
-            };
-            mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
-            );
-
-            const { result } = renderHook(() => useAuth());
-
-            let signInResult;
-            await act(async () => {
-                signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
-                );
-            });
-
-            expect(signInResult!.error).toEqual({
-                message: 'An unexpected error occurred',
+                message: "Custom error message",
             });
         });
 
-        it('should handle null error', async () => {
+        it("should handle unexpected error types", async () => {
+            const testError = "String error";
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(null),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn().mockRejectedValue(testError),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1171,26 +1143,26 @@ describe('useAuth Hook', () => {
             let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
+                    "user@example.com",
+                    "pass",
                 );
             });
 
             expect(signInResult!.error).toEqual({
-                message: 'An unexpected error occurred',
+                message: "An unexpected error occurred",
             });
         });
 
-        it('should handle undefined error', async () => {
+        it("should handle null error", async () => {
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(undefined),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn().mockRejectedValue(null),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1198,26 +1170,26 @@ describe('useAuth Hook', () => {
             let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
+                    "user@example.com",
+                    "pass",
                 );
             });
 
             expect(signInResult!.error).toEqual({
-                message: 'An unexpected error occurred',
+                message: "An unexpected error occurred",
             });
         });
 
-        it('should handle number as error', async () => {
+        it("should handle undefined error", async () => {
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockRejectedValue(404),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signInWithPassword: vi.fn().mockRejectedValue(undefined),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1225,46 +1197,73 @@ describe('useAuth Hook', () => {
             let signInResult;
             await act(async () => {
                 signInResult = await result.current.signIn(
-                    'user@example.com',
-                    'pass'
+                    "user@example.com",
+                    "pass",
                 );
             });
 
             expect(signInResult!.error).toEqual({
-                message: 'An unexpected error occurred',
+                message: "An unexpected error occurred",
+            });
+        });
+
+        it("should handle number as error", async () => {
+            const mockSupabase = {
+                auth: {
+                    signInWithPassword: vi.fn().mockRejectedValue(404),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
+                },
+            };
+            mockCreateClient.mockReturnValue(
+                mockSupabase as unknown as ReturnType<typeof createClient>,
+            );
+
+            const { result } = renderHook(() => useAuth());
+
+            let signInResult;
+            await act(async () => {
+                signInResult = await result.current.signIn(
+                    "user@example.com",
+                    "pass",
+                );
+            });
+
+            expect(signInResult!.error).toEqual({
+                message: "An unexpected error occurred",
             });
         });
     });
 
-    describe('State Persistence', () => {
-        it('should persist loading state across multiple operations', async () => {
+    describe("State Persistence", () => {
+        it("should persist loading state across multiple operations", async () => {
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockResolvedValue({
+                    signInWithPassword: vi.fn().mockResolvedValue({
                         data: { session: {} },
                         error: null,
                     }),
-                    signUp: jest
+                    signUp: vitest
                         .fn()
                         .mockResolvedValue({ data: { user: {} }, error: null }),
-                    signOut: jest.fn().mockResolvedValue({ error: null }),
+                    signOut: vi.fn().mockResolvedValue({ error: null }),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
 
             // After signIn
             await act(async () => {
-                await result.current.signIn('user@example.com', 'password');
+                await result.current.signIn("user@example.com", "password");
             });
             expect(result.current.loading).toBe(false);
 
             // After signUp
             await act(async () => {
-                await result.current.signUp('new@example.com', 'password');
+                await result.current.signUp("new@example.com", "password");
             });
             expect(result.current.loading).toBe(false);
 
@@ -1275,25 +1274,25 @@ describe('useAuth Hook', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        it('should persist error state across multiple operations', async () => {
+        it("should persist error state across multiple operations", async () => {
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest
+                    signInWithPassword: vitest
                         .fn()
                         .mockResolvedValueOnce({
                             data: null,
-                            error: { message: 'Sign in error' },
+                            error: { message: "Sign in error" },
                         })
                         .mockResolvedValueOnce({
                             data: { session: {} },
                             error: null,
                         }),
-                    signUp: jest.fn(),
-                    signOut: jest.fn(),
+                    signUp: vi.fn(),
+                    signOut: vi.fn(),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
@@ -1301,49 +1300,49 @@ describe('useAuth Hook', () => {
             // First signIn fails
             await act(async () => {
                 await result.current.signIn(
-                    'user@example.com',
-                    'wrongpassword'
+                    "user@example.com",
+                    "wrongpassword",
                 );
             });
-            expect(result.current.error).toEqual({ message: 'Sign in error' });
+            expect(result.current.error).toEqual({ message: "Sign in error" });
 
             // Second signIn succeeds and clears error
             await act(async () => {
                 await result.current.signIn(
-                    'user@example.com',
-                    'correctpassword'
+                    "user@example.com",
+                    "correctpassword",
                 );
             });
             expect(result.current.error).toBeNull();
         });
     });
 
-    describe('Multiple Simultaneous Operations', () => {
-        it('should handle sequential auth operations correctly', async () => {
+    describe("Multiple Simultaneous Operations", () => {
+        it("should handle sequential auth operations correctly", async () => {
             const mockSupabase = {
                 auth: {
-                    signInWithPassword: jest.fn().mockResolvedValue({
+                    signInWithPassword: vi.fn().mockResolvedValue({
                         data: { session: {} },
                         error: null,
                     }),
-                    signUp: jest
+                    signUp: vitest
                         .fn()
                         .mockResolvedValue({ data: { user: {} }, error: null }),
-                    signOut: jest.fn().mockResolvedValue({ error: null }),
+                    signOut: vi.fn().mockResolvedValue({ error: null }),
                 },
             };
             mockCreateClient.mockReturnValue(
-                mockSupabase as unknown as ReturnType<typeof createClient>
+                mockSupabase as unknown as ReturnType<typeof createClient>,
             );
 
             const { result } = renderHook(() => useAuth());
 
             // Perform sequential operations
             await act(async () => {
-                await result.current.signIn('user@example.com', 'password');
+                await result.current.signIn("user@example.com", "password");
             });
             expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledTimes(
-                1
+                1,
             );
 
             await act(async () => {

@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for In The Works Page
  *
  * The "In The Works" page is a server component that:
@@ -12,33 +13,20 @@ import { render, screen } from '@testing-library/react';
 import InTheWorksPage from '@/app/in-the-works/page';
 
 // Mock the database query functions
-jest.mock('@/lib/db/projects', () => ({
-    getAllProjects: jest.fn(),
+vi.mock('@/lib/db/projects', () => ({
+    getAllProjects: vi.fn(),
 }));
 
-jest.mock('@/lib/db/events', () => ({
-    getUpcomingEvents: jest.fn(),
-}));
-
-// Mock Next.js Image component
-jest.mock('next/image', () => ({
-    __esModule: true,
-    default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-        return <img {...props} />;
-    },
+vi.mock('@/lib/db/events', () => ({
+    getUpcomingEvents: vi.fn(),
 }));
 
 import { getAllProjects, ProjectQueryError } from '@/lib/db/projects';
 import { getUpcomingEvents, EventQueryError } from '@/lib/db/events';
 import { Database } from '@/types/database';
 
-const mockGetAllProjects = getAllProjects as jest.MockedFunction<
-    typeof getAllProjects
->;
-const mockGetUpcomingEvents = getUpcomingEvents as jest.MockedFunction<
-    typeof getUpcomingEvents
->;
+const mockGetAllProjects = vi.mocked(getAllProjects);
+const mockGetUpcomingEvents = vi.mocked(getUpcomingEvents);
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
 type EventRow = Database['public']['Tables']['events']['Row'];
@@ -77,7 +65,7 @@ const mockEvent: EventRow = {
 
 describe('In The Works Page', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('should render page with title', async () => {

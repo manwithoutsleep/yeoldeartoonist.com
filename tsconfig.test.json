@@ -4,7 +4,7 @@
         "jsx": "react-jsx",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "types": ["jest", "@testing-library/jest-dom", "node"]
+        "types": ["vitest/globals", "@testing-library/jest-dom", "node"]
     },
     "include": ["__tests__/**/*", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

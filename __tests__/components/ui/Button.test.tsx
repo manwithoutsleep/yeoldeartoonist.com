@@ -1,4 +1,5 @@
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '@/components/ui/Button';
@@ -66,7 +67,7 @@ describe('Button Component', () => {
 
     it('should be clickable', async () => {
         const user = userEvent.setup();
-        const handleClick = jest.fn();
+        const handleClick = vi.fn();
         render(<Button onClick={handleClick}>Clickable</Button>);
 
         const button = screen.getByRole('button', { name: 'Clickable' });
@@ -83,7 +84,7 @@ describe('Button Component', () => {
 
     it('should not respond to click when disabled', async () => {
         const user = userEvent.setup();
-        const handleClick = jest.fn();
+        const handleClick = vi.fn();
         render(
             <Button disabled onClick={handleClick}>
                 Disabled

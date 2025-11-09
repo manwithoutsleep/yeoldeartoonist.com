@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for Admin Login Page
  *
  * The login page is a client component that:
@@ -29,16 +30,16 @@ const NO_USER_EMAIL = 'nouser@example.com';
 const NO_USER_PASSWORD = randomUUID();
 
 // Mock useRouter
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
     useRouter: () => ({
         push: mockPush,
     }),
 }));
 
 // Mock useAuth hook
-const mockSignIn = jest.fn();
-jest.mock('@/lib/hooks/useAuth', () => ({
+const mockSignIn = vi.fn();
+vi.mock('@/lib/hooks/useAuth', () => ({
     useAuth: () => ({
         signIn: mockSignIn,
         loading: false,
@@ -48,7 +49,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 
 describe('Admin Login Page', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         // Reset document.cookie
         Object.defineProperty(document, 'cookie', {
             writable: true,

@@ -1,4 +1,5 @@
 /**
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for CheckoutProvider Component
  *
  * CheckoutProvider is a client-side wrapper component that:
@@ -402,7 +403,7 @@ describe('CheckoutProvider Component', () => {
 
     describe('Performance Characteristics', () => {
         it('should not cause unnecessary re-renders when props do not change', () => {
-            const renderSpy = jest.fn();
+            const renderSpy = vi.fn();
 
             const TestChild = () => {
                 renderSpy();

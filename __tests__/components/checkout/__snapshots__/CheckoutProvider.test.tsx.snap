@@ -1,7 +1,7 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CheckoutProvider Component Snapshot Testing should maintain consistent output with complex structure 1`] = `"<section><h1>Title</h1><p>Description</p><button>Action</button></section>"`;
+exports[`CheckoutProvider Component > Snapshot Testing > should maintain consistent output with complex structure 1`] = `"<section><h1>Title</h1><p>Description</p><button>Action</button></section>"`;
 
-exports[`CheckoutProvider Component Snapshot Testing should maintain consistent output with multiple children 1`] = `"<div>First</div><div>Second</div>"`;
+exports[`CheckoutProvider Component > Snapshot Testing > should maintain consistent output with multiple children 1`] = `"<div>First</div><div>Second</div>"`;
 
-exports[`CheckoutProvider Component Snapshot Testing should maintain consistent output with simple children 1`] = `"<div>Content</div>"`;
+exports[`CheckoutProvider Component > Snapshot Testing > should maintain consistent output with simple children 1`] = `"<div>Content</div>"`;

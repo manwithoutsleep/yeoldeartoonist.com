@@ -67,14 +67,20 @@ import type { MockedFunction } from 'vitest';
 const mockFontGoogle = vi.mocked(fontGoogle);
 
 const mockGeist = mockFontGoogle.Geist as unknown as MockedFunction<
-    (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+    (options?: { subsets?: string[]; weight?: string[] }) => {
+        variable: string;
+    }
 >;
 const mockGeistMono = mockFontGoogle.Geist_Mono as unknown as MockedFunction<
-    (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+    (options?: { subsets?: string[]; weight?: string[] }) => {
+        variable: string;
+    }
 >;
 const mockGermaniaOne =
     mockFontGoogle.Germania_One as unknown as MockedFunction<
-        (options?: { subsets?: string[]; weight?: string[] }) => { variable: string }
+        (options?: { subsets?: string[]; weight?: string[] }) => {
+            variable: string;
+        }
     >;
 
 describe('Root Layout', () => {
@@ -211,48 +217,48 @@ describe('Root Layout', () => {
 
     describe('Font Configuration', () => {
         it('should configure Geist Sans font with correct CSS variable', () => {
-            const mockCall = mockGeist.mock.calls[0]?.[0];
+            const mockResult = mockGeist.mock.results[0];
 
-            expect(mockCall).toBeDefined();
-            expect(mockCall.variable).toBe('--font-geist-sans');
+            expect(mockResult).toBeDefined();
+            expect(mockResult?.value.variable).toBe('--font-geist-sans');
         });
 
         it('should configure Geist Sans with latin subset', () => {
             const mockCall = mockGeist.mock.calls[0]?.[0];
 
-            expect(mockCall.subsets).toContain('latin');
+            expect(mockCall?.subsets).toContain('latin');
         });
 
         it('should configure Geist Mono font with correct CSS variable', () => {
-            const mockCall = mockGeistMono.mock.calls[0]?.[0];
+            const mockResult = mockGeistMono.mock.results[0];
 
-            expect(mockCall).toBeDefined();
-            expect(mockCall.variable).toBe('--font-geist-mono');
+            expect(mockResult).toBeDefined();
+            expect(mockResult?.value.variable).toBe('--font-geist-mono');
         });
 
         it('should configure Geist Mono with latin subset', () => {
             const mockCall = mockGeistMono.mock.calls[0]?.[0];
 
-            expect(mockCall.subsets).toContain('latin');
+            expect(mockCall?.subsets).toContain('latin');
         });
 
         it('should configure Germania One font with correct CSS variable', () => {
-            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
+            const mockResult = mockGermaniaOne.mock.results[0];
 
-            expect(mockCall).toBeDefined();
-            expect(mockCall.variable).toBe('--font-germania-one');
+            expect(mockResult).toBeDefined();
+            expect(mockResult?.value.variable).toBe('--font-germania-one');
         });
 
         it('should configure Germania One with weight 400', () => {
             const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
 
-            expect(mockCall.weight).toBe('400');
+            expect(mockCall?.weight).toBe('400');
         });
 
         it('should configure Germania One with latin subset', () => {
             const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
 
-            expect(mockCall.subsets).toContain('latin');
+            expect(mockCall?.subsets).toContain('latin');
         });
     });
 

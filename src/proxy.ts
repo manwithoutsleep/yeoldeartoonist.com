@@ -10,7 +10,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const pathname = requestUrl.pathname;
     const isDevelopment = process.env.NODE_ENV === 'development';

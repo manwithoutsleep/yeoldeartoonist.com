@@ -4,7 +4,8 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "build": "npm run lint && npx tsc --noEmit && npm test && next build --turbopack",
+        "build": "next build --turbopack",
+        "build:full": "npm run lint && npx tsc --noEmit && npm test && next build --turbopack",
         "start": "next start",
         "lint": "eslint",
         "test": "vitest run --coverage",

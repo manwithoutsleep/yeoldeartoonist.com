@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev              # Start development server (http://localhost:3000)
-npm run build           # Full build with type check, lint, format check, and Next.js build
+npm run build           # Production build (Next.js only)
+npm run build:full      # Full build with type check, lint, test, and Next.js build (for CI/local)
 npm run lint            # Run ESLint check
 npm run format          # Format code with Prettier
 npm run format:check    # Check formatting without changes
@@ -212,18 +213,22 @@ Any route under `/admin` is automatically protected by middleware. Components th
 
 ## Build & Deploy
 
-- **Build Process**: `npm run build` runs type check → lint → format check → Next.js build
+- **Build Process**:
+    - `npm run build` - Production build (Next.js only, used by Vercel)
+    - `npm run build:full` - Full pre-deployment check (type check → lint → test → Next.js build)
 - **Production Start**: `npm run start` after building
 - **Deployment**: Target is Vercel. Environment variables must be set in Vercel dashboard
 - **Database**: Use `npm run db:push` to apply migrations to production after deploying code
+- **Pre-commit Hook**: Runs lint-staged (linting + formatting + related tests) and TypeScript check
 
 ## Testing & Debugging
 
 - Local testing: `npm run dev` then visit `http://localhost:3000`
 - Database testing: `npm run db:start` to run local Supabase at `http://127.0.0.1:54333`
-- Build verification: `npm run build` (must complete without errors)
-- Type checking: `npx tsc --noEmit` (included in build)
+- Build verification: `npm run build:full` (runs all checks before building)
+- Type checking: `npx tsc --noEmit`
 - Linting: `npm run lint` (ESLint with Prettier)
+- Testing: `npm test` (Vitest with coverage)
 
 ## Documentation
 

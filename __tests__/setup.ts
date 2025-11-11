@@ -1,17 +1,7 @@
 import { afterAll, beforeAll, vi } from 'vitest';
 import React from 'react';
-import { act as reactAct } from 'react';
 // Extend vitest's expect with DOM matchers like toBeInTheDocument()
 import '@testing-library/jest-dom';
-
-// Polyfill for React 19 act() compatibility with testing-library
-// See: https://github.com/testing-library/react-testing-library/issues/1214
-if (typeof React.act === 'function') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (global as any).React = { ...React, act: reactAct };
-}
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';

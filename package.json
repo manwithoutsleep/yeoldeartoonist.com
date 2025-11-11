@@ -25,7 +25,7 @@
         ">0.2%",
         "not dead",
         "not op_mini all",
-        "node 20"
+        "node 22"
     ],
     "dependencies": {
         "@stripe/react-stripe-js": "^5.2.0",

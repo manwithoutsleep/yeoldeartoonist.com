@@ -33,7 +33,8 @@
             "Bash(test -f C:srcgithubmwsyeoldeartoonist.com.env.example)",
             "Bash(xargs grep:*)",
             "Bash(gh pr list:*)",
-            "Bash(npx eslint:*)"
+            "Bash(npx eslint:*)",
+            "Bash(npx vitest:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

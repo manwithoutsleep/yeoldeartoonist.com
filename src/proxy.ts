@@ -109,7 +109,7 @@ export async function proxy(request: NextRequest) {
     // Check if user is an active administrator using service role access
     const { data: admin, error: adminError } = await supabase
         .from('administrators')
-        .select('id, role, is_active')
+        .select('id, name, role, is_active')
         .eq('auth_id', user.id)
         .eq('is_active', true)
         .single();
@@ -124,6 +124,7 @@ export async function proxy(request: NextRequest) {
     const sessionCache = JSON.stringify({
         userId: user.id,
         adminId: admin.id,
+        name: admin.name,
         role: admin.role,
         expiresAt: cacheExpiry,
     });

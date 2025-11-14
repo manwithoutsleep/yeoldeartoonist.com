@@ -8,7 +8,7 @@
  * Never use this for sensitive operations - use the server client instead.
  */
 
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,4 +26,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * @returns {SupabaseClient} A configured Supabase client instance
  */
 export const createClient = () =>
-    createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+    createSupabaseBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Factory function to create a browser client
+ */
+export const createBrowserClient = () =>
+    createSupabaseBrowserClient<Database>(supabaseUrl, supabaseAnonKey);

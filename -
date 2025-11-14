@@ -1,0 +1,272 @@
+SET session_replication_role = replica;
+
+--
+-- PostgreSQL database dump
+--
+
+-- \restrict zUr6nQaeH2Inhqto9PcSbuaGDvlh9CAdnb6HWT6pouthRYtb7AX98hVntTCkalE
+
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: audit_log_entries; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."audit_log_entries" ("instance_id", "id", "payload", "created_at", "ip_address") VALUES
+	('00000000-0000-0000-0000-000000000000', '08e341fc-926f-4113-9433-6ca1b6c80770', '{"action":"user_signedup","actor_id":"00000000-0000-0000-0000-000000000000","actor_username":"service_role","actor_via_sso":false,"log_type":"team","traits":{"provider":"email","user_email":"brad@southcountysound.com","user_id":"86f08d35-aaf7-4644-95fa-f08a06e8a377","user_phone":""}}', '2025-11-13 17:13:47.96586+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'c257f6d9-95d3-46af-986c-9888e95f316c', '{"action":"login","actor_id":"86f08d35-aaf7-4644-95fa-f08a06e8a377","actor_username":"brad@southcountysound.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-13 17:15:26.759268+00', ''),
+	('00000000-0000-0000-0000-000000000000', '7345369c-4678-40e1-b480-40daf492654a', '{"action":"token_refreshed","actor_id":"86f08d35-aaf7-4644-95fa-f08a06e8a377","actor_username":"brad@southcountysound.com","actor_via_sso":false,"log_type":"token"}', '2025-11-13 19:30:22.215193+00', ''),
+	('00000000-0000-0000-0000-000000000000', '61a16c39-b0b0-4e1e-8927-a97b682469fb', '{"action":"token_revoked","actor_id":"86f08d35-aaf7-4644-95fa-f08a06e8a377","actor_username":"brad@southcountysound.com","actor_via_sso":false,"log_type":"token"}', '2025-11-13 19:30:22.217431+00', '');
+
+
+--
+-- Data for Name: flow_state; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_password", "email_confirmed_at", "invited_at", "confirmation_token", "confirmation_sent_at", "recovery_token", "recovery_sent_at", "email_change_token_new", "email_change", "email_change_sent_at", "last_sign_in_at", "raw_app_meta_data", "raw_user_meta_data", "is_super_admin", "created_at", "updated_at", "phone", "phone_confirmed_at", "phone_change", "phone_change_token", "phone_change_sent_at", "email_change_token_current", "email_change_confirm_status", "banned_until", "reauthentication_token", "reauthentication_sent_at", "is_sso_user", "deleted_at", "is_anonymous") VALUES
+	('00000000-0000-0000-0000-000000000000', '86f08d35-aaf7-4644-95fa-f08a06e8a377', 'authenticated', 'authenticated', 'brad@southcountysound.com', '$2a$10$f1/En.9QmfCIagKDMasj1OZ0Ht8cnA8RHS26d9CveaEp3Iav/rGQi', '2025-11-13 17:13:47.968348+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-11-13 17:15:26.760915+00', '{"provider": "email", "providers": ["email"]}', '{"email_verified": true}', NULL, '2025-11-13 17:13:47.957288+00', '2025-11-13 19:30:22.223816+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false);
+
+
+--
+-- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."identities" ("provider_id", "user_id", "identity_data", "provider", "last_sign_in_at", "created_at", "updated_at", "id") VALUES
+	('86f08d35-aaf7-4644-95fa-f08a06e8a377', '86f08d35-aaf7-4644-95fa-f08a06e8a377', '{"sub": "86f08d35-aaf7-4644-95fa-f08a06e8a377", "email": "brad@southcountysound.com", "email_verified": false, "phone_verified": false}', 'email', '2025-11-13 17:13:47.963352+00', '2025-11-13 17:13:47.963433+00', '2025-11-13 17:13:47.963433+00', '3fb18e05-820d-40fa-a305-da6ff904c4ac');
+
+
+--
+-- Data for Name: instances; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_clients; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: sessions; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."sessions" ("id", "user_id", "created_at", "updated_at", "factor_id", "aal", "not_after", "refreshed_at", "user_agent", "ip", "tag", "oauth_client_id", "refresh_token_hmac_key", "refresh_token_counter") VALUES
+	('e3b1ce1f-7fab-4562-8f19-a35489297492', '86f08d35-aaf7-4644-95fa-f08a06e8a377', '2025-11-13 17:15:26.761027+00', '2025-11-13 19:30:22.226856+00', NULL, 'aal1', NULL, '2025-11-13 19:30:22.226687', 'Next.js Middleware', '172.19.0.1', NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: mfa_amr_claims; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."mfa_amr_claims" ("session_id", "created_at", "updated_at", "authentication_method", "id") VALUES
+	('e3b1ce1f-7fab-4562-8f19-a35489297492', '2025-11-13 17:15:26.765671+00', '2025-11-13 17:15:26.765671+00', 'password', '20cab8d0-9f3d-4ab8-870b-58807021ad4e');
+
+
+--
+-- Data for Name: mfa_factors; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: mfa_challenges; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_authorizations; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_consents; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: one_time_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: refresh_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked", "created_at", "updated_at", "parent", "session_id") VALUES
+	('00000000-0000-0000-0000-000000000000', 1, 'cvjxxh7lmidb', '86f08d35-aaf7-4644-95fa-f08a06e8a377', true, '2025-11-13 17:15:26.763422+00', '2025-11-13 19:30:22.218808+00', NULL, 'e3b1ce1f-7fab-4562-8f19-a35489297492'),
+	('00000000-0000-0000-0000-000000000000', 2, 'befvrh4kmgwq', '86f08d35-aaf7-4644-95fa-f08a06e8a377', false, '2025-11-13 19:30:22.220655+00', '2025-11-13 19:30:22.220655+00', 'cvjxxh7lmidb', 'e3b1ce1f-7fab-4562-8f19-a35489297492');
+
+
+--
+-- Data for Name: sso_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: saml_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: saml_relay_states; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: sso_domains; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: administrators; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO "public"."administrators" ("id", "auth_id", "name", "email", "role", "is_active", "created_at", "updated_at") VALUES
+	('605bf461-cd03-4d3c-8e27-1b8289443504', '86f08d35-aaf7-4644-95fa-f08a06e8a377', 'Brad Harris', 'brad@southcountysound.com', 'super_admin', true, '2025-11-13 17:14:28.868029+00', '2025-11-13 17:14:28.868029+00');
+
+
+--
+-- Data for Name: artwork; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: order_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: pages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: page_artwork; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: projects; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- Data for Name: buckets; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: buckets_analytics; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: iceberg_namespaces; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: iceberg_tables; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: objects; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: prefixes; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: s3_multipart_uploads; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: s3_multipart_uploads_parts; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: hooks; Type: TABLE DATA; Schema: supabase_functions; Owner: supabase_functions_admin
+--
+
+
+
+--
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
+--
+
+SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 2, true);
+
+
+--
+-- Name: hooks_id_seq; Type: SEQUENCE SET; Schema: supabase_functions; Owner: supabase_functions_admin
+--
+
+SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 1, false);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+-- \unrestrict zUr6nQaeH2Inhqto9PcSbuaGDvlh9CAdnb6HWT6pouthRYtb7AX98hVntTCkalE
+
+RESET ALL;

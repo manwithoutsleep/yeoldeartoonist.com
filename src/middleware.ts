@@ -4,13 +4,17 @@
  * This middleware handles authentication checks for protected routes,
  * particularly the /admin routes. It ensures that only authenticated
  * admin users can access the admin panel.
+ *
+ * IMPORTANT: In Next.js 16, this should be named proxy.ts, but there's a known
+ * bug on Windows where proxy.ts doesn't work. We use middleware.ts as a workaround.
+ * See: https://github.com/vercel/next.js/issues/85243
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const pathname = requestUrl.pathname;
     const isDevelopment = process.env.NODE_ENV === 'development';
@@ -41,6 +45,15 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
+    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        if (isDevelopment) {
+            console.error(
+                'Missing NEXT_PUBLIC_SUPABASE_ANON_KEY in middleware'
+            );
+        }
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
         if (isDevelopment) {
             console.error('Missing SUPABASE_SERVICE_ROLE_KEY in middleware');
@@ -48,30 +61,12 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Create a Supabase client with the service role key for admin operations
-    // This ensures RLS policies are properly enforced during authentication checks
+    // Create response object for cookie handling
     const supabaseResponse = NextResponse.next({
         request: {
             headers: request.headers,
         },
     });
-
-    const supabase = createServerClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-            cookies: {
-                getAll() {
-                    return request.cookies.getAll();
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        supabaseResponse.cookies.set(name, value, options)
-                    );
-                },
-            },
-        }
-    );
 
     // Check if user has a cached admin session in cookies
     // This optimization avoids repeated database queries for every request
@@ -96,26 +91,84 @@ export async function proxy(request: NextRequest) {
         }
     }
 
-    // Check if user is authenticated
+    // Create a client for auth operations (uses anon key to avoid contamination)
+    const authClient = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return request.cookies.getAll();
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        supabaseResponse.cookies.set(name, value, options)
+                    );
+                },
+            },
+        }
+    );
+
+    // Check if user is authenticated using auth client
     const {
         data: { user },
-    } = await supabase.auth.getUser();
+    } = await authClient.auth.getUser();
 
     if (!user) {
         // User is not authenticated, redirect to login
+        if (isDevelopment) {
+            console.log('[MIDDLEWARE] No authenticated user found');
+        }
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Check if user is an active administrator using service role access
-    const { data: admin, error: adminError } = await supabase
+    if (isDevelopment) {
+        console.log('[MIDDLEWARE] Authenticated user:', user.id);
+    }
+
+    // Create a separate service role client for admin queries
+    // IMPORTANT: Don't mix auth operations with this client to avoid session contamination
+    const adminClient = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+            cookies: {
+                getAll() {
+                    return request.cookies.getAll();
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        supabaseResponse.cookies.set(name, value, options)
+                    );
+                },
+            },
+        }
+    );
+
+    // Check if user is an active administrator using service role client
+    // Service role bypasses RLS, avoiding infinite recursion
+    const { data: admin, error: adminError } = await adminClient
         .from('administrators')
         .select('id, name, role, is_active')
         .eq('auth_id', user.id)
         .eq('is_active', true)
         .single();
 
+    if (isDevelopment) {
+        console.log('[MIDDLEWARE] Admin lookup result:', {
+            found: !!admin,
+            error: adminError?.message,
+            errorDetails: adminError,
+            userId: user.id,
+            adminData: admin,
+        });
+    }
+
     if (adminError || !admin) {
         // User is not an admin or is inactive, redirect to login
+        if (isDevelopment) {
+            console.log('[MIDDLEWARE] Admin not found or error:', adminError);
+        }
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 

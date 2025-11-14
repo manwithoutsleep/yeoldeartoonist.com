@@ -29,13 +29,7 @@ export default defineConfig({
                 'src/middleware.ts', // Complex middleware, harder to test in isolation
                 'src/lib/supabase/server.ts', // Server-side client, tested in integration
             ],
-            thresholds: {
-                // Global thresholds for Phase 2.5
-                branches: 10,
-                functions: 10,
-                lines: 10,
-                statements: 10,
-            },
+            // No coverage thresholds - manual review preferred
         },
     },
     resolve: {

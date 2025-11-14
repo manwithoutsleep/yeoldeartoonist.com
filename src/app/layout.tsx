@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Germania_One } from 'next/font/google';
 import './globals.css';
-import { Header } from '@/components/layout/Header';
-import { Navigation } from '@/components/layout/Navigation';
-import { Footer } from '@/components/layout/Footer';
+import { PublicLayoutWrapper } from '@/components/layout/PublicLayoutWrapper';
 import { siteConfig } from '@/config/site';
 
 const geistSans = Geist({
@@ -101,13 +99,14 @@ export default function RootLayout({
                     }
 
                     /* Critical header and nav sizing to prevent layout shifts (Phase E) */
-                    header {
+                    /* Note: Scoped to avoid affecting admin components */
+                    .public-layout header {
                         min-height: 80px;
                         display: block;
                         width: 100%;
                     }
 
-                    nav {
+                    .public-layout nav {
                         min-height: 120px;
                         display: block;
                         width: 100%;
@@ -149,10 +148,7 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} ${germaniaOne.variable} antialiased`}
             >
-                <Header />
-                <Navigation />
-                <main>{children}</main>
-                <Footer />
+                <PublicLayoutWrapper>{children}</PublicLayoutWrapper>
 
                 {/* Non-critical scripts placed at end of body (Phase C - C.2 Script Loading) */}
                 {/* All third-party scripts should be loaded here with defer/async attributes */}

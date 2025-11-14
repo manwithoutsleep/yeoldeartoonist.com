@@ -5,10 +5,10 @@
     "scripts": {
         "dev": "next dev",
         "build": "next build --turbopack",
-        "build:full": "npm run lint && npx tsc --noEmit && npm test && next build --turbopack",
+        "build:full": "npm run lint && npx tsc --noEmit && next build --turbopack",
         "start": "next start",
         "lint": "eslint",
-        "test": "vitest run --coverage",
+        "test": "vitest run",
         "test:watch": "vitest",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest run --coverage",

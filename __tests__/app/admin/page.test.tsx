@@ -1,705 +1,560 @@
 /**
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
- * Tests for Admin Page
+ * Tests for Admin Dashboard Page
  *
- * The admin page is a client component that:
- * - Requires authentication (redirects to login if no session)
- * - Displays current user email
- * - Shows a loading state while fetching session
- * - Allows users to sign out
- * - Handles sign out errors gracefully
+ * The admin dashboard is a server component that:
+ * - Displays dashboard metrics (total orders, revenue, pending orders)
+ * - Shows recent orders in a table
+ * - Provides quick navigation to admin sections
+ * - Handles errors gracefully
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import AdminPage from '@/app/admin/page';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { createClient } from '@/lib/supabase/client';
+import { getDashboardMetrics, getRecentOrders } from '@/lib/db/admin/dashboard';
 
-// Type definitions for mocks
-interface MockSupabaseSession {
-    user?: {
-        id: string;
-        email: string;
-    };
-}
-
-// Mock Next.js router
-vi.mock('next/navigation', () => ({
-    useRouter: vi.fn(),
+// Mock the database functions
+vi.mock('@/lib/db/admin/dashboard', () => ({
+    getDashboardMetrics: vi.fn(),
+    getRecentOrders: vi.fn(),
 }));
 
-// Mock Supabase client
-vi.mock('@/lib/supabase/client', () => ({
-    createClient: vi.fn(),
+// Mock Next.js Link component
+vi.mock('next/link', () => ({
+    default: ({
+        children,
+        href,
+    }: {
+        children: React.ReactNode;
+        href: string;
+    }) => <a href={href}>{children}</a>,
 }));
 
-// Mock useAuth hook
-vi.mock('@/lib/hooks/useAuth', () => ({
-    useAuth: vi.fn(),
-}));
+const mockGetDashboardMetrics = vi.mocked(getDashboardMetrics);
+const mockGetRecentOrders = vi.mocked(getRecentOrders);
 
-const mockUseRouter = vi.mocked(useRouter);
-const mockCreateClient = vi.mocked(createClient);
-const mockUseAuth = vi.mocked(useAuth);
-
-describe('Admin Page', () => {
-    const mockPush = vi.fn();
-    const mockSignOut = vi.fn();
-
+describe('Admin Dashboard Page', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockUseRouter.mockReturnValue({
-            push: mockPush,
-        } as unknown as AppRouterInstance);
     });
 
-    describe('Authentication & Session', () => {
-        it('should redirect to login when no session exists', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: null },
-                    }),
+    describe('Metrics Display', () => {
+        it('should display dashboard metrics successfully', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 42,
+                    orders_this_month: 15,
+                    total_revenue: 1250.5,
+                    pending_orders: 5,
                 },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin/login');
-            });
-        });
-
-        it('should display loading state while fetching session', () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockImplementation(
-                        () => new Promise(() => {}) // Never resolves
-                    ),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            expect(screen.getByText('Loading...')).toBeInTheDocument();
-        });
-
-        it('should render admin page when session exists', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(
-                    screen.queryByText('Loading...')
-                ).not.toBeInTheDocument();
+                error: null,
             });
 
-            expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Dashboard')).toBeInTheDocument();
+            expect(screen.getByText('Total Orders')).toBeInTheDocument();
+            expect(screen.getByText('42')).toBeInTheDocument();
+            expect(screen.getByText('Orders This Month')).toBeInTheDocument();
+            expect(screen.getByText('15')).toBeInTheDocument();
+            expect(screen.getByText('Total Revenue')).toBeInTheDocument();
+            expect(screen.getByText('$1250.50')).toBeInTheDocument();
+            expect(screen.getByText('Pending Orders')).toBeInTheDocument();
+            expect(screen.getByText('5')).toBeInTheDocument();
+        });
+
+        it('should display zero values when no metrics are available', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: null,
+                error: null,
+            });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Total Orders')).toBeInTheDocument();
+            const zeros = screen.getAllByText('0');
+            expect(zeros.length).toBeGreaterThan(0);
+            expect(screen.getByText('$0.00')).toBeInTheDocument();
+        });
+
+        it('should display metrics error message', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: null,
+                error: {
+                    message: 'Failed to load metrics',
+                    code: 'METRICS_ERROR',
+                },
+            });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Error')).toBeInTheDocument();
             expect(
-                screen.getByText('Welcome to Admin Panel')
+                screen.getByText('Failed to load metrics')
             ).toBeInTheDocument();
         });
     });
 
-    describe('User Display', () => {
-        it('should display user email in header', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'testuser@example.com',
+    describe('Recent Orders Display', () => {
+        it('should display recent orders in a table', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                const emails = screen.getAllByText('testuser@example.com');
-                expect(emails.length).toBeGreaterThan(0);
+                error: null,
             });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                    {
+                        id: '2',
+                        order_number: 'ORD-002',
+                        customer_name: 'Jane Smith',
+                        customer_email: 'jane@example.com',
+                        total: '149.99',
+                        status: 'paid',
+                        created_at: '2024-01-16T11:00:00Z',
+                    },
+                ],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Recent Orders')).toBeInTheDocument();
+            expect(screen.getByText('ORD-001')).toBeInTheDocument();
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+            expect(screen.getByText('$99.99')).toBeInTheDocument();
+            expect(screen.getByText('pending')).toBeInTheDocument();
+
+            expect(screen.getByText('ORD-002')).toBeInTheDocument();
+            expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+            expect(screen.getByText('$149.99')).toBeInTheDocument();
+            expect(screen.getByText('paid')).toBeInTheDocument();
         });
 
-        it('should display user email in welcome message', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'john@example.com',
+        it('should display empty state when no orders exist', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 0,
+                    orders_this_month: 0,
+                    total_revenue: 0,
+                    pending_orders: 0,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                const emailInWelcome = screen.getAllByText('john@example.com');
-                expect(emailInWelcome.length).toBeGreaterThan(1); // Header + welcome message
+                error: null,
             });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Recent Orders')).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /No orders yet\. Create your first order from the shop!/
+                )
+            ).toBeInTheDocument();
         });
 
-        it('should display correct welcome message content', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
+        it('should display orders error message', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText('You are logged in as')
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(/This is a placeholder admin dashboard/)
-                ).toBeInTheDocument();
+                error: null,
             });
-        });
-    });
 
-    describe('Loading State', () => {
-        it('should clear loading state after user data loads', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: {
+                    message: 'Failed to load orders',
+                    code: 'ORDERS_ERROR',
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            // Initially should show loading
-            expect(screen.getByText('Loading...')).toBeInTheDocument();
-
-            // After session loads, should not show loading
-            await waitFor(() => {
-                expect(
-                    screen.queryByText('Loading...')
-                ).not.toBeInTheDocument();
             });
-        });
-    });
 
-    describe('Sign Out Functionality', () => {
-        it('should display sign out button when authenticated', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
+            const page = await AdminPage();
+            render(page);
 
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                const signOutButton = screen.getByText('Sign out');
-                expect(signOutButton).toBeInTheDocument();
-            });
+            const errorMessages = screen.getAllByText('Error');
+            expect(errorMessages.length).toBeGreaterThan(0);
+            expect(
+                screen.getByText('Failed to load orders')
+            ).toBeInTheDocument();
         });
 
-        it('should be able to click sign out button', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            mockSignOut.mockResolvedValue({ error: null });
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
+        it('should display different order statuses with correct styling', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(screen.getByText('Sign out')).toBeInTheDocument();
+                error: null,
             });
 
-            const signOutButton = screen.getByText('Sign out');
-            fireEvent.click(signOutButton);
-
-            await waitFor(() => {
-                expect(mockSignOut).toHaveBeenCalled();
-            });
-        });
-
-        it('should disable sign out button while signing out', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: true, // Simulate loading state
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                const signOutButton = screen.getByText(
-                    'Signing out...'
-                ) as HTMLButtonElement;
-                expect(signOutButton).toBeDisabled();
-            });
-        });
-
-        it('should show "Signing out..." text while signing out', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: true,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(screen.getByText('Signing out...')).toBeInTheDocument();
-            });
-        });
-
-        it('should redirect to login after successful sign out', async () => {
-            const signOutLoading = false;
-
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: signOutLoading,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            mockSignOut.mockResolvedValue({ error: null });
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(screen.getByText('Sign out')).toBeInTheDocument();
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                    {
+                        id: '2',
+                        order_number: 'ORD-002',
+                        customer_name: 'Jane Smith',
+                        customer_email: 'jane@example.com',
+                        total: '149.99',
+                        status: 'paid',
+                        created_at: '2024-01-16T11:00:00Z',
+                    },
+                    {
+                        id: '3',
+                        order_number: 'ORD-003',
+                        customer_name: 'Bob Johnson',
+                        customer_email: 'bob@example.com',
+                        total: '199.99',
+                        status: 'shipped',
+                        created_at: '2024-01-17T12:00:00Z',
+                    },
+                    {
+                        id: '4',
+                        order_number: 'ORD-004',
+                        customer_name: 'Alice Williams',
+                        customer_email: 'alice@example.com',
+                        total: '249.99',
+                        status: 'delivered',
+                        created_at: '2024-01-18T13:00:00Z',
+                    },
+                ],
+                error: null,
             });
 
-            const signOutButton = screen.getByText('Sign out');
-            fireEvent.click(signOutButton);
+            const page = await AdminPage();
+            render(page);
 
-            await waitFor(() => {
-                expect(mockSignOut).toHaveBeenCalled();
-            });
+            const pendingStatus = screen.getByText('pending');
+            expect(pendingStatus).toHaveClass('bg-yellow-500');
 
-            // After successful sign out, should redirect to login
-            await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin/login');
-            });
-        });
+            const paidStatus = screen.getByText('paid');
+            expect(paidStatus).toHaveClass('bg-green-500');
 
-        it('should handle sign out errors gracefully', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
+            const shippedStatus = screen.getByText('shipped');
+            expect(shippedStatus).toHaveClass('bg-blue-500');
 
-            mockSignOut.mockResolvedValue({
-                error: { message: 'Sign out failed' },
-            });
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(screen.getByText('Sign out')).toBeInTheDocument();
-            });
-
-            const signOutButton = screen.getByText('Sign out');
-            fireEvent.click(signOutButton);
-
-            await waitFor(() => {
-                expect(mockSignOut).toHaveBeenCalled();
-            });
-
-            // Should NOT redirect if there's an error
-            expect(mockPush).not.toHaveBeenCalledWith('/admin/login');
+            const deliveredStatus = screen.getByText('delivered');
+            expect(deliveredStatus).toHaveClass('bg-green-700');
         });
     });
 
-    describe('UI Elements', () => {
-        it('should have admin panel heading', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
+    describe('Navigation Links', () => {
+        it('should have a link to view all orders', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+                error: null,
             });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            const viewAllLink = screen.getByText('View All →');
+            expect(viewAllLink).toBeInTheDocument();
+            expect(viewAllLink).toHaveAttribute('href', '/admin/orders');
         });
 
-        it('should have white background for nav', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
+        it('should have view links for each order', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            const { container } = render(<AdminPage />);
-
-            await waitFor(() => {
-                const nav = container.querySelector('.bg-white');
-                expect(nav).toBeInTheDocument();
+                error: null,
             });
-        });
 
-        it('should have gray background for main area', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            const { container } = render(<AdminPage />);
-
-            await waitFor(() => {
-                const main = container.querySelector('.bg-gray-100');
-                expect(main).toBeInTheDocument();
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: 'order-123',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                ],
+                error: null,
             });
-        });
 
-        it('should have white content card', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
+            const page = await AdminPage();
+            render(page);
+
+            const viewLinks = screen.getAllByText('View');
+            expect(viewLinks.length).toBeGreaterThan(0);
+            expect(viewLinks[0]).toHaveAttribute(
+                'href',
+                '/admin/orders/order-123'
             );
-
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-123',
-                    email: 'admin@example.com',
-                },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            const { container } = render(<AdminPage />);
-
-            await waitFor(() => {
-                const card = container.querySelector('.bg-white.rounded-lg');
-                expect(card).toBeInTheDocument();
-            });
         });
     });
 
-    describe('Session Retrieval', () => {
-        it('should call getSession on component mount', async () => {
-            const mockGetSession = vi.fn().mockResolvedValue({
-                data: { session: null },
-            });
-
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: mockGetSession,
+    describe('Page Layout', () => {
+        it('should display page title and description', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
                 },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                expect(mockGetSession).toHaveBeenCalled();
+                error: null,
             });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Dashboard')).toBeInTheDocument();
+            expect(
+                screen.getByText('Welcome to your admin dashboard')
+            ).toBeInTheDocument();
         });
 
-        it('should set user from session data', async () => {
-            const mockAuthReturn: Partial<ReturnType<typeof useAuth>> = {
-                signOut: mockSignOut,
-                loading: false,
-            };
-            mockUseAuth.mockReturnValue(
-                mockAuthReturn as unknown as ReturnType<typeof useAuth>
-            );
-
-            const testEmail = 'test@example.com';
-            const mockSession: MockSupabaseSession = {
-                user: {
-                    id: 'user-456',
-                    email: testEmail,
+        it('should display metrics in a grid layout', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 42,
+                    orders_this_month: 15,
+                    total_revenue: 1250.5,
+                    pending_orders: 5,
                 },
-            };
-
-            mockCreateClient.mockReturnValue({
-                auth: {
-                    getSession: vi.fn().mockResolvedValue({
-                        data: { session: mockSession },
-                    }),
-                },
-            } as unknown as ReturnType<typeof createClient>);
-
-            render(<AdminPage />);
-
-            await waitFor(() => {
-                const emails = screen.getAllByText(testEmail);
-                expect(emails.length).toBeGreaterThan(0);
+                error: null,
             });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            const { container } = render(page);
+
+            const grid = container.querySelector('.grid');
+            expect(grid).toBeInTheDocument();
+            expect(grid).toHaveClass(
+                'grid-cols-1',
+                'md:grid-cols-2',
+                'lg:grid-cols-4'
+            );
+        });
+    });
+
+    describe('Data Formatting', () => {
+        it('should format currency values correctly', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 1234.567,
+                    pending_orders: 2,
+                },
+                error: null,
+            });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '123.456',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                ],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('$1234.57')).toBeInTheDocument();
+            expect(screen.getByText('$123.46')).toBeInTheDocument();
+        });
+
+        it('should format dates correctly', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
+                },
+                error: null,
+            });
+
+            const testDate = '2024-01-15T10:30:00Z';
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: testDate,
+                    },
+                ],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            const expectedDate = new Date(testDate).toLocaleDateString();
+            expect(screen.getByText(expectedDate)).toBeInTheDocument();
+        });
+    });
+
+    describe('Table Structure', () => {
+        it('should display correct table headers', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
+                },
+                error: null,
+            });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                ],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            render(page);
+
+            expect(screen.getByText('Order Number')).toBeInTheDocument();
+            expect(screen.getByText('Customer')).toBeInTheDocument();
+            expect(screen.getByText('Total')).toBeInTheDocument();
+            expect(screen.getByText('Status')).toBeInTheDocument();
+            expect(screen.getByText('Date')).toBeInTheDocument();
+            expect(screen.getByText('Action')).toBeInTheDocument();
+        });
+
+        it('should display order data in correct table structure', async () => {
+            mockGetDashboardMetrics.mockResolvedValue({
+                data: {
+                    total_orders: 10,
+                    orders_this_month: 5,
+                    total_revenue: 500,
+                    pending_orders: 2,
+                },
+                error: null,
+            });
+
+            mockGetRecentOrders.mockResolvedValue({
+                data: [
+                    {
+                        id: '1',
+                        order_number: 'ORD-001',
+                        customer_name: 'John Doe',
+                        customer_email: 'john@example.com',
+                        total: '99.99',
+                        status: 'pending',
+                        created_at: '2024-01-15T10:00:00Z',
+                    },
+                ],
+                error: null,
+            });
+
+            const page = await AdminPage();
+            const { container } = render(page);
+
+            const table = container.querySelector('table');
+            expect(table).toBeInTheDocument();
+
+            const thead = table?.querySelector('thead');
+            expect(thead).toBeInTheDocument();
+
+            const tbody = table?.querySelector('tbody');
+            expect(tbody).toBeInTheDocument();
+
+            const rows = tbody?.querySelectorAll('tr');
+            expect(rows?.length).toBe(1);
         });
     });
 });

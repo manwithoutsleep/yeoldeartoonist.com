@@ -38,6 +38,12 @@ Complete guide to all documentation files for yeoldeartoonist.com MVP.
 - **[src/lib/supabase/client.ts](./src/lib/supabase/client.ts)** - Browser Supabase client
 - **[src/lib/supabase/server.ts](./src/lib/supabase/server.ts)** - Server Supabase client
 
+### Security & Architecture
+
+- **[ADMIN_RLS_CURRENT_STATUS.md](./ADMIN_RLS_CURRENT_STATUS.md)** - Admin RLS implementation analysis and recommendations
+- **[ADMIN_RLS_PATTERNS.md](./ADMIN_RLS_PATTERNS.md)** - Complete guide to admin user management with RLS
+- **[ADMIN_RLS_QUICK_REFERENCE.md](./ADMIN_RLS_QUICK_REFERENCE.md)** - Quick reference for RLS patterns
+
 ---
 
 ## 📋 Documentation by Phase
@@ -133,6 +139,12 @@ Email integration and production deployment.
 
 → [src/lib/db/migrations/001_initial_schema.sql](./src/lib/db/migrations/001_initial_schema.sql)
 
+### "I want to understand admin RLS patterns"
+
+→ Start: [ADMIN_RLS_CURRENT_STATUS.md](./ADMIN_RLS_CURRENT_STATUS.md)
+→ Quick Ref: [ADMIN_RLS_QUICK_REFERENCE.md](./ADMIN_RLS_QUICK_REFERENCE.md)
+→ Full Guide: [ADMIN_RLS_PATTERNS.md](./ADMIN_RLS_PATTERNS.md)
+
 ### "I want to see what code was created"
 
 → Files in `src/` directory (see Project Structure section below)
@@ -152,7 +164,10 @@ yeoldeartoonist.com/
 │   ├── PHASE_1_SUMMARY.md ................... Implementation summary
 │   ├── PHASE_1_VERIFICATION.md .............. Verification checklist
 │   ├── PHASE_1_READY.md ..................... Status report
-│   └── IMPLEMENTATION_COMPLETE.md ........... Completion summary
+│   ├── IMPLEMENTATION_COMPLETE.md ........... Completion summary
+│   ├── ADMIN_RLS_CURRENT_STATUS.md .......... Admin RLS analysis
+│   ├── ADMIN_RLS_PATTERNS.md ................ Complete RLS guide
+│   └── ADMIN_RLS_QUICK_REFERENCE.md ......... RLS quick reference
 │
 ├── Source Code
 │   ├── src/
@@ -192,7 +207,7 @@ yeoldeartoonist.com/
 
 | Metric              | Value      |
 | ------------------- | ---------- |
-| Documentation files | 9          |
+| Documentation files | 12         |
 | Source code files   | 8          |
 | Database tables     | 8          |
 | TypeScript types    | 50+        |

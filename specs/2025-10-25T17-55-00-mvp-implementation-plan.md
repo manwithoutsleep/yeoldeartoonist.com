@@ -96,7 +96,7 @@ Set up the complete project infrastructure, database, and development environmen
     NEXT_PUBLIC_SITE_NAME=Ye Olde Artoonist
 
     RESEND_API_KEY=xxx
-    RESEND_FROM_EMAIL=orders@yeoldeartoonist.com
+    EMAIL_FROM_ADDRESS=orders@yeoldeartoonist.com
 
     CART_SESSION_SECRET=generate-a-random-32-char-string
     ```

@@ -7,9 +7,10 @@
         "build": "next build --turbopack",
         "build:full": "npm run lint && npx tsc --noEmit && next build --turbopack",
         "start": "next start",
-        "lint": "eslint",
+        "lint": "eslint . --max-warnings 0",
         "test": "vitest run",
         "test:watch": "vitest",
+        "test:unit": "vitest",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest run --coverage",
         "db:start": "supabase start",
@@ -20,6 +21,7 @@
         "db:reset": "supabase db reset",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
+        "format:fix": "prettier --write .",
         "prepare": "husky"
     },
     "browserslist": [
@@ -70,6 +72,7 @@
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
             "eslint --fix",
+            "eslint --max-warnings 0",
             "prettier --write",
             "vitest related --run"
         ],

@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { AdminLayoutClient } from '@/components/admin/AdminLayoutClient';
 
 interface AdminSession {
@@ -31,6 +31,15 @@ export default async function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
+    // Check if this is the login page - if so, just render children without layout
+    const headersList = await headers();
+    const pathname = headersList.get('x-pathname') || '';
+
+    if (pathname === '/admin/login') {
+        // Login page has its own layout, just return children
+        return <>{children}</>;
+    }
+
     // Read session from cookie server-side
     // The middleware ensures this cookie exists for all /admin routes except /admin/login
     const cookieStore = await cookies();

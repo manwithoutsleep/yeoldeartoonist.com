@@ -21,20 +21,26 @@ export async function middleware(request: NextRequest) {
 
     // Only protect admin routes (but allow login without auth)
     if (!pathname.startsWith('/admin')) {
-        return NextResponse.next({
+        const response = NextResponse.next({
             request: {
                 headers: request.headers,
             },
         });
+        // Add pathname header for layout
+        response.headers.set('x-pathname', pathname);
+        return response;
     }
 
     // Allow login page without authentication
     if (pathname === '/admin/login') {
-        return NextResponse.next({
+        const response = NextResponse.next({
             request: {
                 headers: request.headers,
             },
         });
+        // Add pathname header for layout to detect login page
+        response.headers.set('x-pathname', pathname);
+        return response;
     }
 
     // Validate required environment variables
@@ -188,6 +194,9 @@ export async function middleware(request: NextRequest) {
         sameSite: 'lax',
         maxAge: 15 * 60, // 15 minutes
     });
+
+    // Add pathname header for layout
+    supabaseResponse.headers.set('x-pathname', pathname);
 
     return supabaseResponse;
 }

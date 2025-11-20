@@ -11,12 +11,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import AdminLayout from '@/app/admin/layout';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
+import type { ReadonlyHeaders } from 'next/dist/server/web/spec-extension/adapters/headers';
 
 // Mock next/headers
 vi.mock('next/headers', () => ({
     cookies: vi.fn(),
+    headers: vi.fn(),
 }));
 
 // Mock AdminLayoutClient component
@@ -39,6 +41,7 @@ vi.mock('@/components/admin/AdminLayoutClient', () => ({
 }));
 
 const mockCookies = vi.mocked(cookies);
+const mockHeaders = vi.mocked(headers);
 
 /**
  * Helper function to create a properly typed mock cookies object
@@ -57,11 +60,31 @@ function createMockCookies(
     } as unknown as ReadonlyRequestCookies;
 }
 
+/**
+ * Helper function to create a mock headers object
+ */
+function createMockHeaders(pathname: string = '/admin'): ReadonlyHeaders {
+    return {
+        get: vi.fn((name: string) => {
+            if (name === 'x-pathname') return pathname;
+            return null;
+        }),
+        entries: vi.fn(),
+        forEach: vi.fn(),
+        has: vi.fn(),
+        keys: vi.fn(),
+        values: vi.fn(),
+        [Symbol.iterator]: vi.fn(),
+    } as unknown as ReadonlyHeaders;
+}
+
 describe('AdminLayout', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Clear console.error mock between tests
         vi.spyOn(console, 'error').mockImplementation(() => {});
+        // Default headers mock - not login page
+        mockHeaders.mockResolvedValue(createMockHeaders('/admin'));
     });
 
     describe('Session Cookie Handling', () => {

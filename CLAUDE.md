@@ -232,9 +232,13 @@ Any route under `/admin` is automatically protected by proxy (formerly middlewar
 
 ## Documentation
 
-All project documentation is in the `docs/` folder. Start with:
+All project documentation is in the `.docs/` folder. Start with:
 
-- `docs/INDEX.md` - Full documentation index
-- `docs/QUICK_START.md` - 5-minute setup test
-- `docs/SETUP.md` - Detailed configuration guide
-- `docs/MIGRATIONS_GUIDE.md` - Database migration workflow
+- `.docs/INDEX.md` - Full documentation index
+- `.docs/QUICK_START.md` - 5-minute setup test
+- `.docs/SETUP.md` - Detailed configuration guide
+- `.docs/MIGRATIONS_GUIDE.md` - Database migration workflow
+
+## Specifications
+
+All project specifications and planning documents are in the `.specs/` folder. This includes architecture plans, implementation plans, wireframes, and assets.

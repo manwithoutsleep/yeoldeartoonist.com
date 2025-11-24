@@ -69,7 +69,7 @@ export function AdminHeader({
             {/* Logo */}
             <Link
                 href="/admin"
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity font-bold text-lg"
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity font-bold text-lg admin-header-title"
                 aria-label="Dashboard"
             >
                 <div className="w-8 h-8 bg-black rounded flex items-center justify-center text-white text-xs font-bold">

@@ -79,8 +79,8 @@ export function AdminNavigation({
                         href={link.href}
                         className={`px-4 py-2 transition-colors ${
                             isActive(link.href)
-                                ? 'border-b-2 border-black font-semibold'
-                                : 'text-gray-700 hover:text-black'
+                                ? 'admin-nav-active'
+                                : 'admin-nav-inactive'
                         }`}
                     >
                         {link.label}

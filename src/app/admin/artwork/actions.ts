@@ -17,6 +17,8 @@ export async function createArtworkAction(data: ArtworkFormData) {
     }
 
     revalidatePath('/admin/artwork');
+    revalidatePath('/gallery');
+    revalidatePath('/shoppe');
     redirect('/admin/artwork');
 }
 
@@ -29,6 +31,8 @@ export async function updateArtworkAction(id: string, data: ArtworkFormData) {
 
     revalidatePath('/admin/artwork');
     revalidatePath(`/admin/artwork/${id}`);
+    revalidatePath('/gallery');
+    revalidatePath('/shoppe');
     redirect('/admin/artwork');
 }
 
@@ -40,4 +44,6 @@ export async function deleteArtworkAction(id: string) {
     }
 
     revalidatePath('/admin/artwork');
+    revalidatePath('/gallery');
+    revalidatePath('/shoppe');
 }

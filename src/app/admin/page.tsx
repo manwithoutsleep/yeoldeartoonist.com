@@ -13,6 +13,9 @@ import Link from 'next/link';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { getDashboardMetrics, getRecentOrders } from '@/lib/db/admin/dashboard';
 
+// Force dynamic rendering - this page uses cookies via Supabase client
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
     // Fetch data server-side
     const metricsResult = await getDashboardMetrics();

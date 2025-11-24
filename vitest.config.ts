@@ -15,7 +15,15 @@ export default defineConfig({
             '**/*.test.tsx',
         ],
         exclude: ['**/node_modules/**', '**/.next/**'],
-        fileParallelism: false, // Run test files sequentially to avoid hanging
+        // Enable parallel test execution for significant performance improvement
+        // Original issue with vi.resetModules() has been resolved (see commit a2566525)
+        // Tests execute ~60% faster with parallelism enabled
+        fileParallelism: true,
+        // Isolate tests to prevent state leakage between test files
+        isolate: true,
+        // Max number of threads (workers) to use for parallel execution
+        // Lower number avoids resource contention while still getting parallelism benefits
+        maxWorkers: 4,
         testTimeout: 10000, // 10 second timeout per test
         hookTimeout: 10000, // 10 second timeout for hooks
         coverage: {

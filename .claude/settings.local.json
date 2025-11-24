@@ -39,7 +39,13 @@
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
             "WebSearch",
-            "Bash(npx next info)"
+            "Bash(npx next info)",
+            "Bash(timeout:*)",
+            "Bash(ping:*)",
+            "Bash(nul)",
+            "Bash(tsc:*)",
+            "Skill(verify-code)",
+            "Bash(tee:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

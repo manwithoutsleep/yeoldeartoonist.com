@@ -1,12 +1,37 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArtworkRow } from '@/lib/db/admin/artwork';
+import { deleteArtworkAction } from '@/app/admin/artwork/actions';
+import { useState } from 'react';
 
 interface ArtworkListProps {
     artwork: ArtworkRow[];
 }
 
 export default function ArtworkList({ artwork }: ArtworkListProps) {
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const handleDelete = async (id: string, title: string) => {
+        if (!confirm(`Delete "${title}"? This cannot be undone.`)) {
+            return;
+        }
+
+        setDeletingId(id);
+        try {
+            await deleteArtworkAction(id);
+            // The action will revalidate the path, causing the page to refresh
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to delete artwork'
+            );
+            setDeletingId(null);
+        }
+    };
+
     if (!artwork || artwork.length === 0) {
         return (
             <div className="p-8 text-center text-gray-500 bg-white rounded-lg border border-gray-200">
@@ -107,21 +132,16 @@ export default function ArtworkList({ artwork }: ArtworkListProps) {
                                 </Link>
                                 <button
                                     type="button"
-                                    className="text-red-600 hover:text-red-900"
+                                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
                                     aria-label={`Delete ${item.title}`}
-                                    onClick={() => {
-                                        // TODO: Implement delete confirmation
-                                        if (
-                                            confirm(
-                                                'Are you sure you want to delete this artwork?'
-                                            )
-                                        ) {
-                                            // Call delete action (passed via props or context later)
-                                            console.log('Delete', item.id);
-                                        }
-                                    }}
+                                    disabled={deletingId === item.id}
+                                    onClick={() =>
+                                        handleDelete(item.id, item.title)
+                                    }
                                 >
-                                    Delete
+                                    {deletingId === item.id
+                                        ? 'Deleting...'
+                                        : 'Delete'}
                                 </button>
                             </td>
                         </tr>

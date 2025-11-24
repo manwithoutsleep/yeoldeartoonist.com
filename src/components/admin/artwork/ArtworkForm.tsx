@@ -4,16 +4,46 @@ import { useForm, type FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { artworkSchema, type ArtworkFormData } from '@/lib/validation/artwork';
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { z } from 'zod';
+
+/**
+ * Converts an array of tags to a comma-separated string
+ */
+function tagsToString(tags: string[] | null | undefined): string {
+    if (!tags || tags.length === 0) return '';
+    return tags.join(', ');
+}
+
+/**
+ * Converts a comma-separated string to an array of tags
+ */
+function stringToTags(str: string): string[] | null {
+    if (!str || str.trim() === '') return null;
+    return str
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+}
 
 interface ArtworkFormProps {
     initialData?: Partial<ArtworkFormData>;
     onSubmit?: (data: ArtworkFormData) => Promise<void> | void;
 }
 
+// Form schema with tags as string instead of array
+const formSchema = artworkSchema.extend({
+    tags: z.string().optional().nullable(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 export default function ArtworkForm({
     initialData,
     onSubmit,
 }: ArtworkFormProps) {
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -21,31 +51,42 @@ export default function ArtworkForm({
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<ArtworkFormData>({
-        resolver: zodResolver(artworkSchema),
+    } = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
         defaultValues: {
-            title: '',
-            slug: '',
-            description: '',
-            price: '',
-            inventory_count: 0,
-            is_published: false,
-            is_featured: false,
-            is_limited_edition: false,
-            medium: '',
-            dimensions: '',
-            year_created: new Date().getFullYear(),
-            display_order: 0,
-            ...initialData,
+            title: initialData?.title || '',
+            slug: initialData?.slug || '',
+            description: initialData?.description || '',
+            price: initialData?.price || '',
+            original_price: initialData?.original_price || '',
+            sku: initialData?.sku || '',
+            inventory_count: initialData?.inventory_count || 0,
+            is_published: initialData?.is_published || false,
+            is_featured: initialData?.is_featured || false,
+            is_limited_edition: initialData?.is_limited_edition || false,
+            medium: initialData?.medium || '',
+            dimensions: initialData?.dimensions || '',
+            year_created: initialData?.year_created || new Date().getFullYear(),
+            display_order: initialData?.display_order || 0,
+            alt_text: initialData?.alt_text || '',
+            seo_title: initialData?.seo_title || '',
+            seo_description: initialData?.seo_description || '',
+            tags: tagsToString(initialData?.tags),
         },
     });
 
-    const handleFormSubmit = async (data: FieldValues) => {
+    const handleFormSubmit = async (formData: FieldValues) => {
         setIsSubmitting(true);
         setSubmitError(null);
         try {
             if (onSubmit) {
-                await onSubmit(data as ArtworkFormData);
+                // Convert tags string to array
+                const data = formData as FormValues;
+                const submissionData: ArtworkFormData = {
+                    ...data,
+                    tags: stringToTags(data.tags || ''),
+                };
+                await onSubmit(submissionData);
             }
         } catch (error) {
             setSubmitError(
@@ -68,71 +109,55 @@ export default function ArtworkForm({
             )}
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                    <label
-                        htmlFor="title"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="title" className="admin-label">
                         Title
                     </label>
                     <input
                         id="title"
                         type="text"
                         {...register('title')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                     {errors.title && (
-                        <p className="text-sm text-red-600">
-                            {errors.title.message}
-                        </p>
+                        <p className="admin-error">{errors.title.message}</p>
                     )}
                 </div>
 
-                <div className="space-y-2">
-                    <label
-                        htmlFor="slug"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="slug" className="admin-label">
                         Slug
                     </label>
                     <input
                         id="slug"
                         type="text"
                         {...register('slug')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                     {errors.slug && (
-                        <p className="text-sm text-red-600">
-                            {errors.slug.message}
-                        </p>
+                        <p className="admin-error">{errors.slug.message}</p>
                     )}
                 </div>
 
-                <div className="col-span-2 space-y-2">
-                    <label
-                        htmlFor="description"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="description" className="admin-label">
                         Description
                     </label>
                     <textarea
                         id="description"
                         rows={4}
                         {...register('description')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                     {errors.description && (
-                        <p className="text-sm text-red-600">
+                        <p className="admin-error">
                             {errors.description.message}
                         </p>
                     )}
                 </div>
 
                 <div className="space-y-2">
-                    <label
-                        htmlFor="price"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                    <label htmlFor="price" className="admin-label">
                         Price
                     </label>
                     <div className="relative rounded-md shadow-sm">
@@ -142,23 +167,65 @@ export default function ArtworkForm({
                         <input
                             id="price"
                             type="text"
-                            {...register('price')}
-                            className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            {...register('price', {
+                                setValueAs: (v) => (v === '' ? '' : String(v)),
+                            })}
+                            className="admin-input !pl-6"
                             placeholder="0.00"
                         />
                     </div>
                     {errors.price && (
-                        <p className="text-sm text-red-600">
-                            {errors.price.message}
+                        <p className="admin-error">{errors.price.message}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="original_price" className="admin-label">
+                        Original Price
+                    </label>
+                    <div className="relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <input
+                            id="original_price"
+                            type="text"
+                            {...register('original_price', {
+                                setValueAs: (v) =>
+                                    v === ''
+                                        ? ''
+                                        : v === null
+                                          ? null
+                                          : String(v),
+                            })}
+                            className="admin-input !pl-6"
+                            placeholder="0.00"
+                        />
+                    </div>
+                    {errors.original_price && (
+                        <p className="admin-error">
+                            {errors.original_price.message}
                         </p>
                     )}
                 </div>
 
                 <div className="space-y-2">
-                    <label
-                        htmlFor="inventory_count"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                    <label htmlFor="sku" className="admin-label">
+                        SKU
+                    </label>
+                    <input
+                        id="sku"
+                        type="text"
+                        {...register('sku')}
+                        className="admin-input"
+                    />
+                    {errors.sku && (
+                        <p className="admin-error">{errors.sku.message}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="inventory_count" className="admin-label">
                         Inventory Count
                     </label>
                     <input
@@ -167,72 +234,60 @@ export default function ArtworkForm({
                         {...register('inventory_count', {
                             valueAsNumber: true,
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                     {errors.inventory_count && (
-                        <p className="text-sm text-red-600">
+                        <p className="admin-error">
                             {errors.inventory_count.message}
                         </p>
                     )}
                 </div>
 
-                <div className="space-y-2">
-                    <label
-                        htmlFor="medium"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="medium" className="admin-label">
                         Medium
                     </label>
                     <input
                         id="medium"
                         type="text"
                         {...register('medium')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                 </div>
 
-                <div className="space-y-2">
-                    <label
-                        htmlFor="dimensions"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                <div className="md:col-span-2 space-y-2">
+                    <label htmlFor="dimensions" className="admin-label">
                         Dimensions
                     </label>
                     <input
                         id="dimensions"
                         type="text"
                         {...register('dimensions')}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label
-                        htmlFor="year_created"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                    <label htmlFor="year_created" className="admin-label">
                         Year Created
                     </label>
                     <input
                         id="year_created"
                         type="number"
                         {...register('year_created', { valueAsNumber: true })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label
-                        htmlFor="display_order"
-                        className="block text-sm font-medium text-gray-700"
-                    >
+                    <label htmlFor="display_order" className="admin-label">
                         Display Order
                     </label>
                     <input
                         id="display_order"
                         type="number"
                         {...register('display_order', { valueAsNumber: true })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="admin-input"
                     />
                 </div>
             </div>
@@ -284,14 +339,98 @@ export default function ArtworkForm({
                 </div>
             </div>
 
-            <div className="flex justify-end pt-4">
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 border-t border-gray-200 pt-6">
+                <div className="col-span-2 space-y-2">
+                    <label htmlFor="alt_text" className="admin-label">
+                        Alt Text
+                    </label>
+                    <input
+                        id="alt_text"
+                        type="text"
+                        {...register('alt_text')}
+                        className="admin-input"
+                        placeholder="Descriptive text for screen readers"
+                    />
+                    {errors.alt_text && (
+                        <p className="admin-error">{errors.alt_text.message}</p>
+                    )}
+                </div>
+
+                <div className="col-span-2 space-y-2">
+                    <label htmlFor="tags" className="admin-label">
+                        Tags
+                    </label>
+                    <input
+                        id="tags"
+                        type="text"
+                        {...register('tags')}
+                        className="admin-input"
+                        placeholder="Enter tags separated by commas"
+                    />
+                    {errors.tags && (
+                        <p className="admin-error">{errors.tags.message}</p>
+                    )}
+                </div>
+
+                <div className="col-span-2 space-y-2">
+                    <label htmlFor="seo_title" className="admin-label">
+                        SEO Title
+                    </label>
+                    <input
+                        id="seo_title"
+                        type="text"
+                        {...register('seo_title')}
+                        className="admin-input"
+                    />
+                    {errors.seo_title && (
+                        <p className="admin-error">
+                            {errors.seo_title.message}
+                        </p>
+                    )}
+                </div>
+
+                <div className="col-span-2 space-y-2">
+                    <label htmlFor="seo_description" className="admin-label">
+                        SEO Description
+                    </label>
+                    <textarea
+                        id="seo_description"
+                        rows={3}
+                        {...register('seo_description')}
+                        className="admin-input"
+                    />
+                    {errors.seo_description && (
+                        <p className="admin-error">
+                            {errors.seo_description.message}
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                <Link
+                    href="/admin/artwork"
+                    className="text-sm text-gray-600 hover:text-gray-900"
                 >
-                    {isSubmitting ? 'Saving...' : 'Save Artwork'}
-                </button>
+                    ← Back to Artwork List
+                </Link>
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        disabled={isSubmitting}
+                        className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                        {isSubmitting ? 'Saving...' : 'Save Artwork'}
+                    </button>
+                </div>
             </div>
         </form>
     );

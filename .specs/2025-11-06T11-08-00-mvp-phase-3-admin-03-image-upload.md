@@ -312,23 +312,23 @@ export async function POST(request: NextRequest) {
 
 ## Success Criteria
 
-- [ ] All image utility tests pass (100% coverage)
-- [ ] All API route tests pass (90%+ coverage)
-- [ ] All ImageUploader tests pass (80-85% coverage)
-- [ ] TypeScript compiles without errors
-- [ ] ESLint passes with no warnings
-- [ ] Prettier formatting applied
-- [ ] Can upload image in create artwork form
-- [ ] 3 variants created in Supabase Storage
-- [ ] URLs stored correctly in database
-- [ ] File type validation works
-- [ ] File size validation works
-- [ ] Image preview displays correctly
-- [ ] Can replace image in edit mode
-- [ ] Upload progress indicator works
-- [ ] Error messages display correctly
-- [ ] Manual testing checklist complete
-- [ ] The verify-code skill has been successfully executed
+- [x] All image utility tests pass (100% coverage)
+- [x] All API route tests pass (90%+ coverage)
+- [x] All ImageUploader tests pass (80-85% coverage)
+- [x] TypeScript compiles without errors
+- [x] ESLint passes with no warnings
+- [x] Prettier formatting applied
+- [x] Can upload image in create artwork form
+- [x] 3 variants created in Supabase Storage
+- [x] URLs stored correctly in database
+- [x] File type validation works
+- [x] File size validation works
+- [x] Image preview displays correctly
+- [x] Can replace image in edit mode
+- [x] Upload progress indicator works
+- [x] Error messages display correctly
+- [x] Manual testing checklist complete
+- [x] The verify-code skill has been successfully executed
 
 ## Notes
 

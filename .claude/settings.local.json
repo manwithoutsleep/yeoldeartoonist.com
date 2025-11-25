@@ -45,7 +45,8 @@
             "Bash(nul)",
             "Bash(tsc:*)",
             "Skill(verify-code)",
-            "Bash(tee:*)"
+            "Bash(tee:*)",
+            "Bash(test:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

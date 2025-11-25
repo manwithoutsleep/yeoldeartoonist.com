@@ -7,6 +7,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 /**
  * Converts an array of tags to a comma-separated string
@@ -46,6 +47,15 @@ export default function ArtworkForm({
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [imageUrls, setImageUrls] = useState<{
+        image_thumbnail_url?: string;
+        image_url?: string;
+        image_large_url?: string;
+    }>({
+        image_thumbnail_url: initialData?.image_thumbnail_url || undefined,
+        image_url: initialData?.image_url || undefined,
+        image_large_url: initialData?.image_large_url || undefined,
+    });
 
     const {
         register,
@@ -80,11 +90,12 @@ export default function ArtworkForm({
         setSubmitError(null);
         try {
             if (onSubmit) {
-                // Convert tags string to array
+                // Convert tags string to array and include image URLs
                 const data = formData as FormValues;
                 const submissionData: ArtworkFormData = {
                     ...data,
                     tags: stringToTags(data.tags || ''),
+                    ...imageUrls, // Include uploaded image URLs
                 };
                 await onSubmit(submissionData);
             }
@@ -107,6 +118,18 @@ export default function ArtworkForm({
                     {submitError}
                 </div>
             )}
+
+            {/* Image Upload Section */}
+            <div className="pb-6 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Artwork Image
+                </h3>
+                <ImageUploader
+                    onUploadComplete={(urls) => setImageUrls(urls)}
+                    existingImageUrl={initialData?.image_url || undefined}
+                    maxSizeMB={10}
+                />
+            </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="md:col-span-2 space-y-2">

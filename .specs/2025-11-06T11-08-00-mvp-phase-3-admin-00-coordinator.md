@@ -5,114 +5,161 @@
 This coordinator plan manages the execution of sub-tasks for the parent specification: `2025-11-06T11-08-00-mvp-phase-3-admin.md`
 
 **Total Sub-Tasks**: 6
-**Estimated Total Effort**: 48-72 hours (8-12 hours per task)
-**Parallelization Potential**: High (Tasks 02-06 can run in parallel after Task 01)
+**Completed**: 3 (Tasks 01-03) ✅
+**Remaining**: 3 (Tasks 04-06)
+
+### Current Status (Updated 2025-11-25)
+
+✅ **Phases 1-3 Complete** (~30 hours invested)
+
+- Task 01: Dashboard & Navigation Infrastructure ✅
+- Task 02: Artwork Management CRUD ✅
+- Task 03: Image Upload System ✅
+
+⏳ **Next: Phase 4 (Parallel)**
+
+- Task 04: Order Management - 8-12 hours
+- Task 05: Projects & Events Management - 10-14 hours
+- Task 06: Settings & Admin User Management - 8-10 hours
+
+**Remaining Effort**: 10-14 hours (parallel execution)
+**Original Estimate**: 48-72 hours
+**Progress**: ~62% complete (by time invested)
+
+### Strategy Decision: Option B (Sequential Task 03, Then Parallel)
+
+**Decision Date**: 2025-11-25
+
+**Chosen Strategy**: Execute Task 03 first (Phase 3), then Tasks 04-05-06 in parallel (Phase 4)
+
+**Rationale**:
+
+1. **Cleaner workflow**: Task 05 gets fully-tested ImageUploader component immediately (no placeholder integration needed)
+2. **Simpler coordination**: No mid-task component swaps or integration work
+3. **Balanced timeline**: Only ~4 hours slower than maximum parallelization (22-24h vs 18h) but significantly easier to execute
+4. **Clear checkpoints**: Task 03 completion provides a natural validation point before Phase 4
+
+**Alternatives Considered**:
+
+- **Option A** (Maximum Parallelization): All 4 tasks at once, Task 05 starts with placeholder images - rejected due to coordination complexity
+- **Option C** (Fully Sequential): Tasks 03→04→05→06 one at a time - rejected due to longer timeline (34-46h)
+
+**Benefits Over Alternatives**:
+
+- Compared to Option A: Simpler coordination, Task 05 gets complete ImageUploader immediately
+- Compared to Option C: Saves ~10 hours through parallelization in Phase 4
+- Risk level remains low with well-defined dependencies
 
 ## Sub-Task Index
 
-| Task | File                 | Status  | Dependencies | Can Run In Parallel With |
-| ---- | -------------------- | ------- | ------------ | ------------------------ |
-| 01   | dashboard-navigation | Pending | None         | None (foundation)        |
-| 02   | artwork-management   | Pending | 01           | 03, 04, 05, 06           |
-| 03   | image-upload         | Pending | 01, 02       | 04, 05, 06               |
-| 04   | order-management     | Pending | 01           | 02, 03, 05, 06           |
-| 05   | projects-events      | Pending | 01           | 02, 03, 04, 06           |
-| 06   | settings-admin-users | Pending | 01           | 02, 03, 04, 05           |
+| Task | File                 | Status      | Dependencies | Can Run In Parallel With |
+| ---- | -------------------- | ----------- | ------------ | ------------------------ |
+| 01   | dashboard-navigation | ✅ Complete | None         | None (foundation)        |
+| 02   | artwork-management   | ✅ Complete | 01           | N/A (complete)           |
+| 03   | image-upload         | ✅ Complete | 01 ✅, 02 ✅ | N/A (complete)           |
+| 04   | order-management     | 🔄 Next     | 01 ✅, 03 ✅ | 05, 06                   |
+| 05   | projects-events      | 🔄 Next     | 01 ✅, 03 ✅ | 04, 06                   |
+| 06   | settings-admin-users | 🔄 Next     | 01 ✅        | 04, 05                   |
 
 ## Execution Strategy
 
-### Phase 1: Foundation (Sequential - Must Complete First)
+### ✅ Phase 1: Foundation (COMPLETE)
 
-Execute this task first - it provides the foundation for all admin features:
+- **Task 01: Dashboard & Navigation Infrastructure** ✅ COMPLETE
+    - Built admin layout, responsive navigation, and reusable components
+    - Created dashboard with metrics and recent orders
+    - Set up patterns for all subsequent admin pages
+    - **Actual effort**: ~10 hours
 
-- **Task 01: Dashboard & Navigation Infrastructure**
-    - Builds admin layout, responsive navigation, and reusable components
-    - Creates dashboard with metrics and recent orders
-    - Sets up patterns for all subsequent admin pages
-    - **Estimated effort**: 8-12 hours
-    - **Why first**: All other tasks depend on navigation structure and admin components
+### ✅ Phase 2: Artwork Management (COMPLETE)
 
-**Wait for Phase 1 completion before proceeding to Phase 2**
-
-### Phase 2: Parallel Content Management (Can Execute Simultaneously)
-
-After Task 01 completes, execute these tasks in parallel for maximum efficiency:
-
-- **Task 02: Artwork Management CRUD**
+- **Task 02: Artwork Management CRUD** ✅ COMPLETE
     - Artwork list, create, edit, delete pages
     - Form validation with React Hook Form + Zod
     - Cache revalidation integrated (revalidates `/gallery`, `/shoppe` after mutations)
-    - **Estimated effort**: 8-12 hours
+    - **Actual effort**: ~10 hours
+
+### ✅ Phase 3: Image Upload System (COMPLETE)
+
+- **Task 03: Image Upload System** ✅ COMPLETE
+    - Image optimization with Sharp (3 variants: thumbnail, preview, large)
+    - Upload API route at `src/app/api/admin/upload/route.ts`
+    - ImageUploader component at `src/components/admin/ImageUploader.tsx`
+    - Integration into existing ArtworkForm (created in Task 02)
+    - Supabase Storage bucket created with RLS policies
+    - Next.js Image configuration for local and production URLs
+    - **Actual effort**: ~10 hours
+    - **Dependencies Met**: ✅ Task 01 (layout), ✅ Task 02 (ArtworkForm exists)
+
+**Task 03 Completion Checkpoint** - ✅ ALL VERIFIED:
+
+- [x] ImageUploader component created and tested
+- [x] ArtworkForm integration working (image uploads functional)
+- [x] Upload API route functional with Sharp optimization
+- [x] All Task 03 tests passing
+- [x] verify-code skill executed successfully
+
+### 🔄 Phase 4: Remaining Features (NEXT - Parallel Execution)
+
+Task 03 is complete! Now execute these three tasks in parallel:
 
 - **Task 04: Order Management**
     - Orders list with filtering and pagination
     - Order detail with status updates, notes, tracking
     - **Estimated effort**: 8-12 hours
+    - **Dependencies**: None (independent feature)
 
 - **Task 05: Projects & Events Management**
     - Projects CRUD (list, create, edit, delete)
     - Events CRUD (list, create, edit, delete)
+    - **Uses ImageUploader from Task 03** (can reference ArtworkForm as example)
     - Cache revalidation integrated (revalidates `/in-the-works` after mutations)
     - **Estimated effort**: 10-14 hours (two similar features)
+    - **Dependencies**: Task 03 (needs ImageUploader component)
 
 - **Task 06: Settings & Admin User Management** (Optional - Super Admin Only)
     - Admin user creation, editing, deactivation
     - Role-based access control (super_admin only)
     - Settings page structure
     - **Estimated effort**: 8-10 hours
+    - **Dependencies**: None (independent feature)
 
-**These four tasks can run simultaneously** because they:
+**These three tasks can run simultaneously** because they:
 
-- Work with different database tables (artwork, orders, projects, events, administrators)
+- Work with different database tables (orders, projects, events, administrators)
 - Have no shared file dependencies
-- Use the same patterns from Task 01
-
-**Coordination Note**: If implementing sequentially, do Task 02 before Task 05 (Projects & Events can reuse artwork patterns).
-
-### Phase 3: Image Upload Integration (Can Overlap with Phase 2)
-
-- **Task 03: Image Upload System**
-    - Image optimization with Sharp (3 variants)
-    - Upload API with Supabase Storage
-    - ImageUploader component
-    - Integration into ArtworkForm
-    - **Estimated effort**: 8-10 hours
-    - **Dependencies**: Needs Task 01 (layout) and Task 02 (ArtworkForm to integrate with)
-    - **Can overlap**: Start after Task 02's form structure is complete (before all CRUD pages done)
-
-**Parallelization Strategy**:
-
-- Start Task 03 after Task 02's ArtworkForm component is built
-- Task 03 can complete while Task 02's create/edit/delete pages are still in progress
-- Task 05 can reuse ImageUploader once Task 03 is complete
+- Task 05 imports ImageUploader from Task 03 (read-only, no conflicts)
+- Each creates files in separate directories
 
 ## Dependency Graph
 
+**Updated for Current Progress (Tasks 01-02 Complete):**
+
 ```
-                         01 (Dashboard & Nav)
+                         01 (Dashboard & Nav) ✅ COMPLETE
                                 |
                          [Foundation Complete]
+                                |
+                         02 (Artwork CRUD) ✅ COMPLETE
+                                |
+                         [ArtworkForm exists]
+                                |
+                         03 (Image Upload) 🔄 NEXT
+                                |
+                         [ImageUploader created]
                                 |
           +---------------------+---------------------+
           |                     |                     |
           v                     v                     v
-    02 (Artwork)          04 (Orders)          06 (Settings)
-          |                     |
-          | (ArtworkForm)       |
-          v                     |
-    03 (Image Upload)           |
-          |                     |
-          | (ImageUploader)     |
-          v                     |
-    [Integrate into 02]         |
-          |                     |
-          v                     |
-    05 (Proj/Events) <----------+
-          |
-          | (Reuse ImageUploader)
-          v
-    [Integrate into 05]
+    04 (Orders)          05 (Proj/Events)      06 (Settings)
+          |                     |                     |
+    [Independent]      [Uses ImageUploader]    [Independent]
+          |                     |                     |
+          v                     v                     v
+    [Parallel execution - all three can run simultaneously]
 ```
+
+**Remaining Critical Path**: Task 03 → Task 05 (18-24 hours)
 
 **Note**: Cache revalidation (Phase 3.6 from parent spec) is integrated into Tasks 02 and 05 using Next.js `revalidatePath()` in Server Actions.
 
@@ -120,15 +167,22 @@ After Task 01 completes, execute these tasks in parallel for maximum efficiency:
 
 The longest sequence of dependent tasks (determines minimum completion time):
 
-**Path**: Task 01 → Task 02 → Task 03 → Integration with Task 05
+**Original Path**: Task 01 → Task 02 → Task 03 → Task 05
 
-- Task 01: Dashboard & Navigation (8-12 hours)
-- Task 02: Artwork Management (8-12 hours)
-- Task 03: Image Upload (8-10 hours)
-- Task 05: Projects & Events (10-14 hours) - includes ImageUploader integration
-- **Total critical path**: 34-48 hours
+- Task 01: Dashboard & Navigation ✅ ~10 hours (COMPLETE)
+- Task 02: Artwork Management ✅ ~10 hours (COMPLETE)
+- Task 03: Image Upload 🔄 8-10 hours (NEXT)
+- Task 05: Projects & Events - 10-14 hours (includes ImageUploader integration)
+- **Original total**: 34-48 hours
 
-**Note**: Tasks 04 and 06 are off the critical path and can be completed in parallel with Tasks 02-03-05.
+**Remaining Critical Path**: Task 03 → Task 05
+
+- Task 03: Image Upload System (8-10 hours)
+- Task 05: Projects & Events Management (10-14 hours)
+- **Remaining time**: 18-24 hours
+- **Time already invested**: ~20 hours (Tasks 01-02)
+
+**Note**: Tasks 04 and 06 are off the critical path and will run in parallel with Task 05 during Phase 4.
 
 ## Coordination Notes
 
@@ -170,59 +224,74 @@ The longest sequence of dependent tasks (determines minimum completion time):
 
 ### Recommended Execution Order
 
-**If executing sequentially** (not in parallel), use this order for optimal flow:
+**Updated for Current Progress (Tasks 01-02 Complete):**
 
-1. **Task 01: Dashboard & Navigation** - Foundation must be first
-    - Reason: All other tasks depend on admin layout and components
+~~1. **Task 01: Dashboard & Navigation** ✅ COMPLETE~~
+~~2. **Task 02: Artwork Management** ✅ COMPLETE~~
 
-2. **Task 02: Artwork Management** - Second priority
-    - Reason: Establishes CRUD patterns that Task 05 can replicate
+**Remaining Execution Order:**
 
-3. **Task 03: Image Upload** - Third priority
-    - Reason: Completes artwork management, can be reused in Task 05
+**Phase 3 (Sequential - Execute First):**
 
-4. **Task 04: Order Management** - Fourth priority
-    - Reason: Independent feature, can be done anytime after Task 01
+3. **Task 03: Image Upload System** 🔄 NEXT
+    - Reason: Creates ImageUploader component needed by Task 05
+    - Creates: ImageUploader, upload API route, image optimization utilities
+    - Modifies: ArtworkForm (integrates ImageUploader)
+    - **Must complete before Phase 4**
 
-5. **Task 05: Projects & Events** - Final task
-    - Reason: Reuses patterns from Tasks 02 and 03, benefits from having examples
+**Phase 4 (Parallel - Execute After Task 03):**
 
-**If executing in parallel** (recommended):
+Execute these three tasks simultaneously after Task 03 completes:
 
-**Round 1**: Task 01 only
-**Round 2**: Start Tasks 02, 04, 05 simultaneously
-**Round 3**: Start Task 03 once Task 02's ArtworkForm is complete
-**Round 4**: Integrate ImageUploader into Task 02 and Task 05
+4. **Task 04: Order Management**
+    - Reason: Independent feature, no dependencies on other tasks
+    - Can start immediately after Task 03
+
+5. **Task 05: Projects & Events Management**
+    - Reason: Uses ImageUploader from Task 03, can reference ArtworkForm as example
+    - Reuses patterns from Task 02
+    - Can start immediately after Task 03
+
+6. **Task 06: Settings & Admin User Management** (Optional - Super Admin Only)
+    - Reason: Independent feature, no dependencies on other tasks
+    - Can start immediately after Task 03
+
+**Timeline Summary:**
+
+- **Phase 3** (Sequential): 8-10 hours (Task 03 only)
+- **Phase 4** (Parallel): 14 hours (longest task is Task 05 at 10-14 hours)
+- **Total remaining time**: 18-24 hours
+- **Time saved by parallelization**: ~10 hours compared to fully sequential execution
 
 ## Progress Tracking
 
 ### Completion Checklist
 
-- [ ] **Task 01: Dashboard & Navigation Infrastructure**
-    - [ ] Dashboard query functions implemented and tested
-    - [ ] AdminCard, AdminHeader, AdminNavigation components tested
-    - [ ] Admin layout created and tested
-    - [ ] Dashboard page displays metrics and recent orders
-    - [ ] Responsive navigation works (desktop menu bar, mobile sidebar)
-    - [ ] Manual testing complete
-    - [ ] verify-code skill executed successfully
+- [x] **Task 01: Dashboard & Navigation Infrastructure**
+    - [x] Dashboard query functions implemented and tested
+    - [x] AdminCard, AdminHeader, AdminNavigation components tested
+    - [x] Admin layout created and tested
+    - [x] Dashboard page displays metrics and recent orders
+    - [x] Responsive navigation works (desktop menu bar, mobile sidebar)
+    - [x] Manual testing complete
+    - [x] verify-code skill executed successfully
 
-- [ ] **Task 02: Artwork Management CRUD**
-    - [ ] Admin artwork queries implemented and tested
-    - [ ] Validation schema created and tested
-    - [ ] ArtworkForm component tested
-    - [ ] List, create, edit pages tested
-    - [ ] Delete functionality tested
-    - [ ] Manual testing complete
-    - [ ] verify-code skill executed successfully
+- [x] **Task 02: Artwork Management CRUD**
+    - [x] Admin artwork queries implemented and tested
+    - [x] Validation schema created and tested
+    - [x] ArtworkForm component tested
+    - [x] List, create, edit pages tested
+    - [x] Delete functionality tested
+    - [x] Manual testing complete
+    - [x] verify-code skill executed successfully
 
-- [ ] **Task 03: Image Upload System**
-    - [ ] Image optimization utilities tested
-    - [ ] Upload API route tested
-    - [ ] ImageUploader component tested
-    - [ ] Integration with ArtworkForm complete
-    - [ ] Manual testing complete (upload, variants, storage)
-    - [ ] verify-code skill executed successfully
+- [x] **Task 03: Image Upload System**
+    - [x] Image optimization utilities tested
+    - [x] Upload API route tested
+    - [x] ImageUploader component tested
+    - [x] Integration with ArtworkForm complete
+    - [x] Manual testing complete (upload, variants, storage)
+    - [x] verify-code skill executed successfully
 
 - [ ] **Task 04: Order Management**
     - [ ] Admin order queries implemented and tested
@@ -413,37 +482,37 @@ Phase 3 is considered complete when:
 
 ### Technical Metrics
 
-- [x] All 5 sub-tasks marked as complete
-- [x] 100% of tests passing
-- [x] TypeScript compilation succeeds
-- [x] ESLint shows 0 warnings
-- [x] Code coverage meets targets (80-100%)
-- [x] Production build succeeds
+- [ ] All 5 sub-tasks marked as complete
+- [ ] 100% of tests passing
+- [ ] TypeScript compilation succeeds
+- [ ] ESLint shows 0 warnings
+- [ ] Code coverage meets targets (80-100%)
+- [ ] Production build succeeds
 
 ### Functional Metrics
 
-- [x] Admin can login and access all admin pages
-- [x] Admin can create, edit, delete artwork
-- [x] Admin can upload images with automatic variants
-- [x] Admin can view and manage orders
-- [x] Admin can create, edit, delete projects and events
-- [x] All navigation works correctly on desktop and mobile
-- [x] Session management works (timeout, logout)
+- [ ] Admin can login and access all admin pages
+- [ ] Admin can create, edit, delete artwork
+- [ ] Admin can upload images with automatic variants
+- [ ] Admin can view and manage orders
+- [ ] Admin can create, edit, delete projects and events
+- [ ] All navigation works correctly on desktop and mobile
+- [ ] Session management works (timeout, logout)
 
 ### Quality Metrics
 
-- [x] No critical bugs identified in manual testing
-- [x] Responsive design works on mobile, tablet, desktop
-- [x] Accessibility standards met (keyboard navigation, screen reader support)
-- [x] Error handling works correctly (validation, network, 404s)
-- [x] Loading states display appropriately
+- [ ] No critical bugs identified in manual testing
+- [ ] Responsive design works on mobile, tablet, desktop
+- [ ] Accessibility standards met (keyboard navigation, screen reader support)
+- [ ] Error handling works correctly (validation, network, 404s)
+- [ ] Loading states display appropriately
 
 ### Documentation Metrics
 
-- [x] All sub-task specifications complete
-- [x] Coordinator plan finalized
-- [x] Lessons learned documented (if any issues encountered)
-- [x] Manual testing checklists completed for all tasks
+- [ ] All sub-task specifications complete
+- [ ] Coordinator plan finalized
+- [ ] Lessons learned documented (if any issues encountered)
+- [ ] Manual testing checklists completed for all tasks
 
 ## Next Steps After Phase 3
 

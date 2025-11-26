@@ -8,6 +8,7 @@
  * IMPORTANT: In Next.js 16, this should be named proxy.ts, but there's a known
  * bug on Windows where proxy.ts doesn't work. We use middleware.ts as a workaround.
  * See: https://github.com/vercel/next.js/issues/85243
+ * We are tracking this issue in our own GitHub issue #15.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';

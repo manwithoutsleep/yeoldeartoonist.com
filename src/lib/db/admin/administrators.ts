@@ -240,9 +240,11 @@ export async function updateAdmin(
     data: UpdateAdminInput
 ): Promise<{ data: AdminRow | null; error: AdministratorError | null }> {
     try {
-        console.log('[updateAdmin] Called with id:', id);
-        console.log('[updateAdmin] data:', data);
-        console.log('[updateAdmin] typeof id:', typeof id);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[updateAdmin] Called with id:', id);
+            console.log('[updateAdmin] data:', data);
+            console.log('[updateAdmin] typeof id:', typeof id);
+        }
 
         if (typeof window !== 'undefined') {
             throw new Error('Admin queries must run server-side only');
@@ -266,7 +268,9 @@ export async function updateAdmin(
             | string
             | undefined;
         if (password) {
-            console.log('[updateAdmin] Password change requested');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[updateAdmin] Password change requested');
+            }
 
             // Get the admin record to find auth_id
             const { data: existingAdmin, error: fetchError } = await supabase
@@ -276,10 +280,12 @@ export async function updateAdmin(
                 .single();
 
             if (fetchError || !existingAdmin) {
-                console.log(
-                    '[updateAdmin] Failed to fetch admin for auth update:',
-                    fetchError
-                );
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(
+                        '[updateAdmin] Failed to fetch admin for auth update:',
+                        fetchError
+                    );
+                }
                 return {
                     data: null,
                     error: {
@@ -290,10 +296,12 @@ export async function updateAdmin(
             }
 
             // Update Supabase Auth password
-            console.log(
-                '[updateAdmin] Updating auth password for auth_id:',
-                existingAdmin.auth_id
-            );
+            if (process.env.NODE_ENV === 'development') {
+                console.log(
+                    '[updateAdmin] Updating auth password for auth_id:',
+                    existingAdmin.auth_id
+                );
+            }
             const { error: authError } =
                 await supabase.auth.admin.updateUserById(
                     existingAdmin.auth_id,
@@ -301,10 +309,12 @@ export async function updateAdmin(
                 );
 
             if (authError) {
-                console.log(
-                    '[updateAdmin] Auth password update failed:',
-                    authError
-                );
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(
+                        '[updateAdmin] Auth password update failed:',
+                        authError
+                    );
+                }
                 return {
                     data: null,
                     error: {
@@ -315,7 +325,9 @@ export async function updateAdmin(
                 };
             }
 
-            console.log('[updateAdmin] Auth password updated successfully');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[updateAdmin] Auth password updated successfully');
+            }
         }
 
         // Remove password fields from data before updating administrators table
@@ -325,10 +337,12 @@ export async function updateAdmin(
         if (data.role !== undefined) dbData.role = data.role;
         if (data.is_active !== undefined) dbData.is_active = data.is_active;
 
-        console.log(
-            '[updateAdmin] About to update administrators table with:',
-            { id, dbData }
-        );
+        if (process.env.NODE_ENV === 'development') {
+            console.log(
+                '[updateAdmin] About to update administrators table with:',
+                { id, dbData }
+            );
+        }
 
         const { data: admin, error } = await supabase
             .from('administrators')
@@ -337,16 +351,20 @@ export async function updateAdmin(
             .select()
             .single();
 
-        console.log('[updateAdmin] Query result - admin:', admin);
-        console.log('[updateAdmin] Query result - error:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[updateAdmin] Query result - admin:', admin);
+            console.log('[updateAdmin] Query result - error:', error);
+        }
 
         if (error) {
-            console.log('[updateAdmin] Error code:', error.code);
-            console.log('[updateAdmin] Error message:', error.message);
-            console.log(
-                '[updateAdmin] Full error:',
-                JSON.stringify(error, null, 2)
-            );
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[updateAdmin] Error code:', error.code);
+                console.log('[updateAdmin] Error message:', error.message);
+                console.log(
+                    '[updateAdmin] Full error:',
+                    JSON.stringify(error, null, 2)
+                );
+            }
 
             if (error.code === 'PGRST116') {
                 return {
@@ -369,7 +387,9 @@ export async function updateAdmin(
 
         return { data: admin, error: null };
     } catch (err) {
-        console.log('[updateAdmin] Exception:', err);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[updateAdmin] Exception:', err);
+        }
         return {
             data: null,
             error: {

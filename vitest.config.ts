@@ -15,6 +15,10 @@ export default defineConfig({
             '**/*.test.tsx',
         ],
         exclude: ['**/node_modules/**', '**/.next/**'],
+        // Use forks instead of worker threads for guaranteed memory cleanup
+        // jsdom has memory leak issues in worker threads that cause test hangs
+        // Forks run tests in child processes where OS reclaims memory completely
+        pool: 'forks',
         // Enable parallel test execution for significant performance improvement
         // Original issue with vi.resetModules() has been resolved (see commit a2566525)
         // Tests execute ~60% faster with parallelism enabled

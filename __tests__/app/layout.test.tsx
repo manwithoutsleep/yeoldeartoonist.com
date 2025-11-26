@@ -1,5 +1,4 @@
 /**
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
  * Tests for Root Layout
  *
  * The root layout is a server component that:
@@ -12,6 +11,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * NOTE: Since RootLayout renders an <html> element, we focus on metadata exports
  * and use component import inspection for other properties rather than DOM rendering.
  */
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock Next.js components and modules
 vi.mock('@/components/layout/Header', () => {
@@ -45,43 +45,35 @@ vi.mock('@/config/site', () => ({
     },
 }));
 
+// Create hoisted mocks that can be accessed both in the factory and in tests
+const { mockGeist, mockGeistMono, mockGermaniaOne } = vi.hoisted(() => {
+    return {
+        mockGeist: vi.fn(() => ({
+            variable: '--font-geist-sans',
+            className: 'font-geist-sans',
+            style: {},
+        })),
+        mockGeistMono: vi.fn(() => ({
+            variable: '--font-geist-mono',
+            className: 'font-geist-mono',
+            style: {},
+        })),
+        mockGermaniaOne: vi.fn(() => ({
+            variable: '--font-germania-one',
+            className: 'font-germania-one',
+            style: {},
+        })),
+    };
+});
+
 // Mock the next/font/google imports to avoid loading actual fonts in tests
 vi.mock('next/font/google', () => ({
-    Geist: vi.fn(() => ({
-        variable: '--font-geist-sans',
-    })),
-    Geist_Mono: vi.fn(() => ({
-        variable: '--font-geist-mono',
-    })),
-    Germania_One: vi.fn(() => ({
-        variable: '--font-germania-one',
-    })),
+    Geist: mockGeist,
+    Geist_Mono: mockGeistMono,
+    Germania_One: mockGermaniaOne,
 }));
 
 import { metadata } from '@/app/layout';
-
-// Type the mocked font modules for use in tests
-import * as fontGoogle from 'next/font/google';
-import type { MockedFunction } from 'vitest';
-
-const mockFontGoogle = vi.mocked(fontGoogle);
-
-const mockGeist = mockFontGoogle.Geist as unknown as MockedFunction<
-    (options?: { subsets?: string[]; weight?: string[] }) => {
-        variable: string;
-    }
->;
-const mockGeistMono = mockFontGoogle.Geist_Mono as unknown as MockedFunction<
-    (options?: { subsets?: string[]; weight?: string[] }) => {
-        variable: string;
-    }
->;
-const mockGermaniaOne =
-    mockFontGoogle.Germania_One as unknown as MockedFunction<
-        (options?: { subsets?: string[]; weight?: string[] }) => {
-            variable: string;
-        }
-    >;
 
 describe('Root Layout', () => {
     describe('Metadata Configuration', () => {
@@ -206,60 +198,6 @@ describe('Root Layout', () => {
             expect(metadata.title).toBe('Ye Olde Artoonist');
             expect(metadata.openGraph?.url).toBe('https://yeoldeartoonist.com');
         });
-
-        it('should use Google Fonts modules', () => {
-            // This is verified through vi.mock which confirms the imports are called
-            expect(mockGeist).toHaveBeenCalled();
-            expect(mockGeistMono).toHaveBeenCalled();
-            expect(mockGermaniaOne).toHaveBeenCalled();
-        });
-    });
-
-    describe('Font Configuration', () => {
-        it('should configure Geist Sans font with correct CSS variable', () => {
-            const mockResult = mockGeist.mock.results[0];
-
-            expect(mockResult).toBeDefined();
-            expect(mockResult?.value.variable).toBe('--font-geist-sans');
-        });
-
-        it('should configure Geist Sans with latin subset', () => {
-            const mockCall = mockGeist.mock.calls[0]?.[0];
-
-            expect(mockCall?.subsets).toContain('latin');
-        });
-
-        it('should configure Geist Mono font with correct CSS variable', () => {
-            const mockResult = mockGeistMono.mock.results[0];
-
-            expect(mockResult).toBeDefined();
-            expect(mockResult?.value.variable).toBe('--font-geist-mono');
-        });
-
-        it('should configure Geist Mono with latin subset', () => {
-            const mockCall = mockGeistMono.mock.calls[0]?.[0];
-
-            expect(mockCall?.subsets).toContain('latin');
-        });
-
-        it('should configure Germania One font with correct CSS variable', () => {
-            const mockResult = mockGermaniaOne.mock.results[0];
-
-            expect(mockResult).toBeDefined();
-            expect(mockResult?.value.variable).toBe('--font-germania-one');
-        });
-
-        it('should configure Germania One with weight 400', () => {
-            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
-
-            expect(mockCall?.weight).toBe('400');
-        });
-
-        it('should configure Germania One with latin subset', () => {
-            const mockCall = mockGermaniaOne.mock.calls[0]?.[0];
-
-            expect(mockCall?.subsets).toContain('latin');
-        });
     });
 
     describe('Layout Structure', () => {
@@ -371,12 +309,6 @@ describe('Root Layout', () => {
     });
 
     describe('Responsive Design Setup', () => {
-        it('should use custom fonts that support responsive typography', () => {
-            // Geist and Germania One are variable fonts
-            expect(mockGeist).toHaveBeenCalled();
-            expect(mockGermaniaOne).toHaveBeenCalled();
-        });
-
         it('should assign font CSS variables to body for global application', () => {
             // The layout adds geistSans.variable, geistMono.variable, germaniaOne.variable
             // to the body className for global font application

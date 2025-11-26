@@ -50,6 +50,7 @@ space-separated paths:
     - Auto-formats all files
     - Should always succeed
     - If fails, investigate file corruption
+    - Do not bother with `npx prettier --check` or `npm format:check`, it only wastes time.
 
 4. **Vitest**: `npx vitest related run {files}`
     - Runs tests related to modified files

@@ -24,6 +24,14 @@ export function SettingsClient({
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // Check if there's only one active super admin
+    const activeSuperAdmins = admins.filter(
+        (admin) => admin.role === 'super_admin' && admin.is_active
+    );
+    const isLastSuperAdmin =
+        activeSuperAdmins.length === 1 &&
+        activeSuperAdmins[0].id === currentAdminId;
+
     const handleCreateSubmit = async (data: AdminFormData) => {
         setIsLoading(true);
         setError(null);
@@ -51,20 +59,44 @@ export function SettingsClient({
     const handleEditSubmit = async (data: AdminFormData) => {
         if (!editingAdmin) return;
 
+        console.log('[handleEditSubmit] editingAdmin:', editingAdmin);
+        console.log('[handleEditSubmit] data:', data);
+        console.log('[handleEditSubmit] editingAdmin.id:', editingAdmin.id);
+
         setIsLoading(true);
         setError(null);
 
-        const result = await updateAdminAction(editingAdmin.id, {
+        const updateData: {
+            name: string;
+            role: 'admin' | 'super_admin';
+            is_active?: boolean;
+            password?: string;
+            passwordConfirm?: string;
+        } = {
             name: data.name,
             role: data.role,
             is_active: data.is_active,
-        });
+        };
+
+        // Include password fields if password is being changed
+        if (data.password) {
+            updateData.password = data.password;
+            updateData.passwordConfirm = data.passwordConfirm;
+        }
+
+        console.log('[handleEditSubmit] updateData:', updateData);
+
+        const result = await updateAdminAction(editingAdmin.id, updateData);
+
+        console.log('[handleEditSubmit] result:', result);
 
         setIsLoading(false);
 
         if (result.error) {
+            console.log('[handleEditSubmit] Error:', result.error);
             setError(result.error.message);
         } else {
+            console.log('[handleEditSubmit] Success!');
             setSuccess('Admin updated successfully');
             setEditingAdmin(null);
             setTimeout(() => {
@@ -194,10 +226,11 @@ export function SettingsClient({
                                                 onClick={() =>
                                                     handleDeactivate(admin)
                                                 }
-                                                className="text-red-600 hover:text-red-900"
+                                                className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 disabled={
-                                                    admin.id ===
-                                                        currentAdminId ||
+                                                    (admin.id ===
+                                                        currentAdminId &&
+                                                        isLastSuperAdmin) ||
                                                     !admin.is_active ||
                                                     isLoading
                                                 }
@@ -267,6 +300,14 @@ export function SettingsClient({
                                 onSubmit={handleEditSubmit}
                                 onCancel={() => setEditingAdmin(null)}
                                 isLoading={isLoading}
+                                disableRoleChange={
+                                    isLastSuperAdmin &&
+                                    editingAdmin.id === currentAdminId
+                                }
+                                disableActiveToggle={
+                                    isLastSuperAdmin &&
+                                    editingAdmin.id === currentAdminId
+                                }
                             />
                         </div>
                     </div>

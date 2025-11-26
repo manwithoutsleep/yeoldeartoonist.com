@@ -137,8 +137,9 @@ export default function RootLayout({
                     }
 
                     /* Dark mode support (critical for above-the-fold) */
+                    /* IMPORTANT: Admin pages always use light mode regardless of system preference */
                     @media (prefers-color-scheme: dark) {
-                        :root {
+                        :root:not(.light-mode) {
                             --background: #0a0a0a;
                             --foreground: #ededed;
                         }

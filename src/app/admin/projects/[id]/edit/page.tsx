@@ -18,6 +18,9 @@ export default async function EditProjectPage({
         notFound();
     }
 
+    // Bind the id to the action using .bind()
+    const boundUpdateAction = updateProjectAction.bind(null, id);
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -32,10 +35,7 @@ export default async function EditProjectPage({
                 </Link>
             </div>
 
-            <ProjectForm
-                initialData={project}
-                onSubmit={(data) => updateProjectAction(id, data)}
-            />
+            <ProjectForm initialData={project} onSubmit={boundUpdateAction} />
         </div>
     );
 }

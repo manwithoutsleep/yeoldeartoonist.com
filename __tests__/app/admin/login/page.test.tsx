@@ -48,6 +48,8 @@ vi.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 describe('Admin Login Page', () => {
+    let originalLocation: Location;
+
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset document.cookie
@@ -55,6 +57,22 @@ describe('Admin Login Page', () => {
             writable: true,
             value: '',
         });
+
+        // Store original window.location and mock it
+        originalLocation = window.location;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (window as any).location;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).location = {
+            ...originalLocation,
+            href: '',
+        };
+    });
+
+    afterEach(() => {
+        // Restore original window.location
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).location = originalLocation;
     });
 
     describe('Page Rendering', () => {
@@ -286,7 +304,7 @@ describe('Admin Login Page', () => {
             });
         });
 
-        it('should redirect to /admin on successful login', async () => {
+        it('should use window.location.href (not router.push) to redirect after successful login', async () => {
             mockSignIn.mockResolvedValue({
                 data: { session: {} },
                 error: null,
@@ -307,9 +325,17 @@ describe('Admin Login Page', () => {
             await userEvent.type(passwordInput, TEST_PASSWORD);
             fireEvent.click(submitButton);
 
+            // CRITICAL: Must use window.location.href for full page reload
+            // This ensures the server-side layout re-renders with the new session cookie
+            // Using router.push would cause a bug where header/nav don't render
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
+
+            // CRITICAL: Verify router.push is NOT called
+            // router.push causes client-side navigation which doesn't trigger
+            // server-side re-rendering of the layout, causing missing components
+            expect(mockPush).not.toHaveBeenCalled();
         });
 
         it('should not redirect if sign in returns no session', async () => {
@@ -564,7 +590,7 @@ describe('Admin Login Page', () => {
 
             // Verify successful login happened
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
         });
     });
@@ -620,7 +646,7 @@ describe('Admin Login Page', () => {
 
             // Wait for redirect since button disabling happens during loading
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
         });
 
@@ -666,7 +692,7 @@ describe('Admin Login Page', () => {
 
             // Wait for redirect
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
         });
 
@@ -716,6 +742,7 @@ describe('Admin Login Page', () => {
 
             render(<LoginPage />);
 
+            // This uses router.push because it's an auto-redirect on mount
             await waitFor(() => {
                 expect(mockPush).toHaveBeenCalledWith('/admin');
             });
@@ -903,7 +930,7 @@ describe('Admin Login Page', () => {
 
             // Verify redirect happens
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
         });
 
@@ -948,7 +975,7 @@ describe('Admin Login Page', () => {
 
             // Error should clear and login should succeed
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/admin');
+                expect(window.location.href).toBe('/admin');
             });
         });
     });

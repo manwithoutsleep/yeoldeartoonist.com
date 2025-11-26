@@ -41,9 +41,10 @@ space-separated paths:
     - If errors found, fix before proceeding
 
 2. **ESLint**: `npx eslint --fix {files}`
+    - NEVER disable linting suggestions or use `eslint-disable` unless the specific implementation absolutely demands it.
     - Auto-fixes issues when possible
     - Must complete with zero errors and warnings
-    - If errors persist, fix code (never add eslint-disable)
+    - If errors persist, fix code (never add `eslint-disable`)
 
 3. **Prettier**: `npx prettier --write {files}`
     - Auto-formats all files

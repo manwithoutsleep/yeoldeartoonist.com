@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -44,6 +44,18 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    // Force light mode for admin login page regardless of system preference
+    // useLayoutEffect runs synchronously before browser paint, preventing flash
+    useLayoutEffect(() => {
+        // Add light-mode class to html element to override dark mode
+        document.documentElement.classList.add('light-mode');
+
+        // Cleanup: remove light-mode class when leaving login page
+        return () => {
+            document.documentElement.classList.remove('light-mode');
+        };
+    }, []);
 
     // Check if user is already authenticated on component mount
     // Prevents redirect race condition with cleanup flag
@@ -120,17 +132,18 @@ export default function LoginPage() {
 
             if (data?.session) {
                 console.log('[DEBUG] Session created, redirecting to /admin');
-                // Redirect to admin dashboard on successful login
-                router.push('/admin');
+                // Use window.location.href for full page reload to ensure server-side layout re-renders
+                // This is necessary because the admin layout reads session from cookies on the server
+                window.location.href = '/admin';
             } else {
                 console.error('[DEBUG] No session in response data');
                 setError('Authentication succeeded but no session was created');
             }
         },
-        [email, password, signIn, router]
+        [email, password, signIn]
     );
     // Dependencies are necessary: email and password are form state that changes,
-    // signIn is a stable callback from useAuth, router is from useRouter.
+    // signIn is a stable callback from useAuth.
     // This callback must update whenever these values change to ensure fresh values in the handler.
 
     if (isCheckingAuth) {

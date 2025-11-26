@@ -15,7 +15,13 @@ export const eventSchema = z.object({
     location: z.string().min(1, 'Location is required'),
     venue_name: z.string().optional().nullable(),
     booth_number: z.string().optional().nullable(),
-    convention_url: z.string().url('Must be a valid URL').optional().nullable(),
+    convention_url: z
+        .string()
+        .url('Must be a valid URL')
+        .optional()
+        .or(z.literal(''))
+        .nullable()
+        .transform((val) => (val === '' ? null : val)),
     image_url: z.string().url('Must be a valid URL').optional().nullable(),
     is_published: z.boolean().optional().default(false),
 });

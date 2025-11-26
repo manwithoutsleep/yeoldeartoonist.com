@@ -35,7 +35,7 @@ describe('AdminForm', () => {
             expect(screen.getByLabelText(/Name/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/Role/i)).toBeInTheDocument();
-            expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/^Password \*$/)).toBeInTheDocument();
         });
 
         it('does not show is_active checkbox in create mode', () => {
@@ -59,8 +59,8 @@ describe('AdminForm', () => {
                 />
             );
 
-            const passwordLabel = screen.getByText(/Password/i);
-            expect(passwordLabel.textContent).toContain('*');
+            const passwordLabel = screen.getByLabelText(/^Password \*$/);
+            expect(passwordLabel).toBeInTheDocument();
         });
 
         it('shows role dropdown with admin and super_admin options', () => {
@@ -208,7 +208,7 @@ describe('AdminForm', () => {
 
             const nameInput = screen.getByLabelText(/Name/i);
             const emailInput = screen.getByLabelText(/Email/i);
-            const passwordInput = screen.getByLabelText(/Password/i);
+            const passwordInput = screen.getByLabelText(/^Password \*$/);
 
             fireEvent.change(nameInput, { target: { value: 'Test User' } });
             fireEvent.change(emailInput, {
@@ -244,7 +244,9 @@ describe('AdminForm', () => {
             const nameInput = screen.getByLabelText(/Name/i);
             const emailInput = screen.getByLabelText(/Email/i);
             const roleSelect = screen.getByLabelText(/Role/i);
-            const passwordInput = screen.getByLabelText(/Password/i);
+            const passwordInput = screen.getByLabelText(/^Password \*$/);
+            const passwordConfirmInput =
+                screen.getByLabelText(/^Retype Password \*$/);
 
             fireEvent.change(nameInput, { target: { value: 'New Admin' } });
             fireEvent.change(emailInput, {
@@ -252,6 +254,9 @@ describe('AdminForm', () => {
             });
             fireEvent.change(roleSelect, { target: { value: 'super_admin' } });
             fireEvent.change(passwordInput, {
+                target: { value: 'password123' },
+            });
+            fireEvent.change(passwordConfirmInput, {
                 target: { value: 'password123' },
             });
 
@@ -266,6 +271,7 @@ describe('AdminForm', () => {
                     email: 'new@example.com',
                     role: 'super_admin',
                     password: 'password123',
+                    passwordConfirm: 'password123',
                     is_active: true,
                 });
             });
@@ -286,7 +292,9 @@ describe('AdminForm', () => {
             expect(screen.getByLabelText(/Name/i)).toBeInTheDocument();
             expect(screen.queryByLabelText(/Email/i)).not.toBeInTheDocument(); // Email not editable
             expect(screen.getByLabelText(/Role/i)).toBeInTheDocument();
-            expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
+            expect(
+                screen.getByLabelText(/^Password \(optional\)$/)
+            ).toBeInTheDocument();
             expect(screen.getByLabelText(/Active/i)).toBeInTheDocument();
         });
 
@@ -325,8 +333,10 @@ describe('AdminForm', () => {
                 />
             );
 
-            const passwordLabel = screen.getByText(/Password/i);
-            expect(passwordLabel.textContent).toContain('optional');
+            const passwordLabel = screen.getByLabelText(
+                /^Password \(optional\)$/
+            );
+            expect(passwordLabel).toBeInTheDocument();
         });
 
         it('validates name is required in edit mode', async () => {
@@ -366,7 +376,9 @@ describe('AdminForm', () => {
                 />
             );
 
-            const passwordInput = screen.getByLabelText(/Password/i);
+            const passwordInput = screen.getByLabelText(
+                /^Password \(optional\)$/
+            );
             fireEvent.change(passwordInput, { target: { value: 'short' } });
 
             const submitButton = screen.getByRole('button', {
@@ -493,7 +505,10 @@ describe('AdminForm', () => {
                 /Role/i
             ) as HTMLSelectElement;
             const passwordInput = screen.getByLabelText(
-                /Password/i
+                /^Password \*$/
+            ) as HTMLInputElement;
+            const passwordConfirmInput = screen.getByLabelText(
+                /^Retype Password \*$/
             ) as HTMLInputElement;
             const submitButton = screen.getByRole('button', {
                 name: /Saving/i,
@@ -506,6 +521,7 @@ describe('AdminForm', () => {
             expect(emailInput.disabled).toBe(true);
             expect(roleSelect.disabled).toBe(true);
             expect(passwordInput.disabled).toBe(true);
+            expect(passwordConfirmInput.disabled).toBe(true);
             expect(submitButton.disabled).toBe(true);
             expect(cancelButton.disabled).toBe(true);
         });

@@ -16,6 +16,9 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
         notFound();
     }
 
+    // Bind the id to the action using .bind()
+    const boundUpdateAction = updateEventAction.bind(null, id);
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -28,10 +31,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
                 </Link>
             </div>
 
-            <EventForm
-                initialData={event}
-                onSubmit={(data) => updateEventAction(id, data)}
-            />
+            <EventForm initialData={event} onSubmit={boundUpdateAction} />
         </div>
     );
 }

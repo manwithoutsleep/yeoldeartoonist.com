@@ -12,7 +12,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { createBrowserClient } from '@/lib/supabase/client';
 
@@ -35,14 +34,21 @@ export function AdminHeader({
     ...props
 }: AdminHeaderProps) {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const router = useRouter();
 
     const handleLogout = async () => {
         try {
             setIsLoggingOut(true);
             const supabase = createBrowserClient();
+
+            // Clear the admin_session cookie used by middleware FIRST
+            document.cookie =
+                'admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
             await supabase.auth.signOut();
-            router.push('/admin/login');
+
+            // Use router.replace instead of push to avoid keeping the page in history
+            // Also use window.location for a full page reload to ensure clean state
+            window.location.href = '/admin/login';
         } catch (error) {
             console.error('Logout failed:', error);
             setIsLoggingOut(false);

@@ -164,6 +164,7 @@ describe('admin validation schemas', () => {
                 email: 'john@example.com',
                 role: 'admin' as const,
                 password: 'short',
+                passwordConfirm: 'short',
             };
 
             const result = createAdminSchema.safeParse(invalidData);
@@ -173,12 +174,45 @@ describe('admin validation schemas', () => {
             }
         });
 
+        it('requires passwordConfirm for create mode', () => {
+            const invalidData = {
+                name: 'John Doe',
+                email: 'john@example.com',
+                role: 'admin' as const,
+                password: 'password123',
+            };
+
+            const result = createAdminSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].path[0]).toBe('passwordConfirm');
+            }
+        });
+
+        it('requires passwords to match', () => {
+            const invalidData = {
+                name: 'John Doe',
+                email: 'john@example.com',
+                role: 'admin' as const,
+                password: 'password123',
+                passwordConfirm: 'different123',
+            };
+
+            const result = createAdminSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toContain('match');
+                expect(result.error.issues[0].path[0]).toBe('passwordConfirm');
+            }
+        });
+
         it('validates complete admin data for creation', () => {
             const validData = {
                 name: 'John Doe',
                 email: 'john@example.com',
                 role: 'admin' as const,
                 password: 'password123',
+                passwordConfirm: 'password123',
             };
 
             const result = createAdminSchema.safeParse(validData);
@@ -202,6 +236,7 @@ describe('admin validation schemas', () => {
             const invalidData = {
                 name: 'John Doe',
                 password: 'short',
+                passwordConfirm: 'short',
             };
 
             const result = updateAdminSchema.safeParse(invalidData);
@@ -209,6 +244,46 @@ describe('admin validation schemas', () => {
             if (!result.success) {
                 expect(result.error.issues[0].message).toContain('8');
             }
+        });
+
+        it('requires passwordConfirm when password is provided', () => {
+            const invalidData = {
+                name: 'John Doe',
+                password: 'newpassword123',
+            };
+
+            const result = updateAdminSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toContain('match');
+                expect(result.error.issues[0].path[0]).toBe('passwordConfirm');
+            }
+        });
+
+        it('requires passwords to match when updating password', () => {
+            const invalidData = {
+                name: 'John Doe',
+                password: 'newpassword123',
+                passwordConfirm: 'different123',
+            };
+
+            const result = updateAdminSchema.safeParse(invalidData);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toContain('match');
+                expect(result.error.issues[0].path[0]).toBe('passwordConfirm');
+            }
+        });
+
+        it('allows password update when both fields match', () => {
+            const validData = {
+                name: 'John Doe',
+                password: 'newpassword123',
+                passwordConfirm: 'newpassword123',
+            };
+
+            const result = updateAdminSchema.safeParse(validData);
+            expect(result.success).toBe(true);
         });
 
         it('allows partial updates', () => {

@@ -63,8 +63,10 @@ export async function updateAdminAction(
     data: AdminRow | null;
     error: AdministratorError | null;
 }> {
-    console.log('[updateAdminAction] Called with id:', id);
-    console.log('[updateAdminAction] formData:', formData);
+    if (process.env.NODE_ENV === 'development') {
+        console.log('[updateAdminAction] Called with id:', id);
+        console.log('[updateAdminAction] formData:', formData);
+    }
 
     // Get current admin session to check if this is the last super admin
     const cookieStore = await cookies();
@@ -124,11 +126,15 @@ export async function updateAdminAction(
 
     // Validate input
     const validation = updateAdminSchema.safeParse(formData);
-    console.log('[updateAdminAction] Validation result:', validation);
+    if (process.env.NODE_ENV === 'development') {
+        console.log('[updateAdminAction] Validation result:', validation);
+    }
 
     if (!validation.success) {
         const issues = validation.error.issues;
-        console.log('[updateAdminAction] Validation errors:', issues);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[updateAdminAction] Validation errors:', issues);
+        }
         return {
             data: null,
             error: {
@@ -145,15 +151,19 @@ export async function updateAdminAction(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordConfirm, ...adminData } = validation.data;
 
-    console.log(
-        '[updateAdminAction] Calling updateAdmin with validated data:',
-        adminData
-    );
+    if (process.env.NODE_ENV === 'development') {
+        console.log(
+            '[updateAdminAction] Calling updateAdmin with validated data:',
+            adminData
+        );
+    }
 
     // Update admin
     const result = await updateAdmin(id, adminData);
 
-    console.log('[updateAdminAction] updateAdmin result:', result);
+    if (process.env.NODE_ENV === 'development') {
+        console.log('[updateAdminAction] updateAdmin result:', result);
+    }
 
     // Revalidate settings page on success
     if (result.data) {

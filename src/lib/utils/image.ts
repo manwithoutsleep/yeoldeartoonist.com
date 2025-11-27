@@ -34,6 +34,38 @@ export interface ImageVariantsResponse {
 }
 
 /**
+ * Sanitizes a filename by removing path components, multiple extensions, and special characters
+ *
+ * @param filename - The original filename to sanitize
+ * @returns Sanitized filename (alphanumeric, hyphens, underscores only, max 100 chars)
+ *
+ * @example
+ * sanitizeFilename('../../etc/passwd.jpg') // 'passwd'
+ * sanitizeFilename('image.php.jpg') // 'image_php'
+ * sanitizeFilename('my photo!.jpg') // 'my_photo'
+ */
+function sanitizeFilename(filename: string): string {
+    // Remove any path components (handles both Unix and Windows paths)
+    const basename = filename.split('/').pop()?.split('\\').pop() || 'image';
+
+    // Extract only the last extension and remove it
+    const parts = basename.split('.');
+    const base = parts.length > 1 ? parts.slice(0, -1).join('_') : basename;
+
+    // Sanitize: only alphanumeric, hyphens, underscores, spaces
+    const sanitized = base.replace(/[^a-zA-Z0-9_-\s]/g, '_');
+
+    // Replace multiple spaces/underscores with single underscore
+    const cleaned = sanitized.replace(/[\s_]+/g, '_');
+
+    // Remove leading/trailing underscores
+    const trimmed = cleaned.replace(/^_+|_+$/g, '');
+
+    // Limit length and ensure we have a valid name
+    return (trimmed || 'image').substring(0, 100);
+}
+
+/**
  * Generates three WebP image variants (thumbnail, preview, large) from an uploaded image buffer
  *
  * @param buffer - The original image buffer
@@ -64,9 +96,9 @@ export async function generateImageVariants(
             };
         }
 
-        // Strip extension and create base filename
+        // Sanitize filename to prevent security issues
         const timestamp = Date.now();
-        const baseFilename = filename.replace(/\.[^.]+$/, '');
+        const baseFilename = sanitizeFilename(filename);
 
         // Generate the three variants in parallel
         const [thumbnail, preview, large] = await Promise.all([

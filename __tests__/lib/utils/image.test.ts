@@ -216,4 +216,184 @@ describe('generateImageVariants', () => {
         expect(result.error).toBeNull();
         expect(result.data).toBeDefined();
     });
+
+    describe('filename sanitization', () => {
+        it('should sanitize directory traversal attempts', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                '../../../etc/passwd.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-passwd-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toContain('..');
+            expect(result.data?.thumbnail.filename).not.toContain('/');
+            expect(result.data?.thumbnail.filename).not.toContain('\\');
+        });
+
+        it('should handle Windows-style path traversal', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                '..\\..\\..\\windows\\system32\\config.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-config-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toContain('\\');
+        });
+
+        it('should remove multiple extensions', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'image.php.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            // Should convert multiple extensions to underscores
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-image_php-thumb\.webp$/
+            );
+        });
+
+        it('should handle triple extension attack', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'malicious.php.asp.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-malicious_php_asp-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toContain('.php');
+            expect(result.data?.thumbnail.filename).not.toContain('.asp');
+        });
+
+        it('should sanitize special characters', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'my@photo!$%^&*.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            // Special characters are replaced with underscores, then collapsed
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-my_photo-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toMatch(/[@!$%^&*]/);
+        });
+
+        it('should handle spaces in filenames', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'my awesome photo.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-my_awesome_photo-thumb\.webp$/
+            );
+        });
+
+        it('should collapse multiple spaces/underscores', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'image___with    many___spaces.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-image_with_many_spaces-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toMatch(/_{2,}/);
+            expect(result.data?.thumbnail.filename).not.toMatch(/\s{2,}/);
+        });
+
+        it('should handle filename without extension', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'noextension'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-noextension-thumb\.webp$/
+            );
+        });
+
+        it('should limit filename length', async () => {
+            const longFilename = 'a'.repeat(200) + '.jpg';
+            const result = await generateImageVariants(
+                testImageBuffer,
+                longFilename
+            );
+
+            expect(result.error).toBeNull();
+            // Filename should be limited (timestamp + base + suffix + extension)
+            // Base is limited to 100 chars, plus timestamp (13 chars), plus "-thumb.webp" (11 chars)
+            expect(result.data?.thumbnail.filename.length).toBeLessThan(130);
+        });
+
+        it('should use fallback name for empty/invalid filenames', async () => {
+            const testCases = ['', '.jpg', '...jpg', '/.jpg'];
+
+            for (const filename of testCases) {
+                const result = await generateImageVariants(
+                    testImageBuffer,
+                    filename
+                );
+
+                expect(result.error).toBeNull();
+                // Should use 'image' as fallback
+                expect(result.data?.thumbnail.filename).toMatch(
+                    /^\d+-image-thumb\.webp$/
+                );
+            }
+        });
+
+        it('should preserve hyphens and underscores', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'valid-file_name-123.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-valid-file_name-123-thumb\.webp$/
+            );
+        });
+
+        it('should handle Unicode characters', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                'café-日本語-фото.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            // Unicode chars should be replaced with underscores
+            // Result: café-日本語-фото -> caf_-_- (with trailing hyphen preserved)
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-caf_-_--thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).toMatch(/^[\x00-\x7F]+$/); // ASCII only
+        });
+
+        it('should remove leading/trailing underscores', async () => {
+            const result = await generateImageVariants(
+                testImageBuffer,
+                '___image___.jpg'
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data?.thumbnail.filename).toMatch(
+                /^\d+-image-thumb\.webp$/
+            );
+            expect(result.data?.thumbnail.filename).not.toMatch(/^_/);
+            expect(result.data?.thumbnail.filename).not.toMatch(/_-thumb/);
+        });
+    });
 });

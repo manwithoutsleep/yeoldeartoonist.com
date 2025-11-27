@@ -61,7 +61,7 @@ description: Create an implementation plan for a GitHub issue
         <command>date +%Y-%m-%dT%H-%M-%S</command>
         <details>
             Use this timestamp to create a unique spec filename following the pattern:
-            specs/{{timestamp}}-claude-issue-{{issue-id}}.md
+            .specs/{{timestamp}}-claude-issue-{{issue-id}}.md
         </details>
     </step>
 
@@ -178,7 +178,7 @@ description: Create an implementation plan for a GitHub issue
 
     <step id="5">
         <action>Write the plan to the specs directory</action>
-        <filepath>specs/{{timestamp}}-claude-issue-{{issue-id}}.md</filepath>
+        <filepath>.specs/{{timestamp}}-claude-issue-{{issue-id}}.md</filepath>
         <format>
             Use clear Markdown formatting with:
             - Heading hierarchy (H1 for title, H2 for sections, H3 for subsections)
@@ -229,7 +229,7 @@ description: Create an implementation plan for a GitHub issue
 <output_format>
 
 <summary>
-Created implementation plan at: specs/{{timestamp}}-claude-issue-{{issue-id}}.md
+Created implementation plan at: .specs/{{timestamp}}-claude-issue-{{issue-id}}.md
 
         Overview: [2-3 sentence summary of the approach]
 

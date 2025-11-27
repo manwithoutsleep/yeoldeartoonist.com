@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, ChangeEvent } from 'react';
+import { uploadImageAction } from '@/app/admin/actions/upload';
 
 interface ImageUrls {
     image_thumbnail_url: string;
@@ -106,33 +107,29 @@ export default function ImageUploader({
         setError(null);
 
         try {
-            // Create FormData for multipart upload
+            // Create FormData for Server Action
             const formData = new FormData();
             formData.append('file', selectedFile);
 
-            // Simulate progress (since fetch doesn't support upload progress easily)
+            // Simulate progress (since Server Actions don't support upload progress easily)
             setUploadProgress(30);
 
-            const response = await fetch('/api/admin/upload', {
-                method: 'POST',
-                body: formData,
-            });
+            // Call Server Action (CSRF-protected automatically)
+            const result = await uploadImageAction(formData);
 
             setUploadProgress(70);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Upload failed');
+            if (!result.success || !result.data) {
+                throw new Error(result.error || 'Upload failed');
             }
 
-            const data = await response.json();
             setUploadProgress(100);
 
             // Call the completion callback with URLs
             onUploadComplete({
-                image_thumbnail_url: data.image_thumbnail_url,
-                image_url: data.image_url,
-                image_large_url: data.image_large_url,
+                image_thumbnail_url: result.data.image_thumbnail_url,
+                image_url: result.data.image_url,
+                image_large_url: result.data.image_large_url,
             });
 
             // Clear preview after successful upload

@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ImageUploader from '@/components/admin/ImageUploader';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Mock Server Action
+vi.mock('@/app/admin/actions/upload', () => ({
+    uploadImageAction: vi.fn(),
+}));
 
 describe('ImageUploader', () => {
     const mockOnUploadComplete = vi.fn();
@@ -157,14 +159,17 @@ describe('ImageUploader', () => {
     });
 
     describe('Upload Process', () => {
-        it('should call upload API with FormData', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: true,
-                json: async () => ({
+        it('should call upload action with FormData', async () => {
+            const { uploadImageAction } = await import(
+                '@/app/admin/actions/upload'
+            );
+            (uploadImageAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+                success: true,
+                data: {
                     image_thumbnail_url: 'https://example.com/thumb.webp',
                     image_url: 'https://example.com/preview.webp',
                     image_large_url: 'https://example.com/large.webp',
-                }),
+                },
             });
 
             render(<ImageUploader onUploadComplete={mockOnUploadComplete} />);
@@ -187,29 +192,28 @@ describe('ImageUploader', () => {
             fireEvent.click(uploadButton);
 
             await waitFor(() => {
-                expect(global.fetch).toHaveBeenCalledWith(
-                    '/api/admin/upload',
-                    expect.objectContaining({
-                        method: 'POST',
-                        body: expect.any(FormData),
-                    })
+                expect(uploadImageAction).toHaveBeenCalledWith(
+                    expect.any(FormData)
                 );
             });
         });
 
         it('should disable upload button while uploading', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+            const { uploadImageAction } = await import(
+                '@/app/admin/actions/upload'
+            );
+            (uploadImageAction as ReturnType<typeof vi.fn>).mockImplementation(
                 () =>
                     new Promise((resolve) => {
                         setTimeout(
                             () =>
                                 resolve({
-                                    ok: true,
-                                    json: async () => ({
+                                    success: true,
+                                    data: {
                                         image_thumbnail_url: 'thumb.webp',
                                         image_url: 'preview.webp',
                                         image_large_url: 'large.webp',
-                                    }),
+                                    },
                                 }),
                             50
                         );
@@ -251,9 +255,12 @@ describe('ImageUploader', () => {
                 image_large_url: 'https://example.com/large.webp',
             };
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: true,
-                json: async () => mockUrls,
+            const { uploadImageAction } = await import(
+                '@/app/admin/actions/upload'
+            );
+            (uploadImageAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+                success: true,
+                data: mockUrls,
             });
 
             render(<ImageUploader onUploadComplete={mockOnUploadComplete} />);
@@ -275,9 +282,12 @@ describe('ImageUploader', () => {
         });
 
         it('should show error message on upload failure', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: false,
-                json: async () => ({ error: 'Upload failed' }),
+            const { uploadImageAction } = await import(
+                '@/app/admin/actions/upload'
+            );
+            (uploadImageAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+                success: false,
+                error: 'Upload failed',
             });
 
             render(<ImageUploader onUploadComplete={mockOnUploadComplete} />);

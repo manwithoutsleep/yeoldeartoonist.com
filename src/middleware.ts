@@ -190,9 +190,9 @@ export async function middleware(request: NextRequest) {
     });
 
     supabaseResponse.cookies.set('admin_session', sessionCache, {
-        httpOnly: false, // Allows JavaScript to check if user is admin
+        httpOnly: true, // Prevent JavaScript access (XSS protection)
         secure: !isDevelopment, // HTTPS in production
-        sameSite: 'lax',
+        sameSite: 'lax', // CSRF protection while maintaining compatibility
         maxAge: 15 * 60, // 15 minutes
     });
 

@@ -1,36 +1,48 @@
+'use server';
+
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateImageVariants } from '@/lib/utils/image';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+interface UploadResult {
+    success: boolean;
+    data?: {
+        image_thumbnail_url: string;
+        image_url: string;
+        image_large_url: string;
+    };
+    error?: string;
+}
+
 /**
- * POST /api/admin/upload
+ * Server Action for uploading images with automatic CSRF protection.
  *
- * Uploads an image file, processes it into 3 WebP variants (thumbnail, preview, large),
+ * Processes uploaded images into 3 WebP variants (thumbnail, preview, large)
  * and stores them in Supabase Storage.
  *
- * @param request - Next.js request with multipart/form-data containing 'file'
- * @returns JSON response with URLs for all 3 variants or error message
+ * @param formData - FormData containing 'file' field
+ * @returns UploadResult with success status, URLs, or error message
  *
- * Authentication: Requires valid admin_session cookie
- * File Validation: Only JPEG, PNG, WebP up to 10MB
- * Processing: Generates 300px, 800px, and 1600px WebP variants
- * Storage: Uploads to 'artwork' bucket in Supabase Storage
+ * Security:
+ * - CSRF protection: Built-in via Next.js 16 Server Actions
+ * - Authentication: Requires valid admin_session cookie
+ * - File validation: Type and size checks
+ * - Processing: Generates 300px, 800px, and 1600px WebP variants
+ * - Storage: Uploads to 'artwork' bucket in Supabase Storage
  */
-export async function POST(request: NextRequest) {
+export async function uploadImageAction(
+    formData: FormData
+): Promise<UploadResult> {
     try {
-        // 1. Authenticate request
+        // 1. Authenticate (CSRF protection automatic via Server Action)
         const cookieStore = await cookies();
         const sessionCookie = cookieStore.get('admin_session');
 
         if (!sessionCookie) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
+            return { success: false, error: 'Unauthorized' };
         }
 
         // Parse and validate session
@@ -43,50 +55,38 @@ export async function POST(request: NextRequest) {
                 !session.expiresAt ||
                 session.expiresAt < Date.now()
             ) {
-                return NextResponse.json(
-                    {
-                        error:
-                            session.expiresAt < Date.now()
-                                ? 'Session expired'
-                                : 'Invalid session',
-                    },
-                    { status: 401 }
-                );
+                return {
+                    success: false,
+                    error:
+                        session.expiresAt < Date.now()
+                            ? 'Session expired'
+                            : 'Invalid session',
+                };
             }
         } catch {
-            return NextResponse.json(
-                { error: 'Invalid session' },
-                { status: 401 }
-            );
+            return { success: false, error: 'Invalid session' };
         }
 
         // 2. Parse form data
-        const formData = await request.formData();
         const file = formData.get('file') as File | null;
-
         if (!file) {
-            return NextResponse.json(
-                { error: 'No file uploaded' },
-                { status: 400 }
-            );
+            return { success: false, error: 'No file uploaded' };
         }
 
         // 3. Validate file type
         if (!ALLOWED_TYPES.includes(file.type)) {
-            return NextResponse.json(
-                {
-                    error: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.',
-                },
-                { status: 400 }
-            );
+            return {
+                success: false,
+                error: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.',
+            };
         }
 
         // 4. Validate file size
         if (file.size > MAX_FILE_SIZE) {
-            return NextResponse.json(
-                { error: 'File too large. Maximum size is 10MB.' },
-                { status: 413 }
-            );
+            return {
+                success: false,
+                error: 'File too large. Maximum size is 10MB.',
+            };
         }
 
         // 5. Convert file to buffer
@@ -97,14 +97,11 @@ export async function POST(request: NextRequest) {
         const variantsResult = await generateImageVariants(buffer, file.name);
 
         if (variantsResult.error || !variantsResult.data) {
-            return NextResponse.json(
-                {
-                    error:
-                        variantsResult.error?.message ||
-                        'Failed to process image',
-                },
-                { status: 500 }
-            );
+            return {
+                success: false,
+                error:
+                    variantsResult.error?.message || 'Failed to process image',
+            };
         }
 
         const { thumbnail, preview, large } = variantsResult.data;
@@ -137,35 +134,31 @@ export async function POST(request: NextRequest) {
         // Check for upload errors
         const uploadError = uploadResults.find((result) => result.error);
         if (uploadError?.error) {
-            return NextResponse.json(
-                {
-                    error: `Failed to upload image: ${uploadError.error.message}`,
-                },
-                { status: 500 }
-            );
+            return {
+                success: false,
+                error: `Failed to upload image: ${uploadError.error.message}`,
+            };
         }
 
         // 9. Generate public URLs
         const baseUrl = `${supabaseUrl}/storage/v1/object/public/artwork`;
 
-        return NextResponse.json(
-            {
+        return {
+            success: true,
+            data: {
                 image_thumbnail_url: `${baseUrl}/${thumbnail.filename}`,
                 image_url: `${baseUrl}/${preview.filename}`,
                 image_large_url: `${baseUrl}/${large.filename}`,
             },
-            { status: 200 }
-        );
+        };
     } catch (error) {
         console.error('Upload error:', error);
-        return NextResponse.json(
-            {
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : 'An unexpected error occurred',
-            },
-            { status: 500 }
-        );
+        return {
+            success: false,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'An unexpected error occurred',
+        };
     }
 }

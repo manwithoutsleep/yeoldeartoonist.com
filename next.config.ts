@@ -24,16 +24,35 @@ const nextConfig: NextConfig = {
     },
 
     /**
-     * Bundle Optimization (Phase B)
+     * Server Actions Configuration
      *
-     * Optimize package imports to reduce bundle size:
-     * - Stripe: Lazy-loaded on checkout routes only (Phase 3)
-     * - Cart Context: Lazy-loaded on cart/shoppe routes only
-     * - Supabase Client: Only included where needed
+     * Body Size Limit: Increased to 10MB to support large image uploads.
      *
-     * See docs: https://nextjs.org/docs/app/api-reference/next-config-js/optimizePackageImports
+     * Why 10MB?
+     * - Application validates up to 10MB in upload.ts (MAX_FILE_SIZE)
+     * - Client-side validation enforces 10MB in ImageUploader.tsx
+     * - Tests verify 10MB limit enforcement
+     * - Supports high-quality artwork images for gallery/shop
+     *
+     * Default is 1MB, which is too restrictive for this use case.
+     *
+     * See: https://nextjs.org/docs/app/api-reference/next-config-js/serverActions#bodysizelimit
+     * Related: GitHub Issue #35
      */
     experimental: {
+        serverActions: {
+            bodySizeLimit: '10mb',
+        },
+        /**
+         * Bundle Optimization (Phase B)
+         *
+         * Optimize package imports to reduce bundle size:
+         * - Stripe: Lazy-loaded on checkout routes only (Phase 3)
+         * - Cart Context: Lazy-loaded on cart/shoppe routes only
+         * - Supabase Client: Only included where needed
+         *
+         * See docs: https://nextjs.org/docs/app/api-reference/next-config-js/optimizePackageImports
+         */
         optimizePackageImports: [
             '@stripe/react-stripe-js',
             '@stripe/stripe-js',

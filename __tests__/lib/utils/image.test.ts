@@ -27,8 +27,20 @@ describe('generateImageVariants', () => {
     });
 
     it('should generate thumbnail variant at 300px width', async () => {
+        // Create a larger test image (2000x1000) for proper downscaling test
+        const largeImageBuffer = await sharp({
+            create: {
+                width: 2000,
+                height: 1000,
+                channels: 3,
+                background: { r: 255, g: 0, b: 0 },
+            },
+        })
+            .png()
+            .toBuffer();
+
         const result = await generateImageVariants(
-            testImageBuffer,
+            largeImageBuffer,
             'test-image.jpg'
         );
 
@@ -42,8 +54,20 @@ describe('generateImageVariants', () => {
     });
 
     it('should generate preview variant at 800px width', async () => {
+        // Create a larger test image (2000x1000) for proper downscaling test
+        const largeImageBuffer = await sharp({
+            create: {
+                width: 2000,
+                height: 1000,
+                channels: 3,
+                background: { r: 255, g: 0, b: 0 },
+            },
+        })
+            .png()
+            .toBuffer();
+
         const result = await generateImageVariants(
-            testImageBuffer,
+            largeImageBuffer,
             'test-image.jpg'
         );
 
@@ -56,8 +80,20 @@ describe('generateImageVariants', () => {
     });
 
     it('should generate large variant at 1600px width', async () => {
+        // Create a larger test image (2000x1000) for proper downscaling test
+        const largeImageBuffer = await sharp({
+            create: {
+                width: 2000,
+                height: 1000,
+                channels: 3,
+                background: { r: 255, g: 0, b: 0 },
+            },
+        })
+            .png()
+            .toBuffer();
+
         const result = await generateImageVariants(
-            testImageBuffer,
+            largeImageBuffer,
             'test-image.jpg'
         );
 

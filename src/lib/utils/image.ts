@@ -105,7 +105,7 @@ export async function generateImageVariants(
             // Thumbnail: 300px wide
             sharp(buffer)
                 .resize(300, null, {
-                    withoutEnlargement: false,
+                    withoutEnlargement: true,
                     fit: 'inside',
                 })
                 .webp({ quality: 80 })
@@ -114,7 +114,7 @@ export async function generateImageVariants(
             // Preview: 800px wide
             sharp(buffer)
                 .resize(800, null, {
-                    withoutEnlargement: false,
+                    withoutEnlargement: true,
                     fit: 'inside',
                 })
                 .webp({ quality: 80 })
@@ -123,7 +123,7 @@ export async function generateImageVariants(
             // Large: 1600px wide
             sharp(buffer)
                 .resize(1600, null, {
-                    withoutEnlargement: false,
+                    withoutEnlargement: true,
                     fit: 'inside',
                 })
                 .webp({ quality: 80 })

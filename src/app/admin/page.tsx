@@ -1,91 +1,186 @@
-'use client';
+/**
+ * Admin Dashboard Page (Server Component)
+ *
+ * Main dashboard showing:
+ * - Key metrics (total orders, revenue, pending orders, etc.)
+ * - Recent orders list
+ * - Quick access to content management
+ *
+ * Uses layout.tsx for header/navigation structure
+ */
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { User } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/hooks/useAuth';
+import Link from 'next/link';
+import { AdminCard } from '@/components/admin/AdminCard';
+import { getDashboardMetrics, getRecentOrders } from '@/lib/db/admin/dashboard';
 
-export default function AdminPage() {
-    const router = useRouter();
-    const { signOut, loading: signOutLoading } = useAuth();
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+// Force dynamic rendering - this page uses cookies via Supabase client
+export const dynamic = 'force-dynamic';
 
-    useEffect(() => {
-        const getUser = async () => {
-            const supabase = createClient();
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
+export default async function AdminPage() {
+    // Fetch data server-side
+    const metricsResult = await getDashboardMetrics();
+    const ordersResult = await getRecentOrders(10);
 
-            if (!session) {
-                router.push('/admin/login');
-                return;
-            }
-
-            setUser(session.user);
-            setLoading(false);
-        };
-
-        getUser();
-    }, [router]);
-
-    const handleSignOut = async () => {
-        const { error } = await signOut();
-        if (!error) {
-            router.push('/admin/login');
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div>Loading...</div>
-            </div>
-        );
-    }
+    const metrics = metricsResult.data;
+    const metricsError = metricsResult.error;
+    const recentOrders = ordersResult.data || [];
+    const ordersError = ordersResult.error;
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center">
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Admin Panel
-                            </h1>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-600">
-                                {user?.email}
-                            </span>
-                            <button
-                                onClick={handleSignOut}
-                                disabled={signOutLoading}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50"
-                            >
-                                {signOutLoading ? 'Signing out...' : 'Sign out'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+        <div className="space-y-8">
+            {/* Page Title */}
+            <div>
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600 mt-1">
+                    Welcome to your admin dashboard
+                </p>
+            </div>
 
-            <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                        Welcome to Admin Panel
-                    </h2>
-                    <p className="text-gray-600">
-                        You are logged in as <strong>{user?.email}</strong>
-                    </p>
-                    <p className="text-gray-600 mt-2">
-                        This is a placeholder admin dashboard. Add your content
-                        here.
+            {/* Metrics Error */}
+            {metricsError && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                    <p className="text-red-700 font-semibold">Error</p>
+                    <p className="text-red-600 text-sm">
+                        {metricsError.message}
                     </p>
                 </div>
-            </main>
+            )}
+
+            {/* Metrics Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <AdminCard
+                    title="Total Orders"
+                    value={metrics?.total_orders ?? 0}
+                />
+                <AdminCard
+                    title="Orders This Month"
+                    value={metrics?.orders_this_month ?? 0}
+                />
+                <AdminCard
+                    title="Total Revenue"
+                    value={
+                        metrics
+                            ? `$${metrics.total_revenue.toFixed(2)}`
+                            : '$0.00'
+                    }
+                />
+                <AdminCard
+                    title="Pending Orders"
+                    value={metrics?.pending_orders ?? 0}
+                />
+            </div>
+
+            {/* Recent Orders Section */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Recent Orders
+                    </h2>
+                    <Link
+                        href="/admin/orders"
+                        className="text-blue-600 hover:text-blue-800 font-semibold"
+                    >
+                        View All →
+                    </Link>
+                </div>
+
+                {ordersError && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                        <p className="text-red-700 font-semibold">Error</p>
+                        <p className="text-red-600 text-sm">
+                            {ordersError.message}
+                        </p>
+                    </div>
+                )}
+
+                {recentOrders.length === 0 ? (
+                    <div className="bg-white border-2 border-black rounded p-6 text-center">
+                        <p className="text-gray-600">
+                            No orders yet. Create your first order from the
+                            shop!
+                        </p>
+                    </div>
+                ) : (
+                    <div className="bg-white border-2 border-black rounded overflow-hidden">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b-2 border-black bg-gray-50">
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                        Order Number
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                        Customer
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                        Total
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                        Date
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentOrders.map((order) => (
+                                    <tr
+                                        key={order.id}
+                                        className="border-b border-gray-200 hover:bg-gray-50"
+                                    >
+                                        <td className="px-6 py-4 text-sm font-mono text-gray-900">
+                                            {order.order_number}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {order.customer_name}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                                            $
+                                            {parseFloat(order.total).toFixed(2)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            <span
+                                                className={`inline-block px-3 py-1 rounded text-white text-xs font-semibold ${
+                                                    order.status === 'pending'
+                                                        ? 'bg-yellow-500'
+                                                        : order.status ===
+                                                            'paid'
+                                                          ? 'bg-green-500'
+                                                          : order.status ===
+                                                              'shipped'
+                                                            ? 'bg-blue-500'
+                                                            : order.status ===
+                                                                'delivered'
+                                                              ? 'bg-green-700'
+                                                              : 'bg-red-500'
+                                                }`}
+                                            >
+                                                {order.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {new Date(
+                                                order.created_at
+                                            ).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-right">
+                                            <Link
+                                                href={`/admin/orders/${order.id}`}
+                                                className="text-blue-600 hover:text-blue-800 font-semibold"
+                                            >
+                                                View
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

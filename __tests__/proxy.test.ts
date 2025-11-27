@@ -11,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { proxy } from '@/proxy';
+import { middleware } from '@/middleware';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock createServerClient from Supabase SSR
@@ -31,7 +31,7 @@ describe('Middleware', () => {
     describe('Public Routes', () => {
         it('should allow access to public routes without authentication', async () => {
             const request = new NextRequest('http://localhost:3000/gallery');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response.status).toBe(200);
@@ -39,7 +39,7 @@ describe('Middleware', () => {
 
         it('should allow access to home page without authentication', async () => {
             const request = new NextRequest('http://localhost:3000/');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response.status).toBe(200);
@@ -47,7 +47,7 @@ describe('Middleware', () => {
 
         it('should allow access to contact page without authentication', async () => {
             const request = new NextRequest('http://localhost:3000/contact');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response.status).toBe(200);
@@ -55,7 +55,7 @@ describe('Middleware', () => {
 
         it('should allow access to shoppe page without authentication', async () => {
             const request = new NextRequest('http://localhost:3000/shoppe');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response.status).toBe(200);
@@ -67,7 +67,7 @@ describe('Middleware', () => {
             const request = new NextRequest(
                 'http://localhost:3000/admin/login'
             );
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response.status).toBe(200);
@@ -81,7 +81,7 @@ describe('Middleware', () => {
 
             try {
                 const request = new NextRequest('http://localhost:3000/admin');
-                const response = await proxy(request);
+                const response = await middleware(request);
 
                 expect(response).toBeInstanceOf(NextResponse);
                 expect(response?.status).toBe(307); // Redirect status
@@ -96,7 +96,7 @@ describe('Middleware', () => {
 
             try {
                 const request = new NextRequest('http://localhost:3000/admin');
-                const response = await proxy(request);
+                const response = await middleware(request);
 
                 expect(response).toBeInstanceOf(NextResponse);
                 expect(response?.status).toBe(307); // Redirect status
@@ -125,7 +125,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeInstanceOf(NextResponse);
             expect(response?.status).toBe(307); // Redirect
@@ -167,7 +167,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeInstanceOf(NextResponse);
             expect(response?.status).toBe(307); // Redirect to login
@@ -211,7 +211,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeInstanceOf(NextResponse);
         });
@@ -246,7 +246,7 @@ describe('Middleware', () => {
                 },
             });
 
-            await proxy(request);
+            await middleware(request);
 
             // Should return a successful response without calling getUser
             expect(mockSupabaseClient.auth.getUser).not.toHaveBeenCalled();
@@ -302,7 +302,7 @@ describe('Middleware', () => {
                 },
             });
 
-            await proxy(request);
+            await middleware(request);
 
             // Should call getUser because cache is expired
             expect(mockSupabaseClient.auth.getUser).toHaveBeenCalled();
@@ -346,7 +346,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             // Verify session cookie is set with correct max age
             const setCookieHeader = response?.headers.get('set-cookie');
@@ -394,7 +394,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeDefined();
             expect(response?.status).toBe(200); // Successful response
@@ -420,7 +420,7 @@ describe('Middleware', () => {
             const request = new NextRequest(
                 'http://localhost:3000/admin/dashboard'
             );
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             expect(response).toBeInstanceOf(NextResponse);
             expect(response?.status).toBe(307);
@@ -473,7 +473,7 @@ describe('Middleware', () => {
                 },
             });
 
-            await proxy(request);
+            await middleware(request);
 
             // Should continue with normal auth flow after parsing fails
             expect(mockSupabaseClient.auth.getUser).toHaveBeenCalled();
@@ -515,7 +515,7 @@ describe('Middleware', () => {
             );
 
             const request = new NextRequest('http://localhost:3000/admin');
-            const response = await proxy(request);
+            const response = await middleware(request);
 
             // Should redirect to login on database error
             expect(response).toBeInstanceOf(NextResponse);

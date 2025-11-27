@@ -70,7 +70,7 @@ npm run test:ui       # Run tests with UI interface
 
 - **Framework**: Next.js 16 with App Router and TypeScript 5
 - **Database**: Supabase PostgreSQL with RLS (Row-Level Security)
-- **Authentication**: Supabase Auth with admin session caching in middleware
+- **Authentication**: Supabase Auth with admin session caching in proxy (formerly middleware)
 - **Payment**: Stripe (test mode)
 - **Email**: Resend API
 - **Styling**: Tailwind CSS 4 with PostCSS
@@ -108,7 +108,7 @@ src/
 │   └── site.ts       # Centralized site configuration
 ├── styles/
 │   └── globals.css   # Global styles
-└── middleware.ts     # Admin route protection with session caching
+└── proxy.ts     # Admin route protection with session caching (formerly middleware.ts)
 ```
 
 ### Key Architectural Decisions
@@ -119,9 +119,9 @@ src/
 - **Server Client** (`src/lib/supabase/server.ts`): Uses service role key for admin operations and bypassing RLS when needed
 - Database queries use the appropriate client based on context (client vs. server components)
 
-#### 2. Admin Middleware Protection
+#### 2. Admin Proxy (formerly Middleware) Protection
 
-- `/admin` routes are protected by middleware (`src/middleware.ts`)
+- `/admin` routes are protected by proxy (formerly middleware) (`src/proxy.ts`)
 - Admin session is cached in cookies for 15 minutes to reduce database queries
 - Cache validation checks: user ID exists, session hasn't expired
 - All non-admin routes are unprotected (public pages)
@@ -163,7 +163,7 @@ All tables have `created_at` and `updated_at` timestamps. IDs are UUIDs.
 
 ## Phases
 
-**Phase 1** (Complete): Database schema, Supabase clients, middleware, types
+**Phase 1** (Complete): Database schema, Supabase clients, proxy (formerly middleware), types
 **Phase 2** (Next): Public pages (gallery, shop, contact), components
 **Phase 3**: Shopping cart, checkout integration, order management
 **Phase 4**: Admin panel for content management
@@ -209,7 +209,7 @@ Use Zod schemas for form validation and API request/response validation. Define 
 
 ### Protected Routes
 
-Any route under `/admin` is automatically protected by middleware. Components that need auth access should use the browser Supabase client's `auth.getUser()` method.
+Any route under `/admin` is automatically protected by proxy (formerly middleware). Components that need auth access should use the browser Supabase client's `auth.getUser()` method.
 
 ## Build & Deploy
 
@@ -232,9 +232,13 @@ Any route under `/admin` is automatically protected by middleware. Components th
 
 ## Documentation
 
-All project documentation is in the `docs/` folder. Start with:
+All project documentation is in the `.docs/` folder. Start with:
 
-- `docs/INDEX.md` - Full documentation index
-- `docs/QUICK_START.md` - 5-minute setup test
-- `docs/SETUP.md` - Detailed configuration guide
-- `docs/MIGRATIONS_GUIDE.md` - Database migration workflow
+- `.docs/INDEX.md` - Full documentation index
+- `.docs/QUICK_START.md` - 5-minute setup test
+- `.docs/SETUP.md` - Detailed configuration guide
+- `.docs/MIGRATIONS_GUIDE.md` - Database migration workflow
+
+## Specifications
+
+All project specifications and planning documents are in the `.specs/` folder. This includes architecture plans, implementation plans, wireframes, and assets.

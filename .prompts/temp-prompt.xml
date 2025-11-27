@@ -1,0 +1,41 @@
+<xml version="1.0" encoding="UTF-8">
+<prompt>
+    <context>
+        The spec in @.specs\2025-11-06T11-08-00-mvp-phase-3-admin.md describes the addition of an admin interface for this project. Each phase has a "Lint and format" step at the end. This is not frequent enough for such a large specification, and it lacks clarity.
+    </context>
+
+    <purpose>
+        Modify the spec to clearly define the code VERIFICATION_PROCEDURE, and add instructions to run the VERIFICATION_PROCEDURE at more frequent intervals, such as at the end of each TDD Green step and each TDD Refactor step, in addition to at the end of each Phase.
+    </purpose>
+
+    <verification_procedure>
+        Run this verification procedure after completing EACH phase:
+
+        <verification_commands>
+            <cmd_compile>tsc --noEmit</cmd_compile>
+            <cmd_lint>npx eslint --fix {files}</cmd_lint>
+            <cmd_format>npx prettier --write {files}</cmd_format>
+            <cmd_test>npx vitest related run {files}</cmd_test>
+        </verification_commands>
+
+        <verification_steps>
+            1. Identify the specific file paths modified in the current phase
+            2. Run verification commands, replacing {files} with space-separated file paths:
+                - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
+                - ESLint: npx eslint --fix {files}
+                - Prettier: npx prettier --write {files}
+                - Vitest: npx vitest related run {files}
+            3. If any command fails:
+                - Fix the specific error
+                - Retry the verification step
+                - Note that during a TDD Red phase, newly-added tests would be expected to fail.
+            4. If failures persist beyond 3 attempts:
+                - Stop implementation
+                - Document the issue
+                - Ask for human guidance
+            5. Only proceed to next phase when ALL verifications pass for the current phase
+        </verification_steps>
+
+        This ensures code quality and prevents accumulation of technical debt after each phase.
+    </verification_procedure>
+</prompt>

@@ -160,7 +160,10 @@ export default async function InTheWorksPage() {
                                         <div className="space-y-2 text-sm border-t border-gray-300 pt-4">
                                             <div>
                                                 <span className="font-semibold">
-                                                    Dates:
+                                                    {event.start_date ===
+                                                    event.end_date
+                                                        ? 'Date:'
+                                                        : 'Dates:'}
                                                 </span>{' '}
                                                 {new Date(
                                                     event.start_date
@@ -168,15 +171,24 @@ export default async function InTheWorksPage() {
                                                     year: 'numeric',
                                                     month: 'long',
                                                     day: 'numeric',
-                                                })}{' '}
-                                                -{' '}
-                                                {new Date(
-                                                    event.end_date
-                                                ).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
                                                 })}
+                                                {event.start_date !==
+                                                    event.end_date && (
+                                                    <>
+                                                        {' '}
+                                                        -{' '}
+                                                        {new Date(
+                                                            event.end_date
+                                                        ).toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric',
+                                                            }
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
 
                                             <div>

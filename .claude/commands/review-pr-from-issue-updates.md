@@ -9,7 +9,7 @@ You MUST NOT write, modify, or execute any code.
 
 ## 1. Context
 
-Project: Babawa.chat Interviewer App
+Project: YeOldeArtoonist.com Website
 
 Programming Language/Framework: TypeScript / Next.js
 

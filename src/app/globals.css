@@ -28,8 +28,9 @@
 }
 
 /* Dark mode support - Non-critical (also defined in inline CSS) */
+/* IMPORTANT: Admin pages always use light mode regardless of system preference */
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not(.light-mode) {
         --background: #0a0a0a;
         --foreground: #ededed;
     }
@@ -80,3 +81,42 @@ h6 {
  *
  * Expected FCP improvement: ~300-500ms
  */
+
+/* Admin UI Components - Reusable Styles for Consistency */
+
+/* Form Input/Textarea - Standard styling with high contrast */
+.admin-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm;
+    @apply focus:ring-indigo-500 focus:border-indigo-500;
+    @apply sm:text-sm text-gray-900;
+}
+
+/* Form Label - High contrast label text */
+.admin-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+/* Form Error Message - Red error text */
+.admin-error {
+    @apply text-sm text-red-600;
+}
+
+/* Page Header - Large bold black text */
+.admin-page-header {
+    @apply text-3xl font-bold mb-6 text-black;
+}
+
+/* Navigation Active State - Desktop horizontal menu */
+.admin-nav-active {
+    @apply border-b-2 border-black font-semibold text-black;
+}
+
+/* Navigation Inactive State - Desktop horizontal menu */
+.admin-nav-inactive {
+    @apply text-gray-700 hover:text-black;
+}
+
+/* Header Logo/Title - High contrast black text */
+.admin-header-title {
+    @apply text-black;
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -44,6 +44,18 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    // Force light mode for admin login page regardless of system preference
+    // useLayoutEffect runs synchronously before browser paint, preventing flash
+    useLayoutEffect(() => {
+        // Add light-mode class to html element to override dark mode
+        document.documentElement.classList.add('light-mode');
+
+        // Cleanup: remove light-mode class when leaving login page
+        return () => {
+            document.documentElement.classList.remove('light-mode');
+        };
+    }, []);
 
     // Check if user is already authenticated on component mount
     // Prevents redirect race condition with cleanup flag
@@ -102,9 +114,16 @@ export default function LoginPage() {
                 return;
             }
 
+            console.log('[DEBUG] Starting sign-in...');
             const { data, error: signInError } = await signIn(email, password);
+            console.log('[DEBUG] Sign-in result:', {
+                hasData: !!data,
+                hasSession: !!data?.session,
+                hasError: !!signInError,
+            });
 
             if (signInError) {
+                console.error('[DEBUG] Sign-in error:', signInError);
                 // Sanitize error message to prevent account enumeration
                 const sanitized = sanitizeAuthError(signInError.message);
                 setError(sanitized);
@@ -112,14 +131,19 @@ export default function LoginPage() {
             }
 
             if (data?.session) {
-                // Redirect to admin dashboard on successful login
-                router.push('/admin');
+                console.log('[DEBUG] Session created, redirecting to /admin');
+                // Use window.location.href for full page reload to ensure server-side layout re-renders
+                // This is necessary because the admin layout reads session from cookies on the server
+                window.location.href = '/admin';
+            } else {
+                console.error('[DEBUG] No session in response data');
+                setError('Authentication succeeded but no session was created');
             }
         },
-        [email, password, signIn, router]
+        [email, password, signIn]
     );
     // Dependencies are necessary: email and password are form state that changes,
-    // signIn is a stable callback from useAuth, router is from useRouter.
+    // signIn is a stable callback from useAuth.
     // This callback must update whenever these values change to ensure fresh values in the handler.
 
     if (isCheckingAuth) {

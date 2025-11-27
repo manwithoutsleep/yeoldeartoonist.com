@@ -1,6 +1,6 @@
 ---
-argument-hint: [spec-name] [phase-id] [pr-num]
 description: Review a PR and add comments
+argument-hint: [pr-num] [spec-name] [phase-id]
 ---
 
 Act as an expert Senior Software Engineer and a meticulous code reviewer. Your task is to perform a thorough review of the following pull request. I want you to be critical and provide detailed, actionable feedback.
@@ -15,7 +15,9 @@ TypeScript / Next.js
 
 ### Goal of this PR
 
-This PR is intended to implement the requirements described in {{phase-id}} of the implementation plan defined in {{spec-name}}.
+This PR is intended to implement the requirements described in the implementation plan defined in {{spec-name}}.
+
+If {{phase-id}} is given, then the PR is limited to the features described in that portion of {{spec-name}}. Otherwise, the PR is meant to implement all features described in {{spec-name}}.
 
 ### Relevant Architecture/Design Decisions
 

@@ -126,7 +126,11 @@ export default function ArtworkForm({
                 </h3>
                 <ImageUploader
                     onUploadComplete={(urls) => setImageUrls(urls)}
-                    existingImageUrl={initialData?.image_url || undefined}
+                    existingImageUrl={
+                        imageUrls.image_url ||
+                        initialData?.image_url ||
+                        undefined
+                    }
                     maxSizeMB={10}
                 />
             </div>

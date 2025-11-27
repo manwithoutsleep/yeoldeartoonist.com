@@ -11,6 +11,11 @@ vi.mock('next/navigation', () => ({
     }),
 }));
 
+// Mock Server Action
+vi.mock('@/app/admin/actions/upload', () => ({
+    uploadImageAction: vi.fn(),
+}));
+
 describe('ArtworkForm', () => {
     it('renders all form fields', () => {
         render(<ArtworkForm />);
@@ -277,5 +282,43 @@ describe('ArtworkForm', () => {
         const submitData = mockSubmit.mock.calls[0][0];
         expect(submitData.price).toBe('100.00');
         expect(submitData.original_price).toBe('150.00');
+    });
+
+    it('should display uploaded image thumbnail after successful upload', async () => {
+        const { uploadImageAction } = await import(
+            '@/app/admin/actions/upload'
+        );
+        (uploadImageAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+            success: true,
+            data: {
+                image_thumbnail_url: 'https://example.com/thumb.webp',
+                image_url: 'https://example.com/preview.webp',
+                image_large_url: 'https://example.com/large.webp',
+            },
+        });
+
+        render(<ArtworkForm />);
+
+        // Upload an image
+        const file = new File(['image content'], 'test-artwork.jpg', {
+            type: 'image/jpeg',
+        });
+        const fileInput = screen.getByLabelText(/choose image file/i);
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        const uploadButton = await screen.findByRole('button', {
+            name: /upload image/i,
+        });
+        fireEvent.click(uploadButton);
+
+        // Verify thumbnail is displayed after upload
+        await waitFor(() => {
+            const currentImage = screen.getByAltText(/current image/i);
+            expect(currentImage).toBeInTheDocument();
+            expect(currentImage).toHaveAttribute(
+                'src',
+                'https://example.com/preview.webp'
+            );
+        });
     });
 });

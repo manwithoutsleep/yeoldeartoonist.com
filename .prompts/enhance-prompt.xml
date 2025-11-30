@@ -1,21 +1,26 @@
-<xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <prompt>
     <context>
-        I have developed a prompt for an AI model that I want to modify to suit a slightly different situation. When working on a relatively small feature, the original prompt worked well for implementing an entire specification in a single pass. However, for a much larger feature I want to have it work through the plan in phases, with regular checkpoints where it will verify its work.
+        I have developed a prompt for an AI model that I want to modify to suit a slightly different
+        situation. When working on a relatively small feature, the original prompt worked well for
+        implementing an entire specification in a single pass. However, for a much larger feature I
+        want to have it work through the plan in phases, with regular checkpoints where it will
+        verify its work.
     </context>
 
     <purpose>
-        Read the provided prompt to understand its goals. Enhance the prompt by adding a loop which iterates over phases of the specifications and running the VERIFICATION steps at the end of each PHASE. Maintain the XML structure.
+        Read the provided prompt to understand its goals. Enhance the prompt by adding a loop which
+        iterates over phases of the specifications and running the VERIFICATION steps at the end of
+        each PHASE. Maintain the XML structure.
     </purpose>
 
     <phase>
-        A portion of the specification that is sized appropriately to reasonably implement, verify, and test. Often these sections are labeled as "phase", "step", or "task" in the specification.
+        A portion of the specification that is sized appropriately to reasonably implement, verify,
+        and test. Often these sections are labeled as "phase", "step", or "task" in the
+        specification.
     </phase>
 
-    <verification_procedure>
-        After implementation, follow this verification procedure:
-
-        <verification_commands>
+    <verification_procedure> After implementation, follow this verification procedure: <verification_commands>
             <cmd_compile>tsc --noEmit</cmd_compile>
             <cmd_lint>npx eslint --fix {files}</cmd_lint>
             <cmd_format>npx prettier --write {files}</cmd_format>
@@ -23,26 +28,23 @@
         </verification_commands>
 
         <verification_steps>
-            1. Identify the specific file paths modified in the current step
+        1. Identify the specific file paths modified in the current step
             2. Run verification commands, replacing {files} with space-separated file paths:
-                - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
-                - ESLint: npx eslint --fix {files}
-                - Prettier: npx prettier --write {files}
-                - Vitest: npx vitest related run {files}
+            - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
+            - ESLint: npx eslint --fix {files}
+            - Prettier: npx prettier --write {files}
+            - Vitest: npx vitest related run {files}
             3. If any command fails:
-                - Fix the specific error
-                - Retry the verification step
-                - Note that during a TDD Red PHASE, newly-added tests would be expected to fail.
+            - Fix the specific error
+            - Retry the verification step
+            - Note that during a TDD Red PHASE, newly-added tests would be expected to fail.
             4. If failures persist beyond 3 attempts:
-                - Stop implementation
-                - Document the issue
-                - Ask for human guidance
+            - Stop implementation
+            - Document the issue
+            - Ask for human guidance
             5. Only proceed to next step when ALL verifications pass
         </verification_steps>
-
-        This ensures code quality and prevents accumulation of technical debt.
-
-    </verification_procedure>
+        This ensures code quality and prevents accumulation of technical debt. </verification_procedure>
 
     <instructions>
         <instruction>Read the PROMPT-TO-ENHANCE to understand its goals.</instruction>

@@ -1,7 +1,7 @@
-<xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <prompt>
     <variables>
-        <variable name="issue-id" description="The GitHub Issue ID to develop a plan for." value="30"/>
+        <variable name="issue-id" description="The GitHub Issue ID to develop a plan for." />
     </variables>
     <context>
         <role>strategist</role>
@@ -14,7 +14,8 @@
         </constraints>
         <development_principles>
             <tdd>
-                Implementation should follow Test Driven Development (TDD) practices whenever practical:
+                Implementation should follow Test Driven Development (TDD) practices whenever
+                practical:
                 - Write tests first (Red)
                 - Implement code to pass tests (Green)
                 - Refactor while keeping tests passing (Refactor)
@@ -32,15 +33,16 @@
 
     <purpose>
         Create a comprehensive, strategic implementation plan for GitHub Issue #{{issue-id}}.
-        The plan should be detailed enough to guide implementation but require human approval before any code changes are made.
+        The plan should be detailed enough to guide implementation but require human approval before
+        any code changes are made.
         The plan must incorporate TDD practices and SOLID principles throughout.
     </purpose>
 
     <available_tools>
-    <tool>GitHub CLI (gh) - for reading issue details, checking project state</tool>
-    <tool>Git - for branch management planning</tool>
-    <tool>Bash - for timestamps and filesystem operations</tool>
-    <tool>Read/Write - for creating the plan document</tool>
+        <tool>GitHub CLI (gh) - for reading issue details, checking project state</tool>
+        <tool>Git - for branch management planning</tool>
+        <tool>Bash - for timestamps and filesystem operations</tool>
+        <tool>Read/Write - for creating the plan document</tool>
     </available_tools>
 
     <instructions>
@@ -79,10 +81,7 @@
 
         <step id="4">
             <action>Develop the implementation plan</action>
-            <details>
-                Create a strategic plan that includes:
-
-                <plan_structure>
+            <details> Create a strategic plan that includes: <plan_structure>
                     <section name="overview">
                         - Brief summary of the issue
                         - Goals and success criteria
@@ -108,8 +107,7 @@
                         - Refactor while keeping tests passing (Refactor phase)
                         - Verify SOLID principles are maintained
                         - Run verification commands after each step (see Verification Process below)
-
-                        Each step should include:
+                Each step should include:
                         - What needs to be done (specific files, components, functions)
                         - Why it needs to be done (rationale)
                         - How SOLID principles are applied
@@ -125,10 +123,8 @@
                         N. After PR approval, squash and merge
                     </section>
 
-                    <section name="verification_process">
-                        After EACH implementation step, follow this verification procedure:
-
-                        <verification_commands>
+                    <section name="verification_process"> After EACH implementation step, follow
+                this verification procedure: <verification_commands>
                             <cmd_compile>tsc --noEmit</cmd_compile>
                             <cmd_lint>npx eslint --fix {files}</cmd_lint>
                             <cmd_format>npx prettier --write {files}</cmd_format>
@@ -136,8 +132,9 @@
                         </verification_commands>
 
                         <verification_steps>
-                            1. Identify the specific file paths modified in the current step
-                            2. Run verification commands, replacing {files} with space-separated file paths:
+                1. Identify the specific file paths modified in the current step
+                            2. Run verification commands, replacing {files} with space-separated
+                            file paths:
                             - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
                             - ESLint: npx eslint --fix {files}
                             - Prettier: npx prettier --write {files}
@@ -151,9 +148,7 @@
                             - Ask for human guidance
                             5. Only proceed to next step when ALL verifications pass
                         </verification_steps>
-
-                        This ensures code quality and prevents accumulation of technical debt.
-                    </section>
+                This ensures code quality and prevents accumulation of technical debt. </section>
 
                     <section name="testing_strategy">
                         Follow TDD approach:
@@ -212,25 +207,24 @@
     </instructions>
 
     <quality_checks>
-    <check>Plan addresses all aspects of the GitHub issue</check>
-    <check>Steps are specific and actionable</check>
-    <check>Dependencies between steps are clear</check>
-    <check>Testing strategy is comprehensive and follows TDD approach</check>
-    <check>Tests are written BEFORE implementation in each step</check>
-    <check>Risks and mitigation strategies are identified</check>
-    <check>SOLID principles are explicitly applied and explained</check>
-    <check>Each implementation step includes TDD cycle (Red-Green-Refactor)</check>
-    <check>Each step includes verification commands (compile, lint, format, test)</check>
-    <check>Verification failure handling is documented (3-attempt limit, human escalation)</check>
-    <check>Refactoring opportunities are identified</check>
-    <check>All file paths and naming follow project standards</check>
+        <check>Plan addresses all aspects of the GitHub issue</check>
+        <check>Steps are specific and actionable</check>
+        <check>Dependencies between steps are clear</check>
+        <check>Testing strategy is comprehensive and follows TDD approach</check>
+        <check>Tests are written BEFORE implementation in each step</check>
+        <check>Risks and mitigation strategies are identified</check>
+        <check>SOLID principles are explicitly applied and explained</check>
+        <check>Each implementation step includes TDD cycle (Red-Green-Refactor)</check>
+        <check>Each step includes verification commands (compile, lint, format, test)</check>
+        <check>Verification failure handling is documented (3-attempt limit, human escalation)</check>
+        <check>Refactoring opportunities are identified</check>
+        <check>All file paths and naming follow project standards</check>
     </quality_checks>
 
     <output_format>
 
-    <summary>
-    Created implementation plan at: .specs/{{timestamp}}-claude-issue-{{issue-id}}.md
-
+        <summary>
+            Created implementation plan at: .specs/{{timestamp}}-claude-issue-{{issue-id}}.md
             Overview: [2-3 sentence summary of the approach]
 
             Key Decisions:

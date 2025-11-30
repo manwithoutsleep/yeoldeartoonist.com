@@ -49,7 +49,7 @@ export default async function InTheWorksPage() {
 
                 {/* Projects Section */}
                 <section className="mb-16">
-                    <h2 className="text-[40px] font-bold mb-3 bg-black text-white text-center py-4">
+                    <h2 className="text-[40px] font-bold !mb-3 bg-black text-white text-center py-4">
                         Projects
                     </h2>
 
@@ -124,7 +124,7 @@ export default async function InTheWorksPage() {
 
                 {/* Events Section */}
                 <section className="mb-16">
-                    <h2 className="text-[40px] font-bold mb-3 bg-black text-white text-center py-4">
+                    <h2 className="text-[40px] font-bold !mb-3 bg-black text-white text-center py-4">
                         Upcoming Events
                     </h2>
 

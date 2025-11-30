@@ -1,6 +1,13 @@
 ---
-argument-hint: [issue-id]
 description: Create an implementation plan for a GitHub issue
+argument-hint: [issue-id]
+allowed-tools:
+    [
+        Read,
+        Edit,
+        Bash(gh issue view:*),
+        Bash(powershell -Command \"Get-Date -Format ''yyyy-MM-ddTHH-mm-ss''\"),
+    ]
 ---
 
 <context>

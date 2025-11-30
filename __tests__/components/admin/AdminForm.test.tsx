@@ -272,9 +272,61 @@ describe('AdminForm', () => {
                     role: 'super_admin',
                     password: 'password123',
                     passwordConfirm: 'password123',
-                    is_active: true,
                 });
             });
+        });
+
+        it('initializes email as empty string, never undefined', () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                />
+            );
+
+            const emailInput = screen.getByLabelText(
+                /Email/i
+            ) as HTMLInputElement;
+            expect(emailInput.value).toBe('');
+            expect(emailInput.value).not.toBe(undefined);
+        });
+
+        it('always includes email in submitted data even when trying to submit without filling it', async () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                />
+            );
+
+            const nameInput = screen.getByLabelText(/Name/i);
+            const passwordInput = screen.getByLabelText(/^Password \*$/);
+            const passwordConfirmInput =
+                screen.getByLabelText(/^Retype Password \*$/);
+
+            fireEvent.change(nameInput, { target: { value: 'Test Admin' } });
+            fireEvent.change(passwordInput, {
+                target: { value: 'password123' },
+            });
+            fireEvent.change(passwordConfirmInput, {
+                target: { value: 'password123' },
+            });
+
+            const submitButton = screen.getByRole('button', {
+                name: /Create Admin/i,
+            });
+            fireEvent.click(submitButton);
+
+            // Validation should catch empty email before submission
+            await waitFor(() => {
+                expect(
+                    screen.getByText('Email is required')
+                ).toBeInTheDocument();
+            });
+
+            expect(mockOnSubmit).not.toHaveBeenCalled();
         });
     });
 

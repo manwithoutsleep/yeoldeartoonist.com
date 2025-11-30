@@ -3,10 +3,44 @@
 import { useState } from 'react';
 import type { AdminRow } from '@/lib/db/admin/administrators';
 
-interface AdminFormProps {
-    mode: 'create' | 'edit';
-    initialData?: AdminRow;
-    onSubmit: (data: AdminFormData) => Promise<void>;
+// Separate interfaces for create and edit modes
+export interface CreateAdminFormData {
+    name: string;
+    email: string; // Required for create
+    role: 'admin' | 'super_admin';
+    password: string;
+    passwordConfirm: string;
+}
+
+export interface EditAdminFormData {
+    name: string;
+    role: 'admin' | 'super_admin';
+    password?: string;
+    passwordConfirm?: string;
+    is_active?: boolean;
+}
+
+// Union type for backward compatibility
+export type AdminFormData = CreateAdminFormData | EditAdminFormData;
+
+// Props for create mode
+interface CreateAdminFormProps {
+    mode: 'create';
+    initialData?: never;
+    onSubmit: (data: CreateAdminFormData) => Promise<void>;
+    onCancel: () => void;
+    isLoading?: boolean;
+    disableRoleChange?: never;
+    disableActiveToggle?: never;
+    error?: string | null;
+    onErrorDismiss?: () => void;
+}
+
+// Props for edit mode
+interface EditAdminFormProps {
+    mode: 'edit';
+    initialData: AdminRow;
+    onSubmit: (data: EditAdminFormData) => Promise<void>;
     onCancel: () => void;
     isLoading?: boolean;
     disableRoleChange?: boolean;
@@ -15,34 +49,48 @@ interface AdminFormProps {
     onErrorDismiss?: () => void;
 }
 
-export interface AdminFormData {
-    name: string;
-    email?: string;
-    role: 'admin' | 'super_admin';
-    password?: string;
-    passwordConfirm?: string;
-    is_active?: boolean;
-}
+// Union of both prop types
+type AdminFormProps = CreateAdminFormProps | EditAdminFormProps;
 
-export function AdminForm({
-    mode,
-    initialData,
-    onSubmit,
-    onCancel,
-    isLoading = false,
-    disableRoleChange = false,
-    disableActiveToggle = false,
-    error,
-    onErrorDismiss,
-}: AdminFormProps) {
-    const [formData, setFormData] = useState<AdminFormData>({
-        name: initialData?.name || '',
-        email: initialData?.email || '',
-        role: initialData?.role || 'admin',
-        password: '',
-        passwordConfirm: '',
-        is_active: initialData?.is_active ?? true,
+export function AdminForm(props: AdminFormProps) {
+    const {
+        mode,
+        onSubmit,
+        onCancel,
+        isLoading = false,
+        error,
+        onErrorDismiss,
+    } = props;
+
+    // Type-safe state initialization based on mode
+    const [formData, setFormData] = useState<
+        CreateAdminFormData | EditAdminFormData
+    >(() => {
+        if (mode === 'create') {
+            return {
+                name: '',
+                email: '', // Always initialize as empty string, never undefined
+                role: 'admin',
+                password: '',
+                passwordConfirm: '',
+            };
+        } else {
+            // mode === 'edit'
+            const { initialData } = props;
+            return {
+                name: initialData.name,
+                role: initialData.role,
+                password: '',
+                passwordConfirm: '',
+                is_active: initialData.is_active ?? true,
+            };
+        }
     });
+
+    // Extract mode-specific props after mode check
+    const disableRoleChange = mode === 'edit' ? props.disableRoleChange : false;
+    const disableActiveToggle =
+        mode === 'edit' ? props.disableActiveToggle : false;
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -54,34 +102,39 @@ export function AdminForm({
         }
 
         if (mode === 'create') {
-            if (!formData.email?.trim()) {
+            const createData = formData as CreateAdminFormData;
+            if (!createData.email.trim()) {
                 newErrors.email = 'Email is required';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createData.email)) {
                 newErrors.email = 'Invalid email address';
             }
 
-            if (!formData.password) {
+            if (!createData.password) {
                 newErrors.password = 'Password is required';
-            } else if (formData.password.length < 8) {
+            } else if (createData.password.length < 8) {
                 newErrors.password = 'Password must be at least 8 characters';
             }
 
-            if (!formData.passwordConfirm) {
+            if (!createData.passwordConfirm) {
                 newErrors.passwordConfirm = 'Please retype password';
-            } else if (formData.password !== formData.passwordConfirm) {
+            } else if (createData.password !== createData.passwordConfirm) {
                 newErrors.passwordConfirm = 'Passwords do not match';
             }
         }
 
-        if (mode === 'edit' && formData.password) {
-            if (formData.password.length < 8) {
-                newErrors.password = 'Password must be at least 8 characters';
-            }
+        if (mode === 'edit') {
+            const editData = formData as EditAdminFormData;
+            if (editData.password) {
+                if (editData.password.length < 8) {
+                    newErrors.password =
+                        'Password must be at least 8 characters';
+                }
 
-            if (!formData.passwordConfirm) {
-                newErrors.passwordConfirm = 'Please retype password';
-            } else if (formData.password !== formData.passwordConfirm) {
-                newErrors.passwordConfirm = 'Passwords do not match';
+                if (!editData.passwordConfirm) {
+                    newErrors.passwordConfirm = 'Please retype password';
+                } else if (editData.password !== editData.passwordConfirm) {
+                    newErrors.passwordConfirm = 'Passwords do not match';
+                }
             }
         }
 
@@ -96,7 +149,12 @@ export function AdminForm({
             return;
         }
 
-        await onSubmit(formData);
+        // Type-safe submission based on mode
+        if (mode === 'create') {
+            await onSubmit(formData as CreateAdminFormData);
+        } else {
+            await onSubmit(formData as EditAdminFormData);
+        }
     };
 
     return (
@@ -156,9 +214,12 @@ export function AdminForm({
                         type="email"
                         id="email"
                         name="email"
-                        value={formData.email}
+                        value={(formData as CreateAdminFormData).email}
                         onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
+                            setFormData({
+                                ...formData,
+                                email: e.target.value,
+                            } as CreateAdminFormData)
                         }
                         className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                         disabled={isLoading}
@@ -266,12 +327,12 @@ export function AdminForm({
                             type="checkbox"
                             id="is_active"
                             name="is_active"
-                            checked={formData.is_active}
+                            checked={(formData as EditAdminFormData).is_active}
                             onChange={(e) =>
                                 setFormData({
                                     ...formData,
                                     is_active: e.target.checked,
-                                })
+                                } as EditAdminFormData)
                             }
                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isLoading || disableActiveToggle}

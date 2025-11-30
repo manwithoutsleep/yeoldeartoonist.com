@@ -19,7 +19,7 @@ interface ProjectFormProps {
 
 const fieldDescriptions = {
     title: 'The title of the project.',
-    slug: 'The URL-friendly version of the title. Usually auto-generated from the title.',
+    slug: 'The URL-friendly version of the title. No spaces allowed. Usually the title with spaces replaced by dashes and filler words removed.',
     description: 'A detailed description of the project.',
     status: 'The current status of the project.',
     progress_percentage: 'The progress of the project, as a percentage.',

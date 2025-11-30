@@ -518,4 +518,146 @@ describe('In The Works Page', () => {
             expect(true).toBe(true); // This would be verified via Next.js build
         });
     });
+
+    describe('Responsive Layout (Issue #33)', () => {
+        it('should display projects in single-column layout (not grid)', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [mockProject],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            const { container } = render(result);
+
+            // Projects container should NOT have grid-cols-2
+            const projectsContainer = container.querySelector(
+                '.grid.md\\:grid-cols-2'
+            );
+            expect(projectsContainer).not.toBeInTheDocument();
+        });
+
+        it('should display project images with object-contain (not object-cover)', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [mockProject],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            render(result);
+
+            const img = screen.getByAltText(
+                'Test Project: A test project in progress'
+            );
+            expect(img).toHaveClass('object-contain');
+            expect(img).not.toHaveClass('object-cover');
+        });
+
+        it('should display event images with object-contain (not object-cover)', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [mockEvent],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            render(result);
+
+            const img = screen.getByAltText(
+                'Test Convention: A fun convention'
+            );
+            expect(img).toHaveClass('object-contain');
+            expect(img).not.toHaveClass('object-cover');
+        });
+
+        it('should use flex layout with responsive direction for projects', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [mockProject],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            const { container } = render(result);
+
+            // Find project card container
+            const projectCard = container.querySelector(
+                '.flex.flex-col.md\\:flex-row'
+            );
+            expect(projectCard).toBeInTheDocument();
+        });
+
+        it('should use flex layout with responsive direction for events', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [mockEvent],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            const { container } = render(result);
+
+            // Find event card container
+            const eventCard = container.querySelector(
+                '.flex.flex-col.md\\:flex-row'
+            );
+            expect(eventCard).toBeInTheDocument();
+        });
+
+        it('should constrain image height on desktop for projects', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [mockProject],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            const { container } = render(result);
+
+            // Find image container with max-height constraint
+            const imageContainer = container.querySelector(
+                '.md\\:max-h-\\[400px\\]'
+            );
+            expect(imageContainer).toBeInTheDocument();
+        });
+
+        it('should constrain image height on desktop for events', async () => {
+            mockGetAllProjects.mockResolvedValue({
+                data: [],
+                error: null,
+            });
+            mockGetUpcomingEvents.mockResolvedValue({
+                data: [mockEvent],
+                error: null,
+            });
+
+            const result = await InTheWorksPage();
+            const { container } = render(result);
+
+            // Find image container with max-height constraint
+            const imageContainer = container.querySelector(
+                '.md\\:max-h-\\[400px\\]'
+            );
+            expect(imageContainer).toBeInTheDocument();
+        });
+    });
 });

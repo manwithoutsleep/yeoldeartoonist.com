@@ -11,6 +11,11 @@ import { getUpcomingEvents } from '@/lib/db/events';
  * - Events section with date range, location
  * - Upcoming events sorted first
  * - Server-side rendering for SSG/ISR benefits
+ *
+ * Layout:
+ * - Desktop (≥768px): Single-column with image on left (400px height, auto width)
+ * - Mobile (<768px): Stacked layout with image above text (full width, auto height)
+ * - Images displayed in original aspect ratio using object-contain (no cropping)
  */
 
 export const revalidate = 3600; // Revalidate every hour (ISR)
@@ -44,7 +49,7 @@ export default async function InTheWorksPage() {
 
                 {/* Projects Section */}
                 <section className="mb-16">
-                    <h2 className="text-3xl font-bold mb-8 border-b-2 border-black pb-4">
+                    <h2 className="text-[40px] font-bold !mb-3 bg-black text-white text-center py-4">
                         Projects
                     </h2>
 
@@ -55,24 +60,25 @@ export default async function InTheWorksPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="flex flex-col gap-8">
                             {projects.map((project) => (
                                 <div
                                     key={project.id}
-                                    className="border-2 border-black rounded overflow-hidden"
+                                    className="border-2 border-black rounded flex flex-col md:flex-row"
                                 >
                                     {project.image_url && (
-                                        <div className="relative w-full h-48 overflow-hidden bg-gray-100">
+                                        <div className="relative bg-gray-100 flex-shrink-0 w-full md:w-auto overflow-hidden rounded-t md:rounded-l md:rounded-tr-none">
                                             <Image
                                                 src={project.image_url}
                                                 alt={`${project.title}${project.description ? ': ' + project.description : ''}`}
-                                                fill
-                                                className="object-cover"
+                                                width={800}
+                                                height={600}
+                                                className="object-contain w-full h-auto md:h-auto md:w-auto md:max-h-[400px]"
                                             />
                                         </div>
                                     )}
 
-                                    <div className="p-6">
+                                    <div className="p-6 flex-1">
                                         <h3 className="text-2xl font-bold mb-2">
                                             {project.title}
                                         </h3>
@@ -118,7 +124,7 @@ export default async function InTheWorksPage() {
 
                 {/* Events Section */}
                 <section className="mb-16">
-                    <h2 className="text-3xl font-bold mb-8 border-b-2 border-black pb-4">
+                    <h2 className="text-[40px] font-bold !mb-3 bg-black text-white text-center py-4">
                         Upcoming Events
                     </h2>
 
@@ -129,24 +135,25 @@ export default async function InTheWorksPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="flex flex-col gap-8">
                             {events.map((event) => (
                                 <div
                                     key={event.id}
-                                    className="border-2 border-black rounded overflow-hidden"
+                                    className="border-2 border-black rounded flex flex-col md:flex-row"
                                 >
                                     {event.image_url && (
-                                        <div className="relative w-full h-48 overflow-hidden bg-gray-100">
+                                        <div className="relative bg-gray-100 flex-shrink-0 w-full md:w-auto overflow-hidden rounded-t md:rounded-l md:rounded-tr-none">
                                             <Image
                                                 src={event.image_url}
                                                 alt={`${event.title}${event.description ? ': ' + event.description : ''}`}
-                                                fill
-                                                className="object-cover"
+                                                width={800}
+                                                height={600}
+                                                className="object-contain w-full h-auto md:h-auto md:w-auto md:max-h-[400px]"
                                             />
                                         </div>
                                     )}
 
-                                    <div className="p-6">
+                                    <div className="p-6 flex-1">
                                         <h3 className="text-2xl font-bold mb-2">
                                             {event.title}
                                         </h3>

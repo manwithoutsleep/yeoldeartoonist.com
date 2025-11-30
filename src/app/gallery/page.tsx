@@ -51,7 +51,7 @@ export default async function GalleryPage() {
                                             src={item.image_thumbnail_url}
                                             alt={item.alt_text || item.title}
                                             fill
-                                            className="object-cover group-hover:scale-110 transition-transform"
+                                            className="object-contain group-hover:scale-110 transition-transform"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-200">

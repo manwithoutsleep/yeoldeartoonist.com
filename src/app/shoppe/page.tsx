@@ -59,7 +59,7 @@ export default async function ShoppePage() {
                                                 product.title
                                             }
                                             fill
-                                            className="object-cover hover:scale-110 transition-transform"
+                                            className="object-contain hover:scale-110 transition-transform"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-200">

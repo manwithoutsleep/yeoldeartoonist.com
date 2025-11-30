@@ -27,7 +27,7 @@ export default defineConfig({
         isolate: true,
         // Max number of threads (workers) to use for parallel execution
         // Lower number avoids resource contention while still getting parallelism benefits
-        maxWorkers: 4,
+        maxWorkers: 3,
         testTimeout: 10000, // 10 second timeout per test
         hookTimeout: 10000, // 10 second timeout for hooks
         coverage: {

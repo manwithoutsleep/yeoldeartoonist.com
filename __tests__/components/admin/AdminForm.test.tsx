@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+    render,
+    screen,
+    fireEvent,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { AdminForm } from '@/components/admin/AdminForm';
 import type { AdminRow } from '@/lib/db/admin/administrators';
@@ -36,6 +42,25 @@ describe('AdminForm', () => {
             expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/Role/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/^Password \*$/)).toBeInTheDocument();
+        });
+
+        it('shows an info balloon for the name field', () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                />
+            );
+
+            const nameLabel = screen.getByText(/Name/i);
+            if (!nameLabel.parentElement) {
+                throw new Error('Could not find parent element of name label');
+            }
+            const infoIcon = within(nameLabel.parentElement).getByRole('img', {
+                name: /info/i,
+            });
+            expect(infoIcon).toBeInTheDocument();
         });
 
         it('does not show is_active checkbox in create mode', () => {

@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+    render,
+    screen,
+    fireEvent,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import ArtworkForm from '@/components/admin/artwork/ArtworkForm';
 import userEvent from '@testing-library/user-event';
@@ -31,6 +37,18 @@ describe('ArtworkForm', () => {
         expect(screen.getByLabelText(/seo title/i)).toBeDefined();
         expect(screen.getByLabelText(/seo description/i)).toBeDefined();
         expect(screen.getByLabelText(/tags/i)).toBeDefined();
+    });
+
+    it('shows an info balloon for the title field', () => {
+        render(<ArtworkForm />);
+        const titleLabel = screen.getByText(/^title$/i);
+        if (!titleLabel.parentElement) {
+            throw new Error('Could not find parent element of title label');
+        }
+        const infoIcon = within(titleLabel.parentElement).getByRole('img', {
+            name: /info/i,
+        });
+        expect(infoIcon).toBeInTheDocument();
     });
 
     it('validates required fields', async () => {

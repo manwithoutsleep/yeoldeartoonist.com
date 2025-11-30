@@ -604,4 +604,108 @@ describe('AdminForm', () => {
             expect(activeCheckbox.checked).toBe(true);
         });
     });
+
+    describe('Error Display', () => {
+        it('displays error message when error prop is provided', () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error="Test error message"
+                />
+            );
+
+            expect(screen.getByText('Test error message')).toBeInTheDocument();
+        });
+
+        it('does not display error when error prop is null', () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error={null}
+                />
+            );
+
+            // Should not find any error message
+            expect(
+                screen.queryByText(/Test error message/i)
+            ).not.toBeInTheDocument();
+        });
+
+        it('does not display error when error prop is not provided', () => {
+            const { container } = render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                />
+            );
+
+            // Error container should not exist
+            const errorContainer = container.querySelector('.bg-red-50');
+            expect(errorContainer).not.toBeInTheDocument();
+        });
+
+        it('calls onErrorDismiss when dismiss button is clicked', () => {
+            const mockOnErrorDismiss = vi.fn();
+
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error="Test error message"
+                    onErrorDismiss={mockOnErrorDismiss}
+                />
+            );
+
+            const dismissButton = screen.getByLabelText('Dismiss error');
+            fireEvent.click(dismissButton);
+
+            expect(mockOnErrorDismiss).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not show dismiss button when onErrorDismiss is not provided', () => {
+            render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error="Test error message"
+                />
+            );
+
+            expect(
+                screen.queryByLabelText('Dismiss error')
+            ).not.toBeInTheDocument();
+        });
+
+        it('displays error in both create and edit modes', () => {
+            const { rerender } = render(
+                <AdminForm
+                    mode="create"
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error="Create mode error"
+                />
+            );
+
+            expect(screen.getByText('Create mode error')).toBeInTheDocument();
+
+            rerender(
+                <AdminForm
+                    mode="edit"
+                    initialData={mockAdminData}
+                    onSubmit={mockOnSubmit}
+                    onCancel={mockOnCancel}
+                    error="Edit mode error"
+                />
+            );
+
+            expect(screen.getByText('Edit mode error')).toBeInTheDocument();
+        });
+    });
 });

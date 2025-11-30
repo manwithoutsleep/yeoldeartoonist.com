@@ -11,6 +11,8 @@ interface AdminFormProps {
     isLoading?: boolean;
     disableRoleChange?: boolean;
     disableActiveToggle?: boolean;
+    error?: string | null;
+    onErrorDismiss?: () => void;
 }
 
 export interface AdminFormData {
@@ -30,6 +32,8 @@ export function AdminForm({
     isLoading = false,
     disableRoleChange = false,
     disableActiveToggle = false,
+    error,
+    onErrorDismiss,
 }: AdminFormProps) {
     const [formData, setFormData] = useState<AdminFormData>({
         name: initialData?.name || '',
@@ -97,6 +101,26 @@ export function AdminForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <div className="rounded-md bg-red-50 p-4">
+                    <div className="flex">
+                        <div className="flex-1">
+                            <p className="text-sm text-red-800">{error}</p>
+                        </div>
+                        {onErrorDismiss && (
+                            <button
+                                type="button"
+                                onClick={onErrorDismiss}
+                                className="ml-3 text-red-500 hover:text-red-700"
+                                aria-label="Dismiss error"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <div>
                 <label
                     htmlFor="name"

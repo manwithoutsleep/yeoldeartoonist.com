@@ -21,7 +21,9 @@ export function SettingsClient({
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingAdmin, setEditingAdmin] = useState<AdminRow | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [createError, setCreateError] = useState<string | null>(null);
+    const [editError, setEditError] = useState<string | null>(null);
+    const [deactivateError, setDeactivateError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
     // Check if there's only one active super admin
@@ -34,7 +36,7 @@ export function SettingsClient({
 
     const handleCreateSubmit = async (data: AdminFormData) => {
         setIsLoading(true);
-        setError(null);
+        setCreateError(null);
 
         const result = await createAdminAction({
             name: data.name,
@@ -46,10 +48,11 @@ export function SettingsClient({
         setIsLoading(false);
 
         if (result.error) {
-            setError(result.error.message);
+            setCreateError(result.error.message);
         } else {
             setSuccess('Admin created successfully');
             setShowCreateModal(false);
+            setCreateError(null);
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -64,7 +67,7 @@ export function SettingsClient({
         console.log('[handleEditSubmit] editingAdmin.id:', editingAdmin.id);
 
         setIsLoading(true);
-        setError(null);
+        setEditError(null);
 
         const updateData: {
             name: string;
@@ -94,11 +97,12 @@ export function SettingsClient({
 
         if (result.error) {
             console.log('[handleEditSubmit] Error:', result.error);
-            setError(result.error.message);
+            setEditError(result.error.message);
         } else {
             console.log('[handleEditSubmit] Success!');
             setSuccess('Admin updated successfully');
             setEditingAdmin(null);
+            setEditError(null);
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
@@ -111,14 +115,14 @@ export function SettingsClient({
         }
 
         setIsLoading(true);
-        setError(null);
+        setDeactivateError(null);
 
         const result = await deactivateAdminAction(admin.id);
 
         setIsLoading(false);
 
         if (result.error) {
-            setError(result.error.message);
+            setDeactivateError(result.error.message);
         } else {
             setSuccess('Admin deactivated successfully');
             setTimeout(() => {
@@ -130,9 +134,9 @@ export function SettingsClient({
     return (
         <div className="space-y-6">
             {/* Error/Success Messages */}
-            {error && (
+            {deactivateError && (
                 <div className="rounded-md bg-red-50 p-4">
-                    <p className="text-sm text-red-800">{error}</p>
+                    <p className="text-sm text-red-800">{deactivateError}</p>
                 </div>
             )}
 
@@ -150,7 +154,10 @@ export function SettingsClient({
                             Admin Users
                         </h2>
                         <button
-                            onClick={() => setShowCreateModal(true)}
+                            onClick={() => {
+                                setCreateError(null);
+                                setShowCreateModal(true);
+                            }}
                             className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             Add New Admin
@@ -215,9 +222,10 @@ export function SettingsClient({
                                         </td>
                                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                                             <button
-                                                onClick={() =>
-                                                    setEditingAdmin(admin)
-                                                }
+                                                onClick={() => {
+                                                    setEditError(null);
+                                                    setEditingAdmin(admin);
+                                                }}
                                                 className="text-indigo-600 hover:text-indigo-900 mr-4"
                                             >
                                                 Edit
@@ -274,8 +282,13 @@ export function SettingsClient({
                             <AdminForm
                                 mode="create"
                                 onSubmit={handleCreateSubmit}
-                                onCancel={() => setShowCreateModal(false)}
+                                onCancel={() => {
+                                    setCreateError(null);
+                                    setShowCreateModal(false);
+                                }}
                                 isLoading={isLoading}
+                                error={createError}
+                                onErrorDismiss={() => setCreateError(null)}
                             />
                         </div>
                     </div>
@@ -298,7 +311,10 @@ export function SettingsClient({
                                 mode="edit"
                                 initialData={editingAdmin}
                                 onSubmit={handleEditSubmit}
-                                onCancel={() => setEditingAdmin(null)}
+                                onCancel={() => {
+                                    setEditError(null);
+                                    setEditingAdmin(null);
+                                }}
                                 isLoading={isLoading}
                                 disableRoleChange={
                                     isLastSuperAdmin &&
@@ -308,6 +324,8 @@ export function SettingsClient({
                                     isLastSuperAdmin &&
                                     editingAdmin.id === currentAdminId
                                 }
+                                error={editError}
+                                onErrorDismiss={() => setEditError(null)}
                             />
                         </div>
                     </div>

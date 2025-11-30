@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import type { AdminRow } from '@/lib/db/admin/administrators';
-import { AdminForm, type AdminFormData } from '@/components/admin/AdminForm';
+import {
+    AdminForm,
+    type CreateAdminFormData,
+    type EditAdminFormData,
+} from '@/components/admin/AdminForm';
 import {
     createAdminAction,
     updateAdminAction,
@@ -34,15 +38,23 @@ export function SettingsClient({
         activeSuperAdmins.length === 1 &&
         activeSuperAdmins[0].id === currentAdminId;
 
-    const handleCreateSubmit = async (data: AdminFormData) => {
+    const handleCreateSubmit = async (data: CreateAdminFormData) => {
         setIsLoading(true);
         setCreateError(null);
 
+        // Validate required fields at runtime (defense in depth)
+        if (!data.email || !data.password || !data.passwordConfirm) {
+            setCreateError('All fields are required');
+            setIsLoading(false);
+            return;
+        }
+
         const result = await createAdminAction({
             name: data.name,
-            email: data.email!,
+            email: data.email,
             role: data.role,
-            password: data.password!,
+            password: data.password,
+            passwordConfirm: data.passwordConfirm, // Need to include this for Zod validation
         });
 
         setIsLoading(false);
@@ -59,7 +71,7 @@ export function SettingsClient({
         }
     };
 
-    const handleEditSubmit = async (data: AdminFormData) => {
+    const handleEditSubmit = async (data: EditAdminFormData) => {
         if (!editingAdmin) return;
 
         console.log('[handleEditSubmit] editingAdmin:', editingAdmin);

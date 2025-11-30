@@ -4,7 +4,6 @@ import {
     createAdmin,
     updateAdmin,
     deactivateAdmin,
-    type CreateAdminInput,
     type UpdateAdminInput,
     type AdminRow,
 } from '@/lib/db/admin/administrators';
@@ -14,10 +13,23 @@ import { cookies } from 'next/headers';
 import type { AdministratorError } from '@/lib/db/admin/administrators';
 
 /**
+ * Input type for creating an admin - matches what the form sends
+ */
+export interface CreateAdminActionInput {
+    name: string;
+    email: string;
+    role: 'admin' | 'super_admin';
+    password: string;
+    passwordConfirm: string;
+}
+
+/**
  * Server action to create a new admin user
  * Validates input, creates user, and revalidates settings page
  */
-export async function createAdminAction(formData: CreateAdminInput): Promise<{
+export async function createAdminAction(
+    formData: CreateAdminActionInput
+): Promise<{
     data: AdminRow | null;
     error: AdministratorError | null;
 }> {

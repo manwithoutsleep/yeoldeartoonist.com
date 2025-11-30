@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import ImageUploader from '@/components/admin/ImageUploader';
+import { InfoBalloon } from '@/components/ui/InfoBalloon';
 
 /**
  * Converts an array of tags to a comma-separated string
@@ -39,6 +40,28 @@ const formSchema = artworkSchema.extend({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const fieldDescriptions = {
+    title: 'The title of the artwork.',
+    slug: 'The URL-friendly version of the title. No spaces allowed. Usually the title with spaces replaced by dashes and filler words removed.',
+    description: 'A detailed description of the artwork.',
+    price: 'The price of the artwork in dollars.',
+    original_price: 'The original price of the artwork, if it is on sale.',
+    sku: 'The Stock Keeping Unit for inventory tracking.',
+    inventory_count: 'The number of items available for sale.',
+    is_published: 'Whether the artwork is visible to the public.',
+    is_featured:
+        'Whether the artwork is featured on the home page. (Not currenltly used)',
+    is_limited_edition: 'Whether the artwork is a limited edition.',
+    medium: 'The materials used to create the artwork (e.g., oil on canvas).',
+    dimensions: 'The dimensions of the artwork (e.g., 24" x 36").',
+    year_created: 'The year the artwork was created.',
+    display_order: 'The order in which the artwork appears in lists.',
+    alt_text: 'Descriptive text for screen readers and search engines.',
+    seo_title: 'A custom title for search engine results.',
+    seo_description: 'A custom description for search engine results.',
+    tags: 'A comma-separated list of tags for categorization.',
+};
 
 export default function ArtworkForm({
     initialData,
@@ -137,9 +160,12 @@ export default function ArtworkForm({
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="title" className="admin-label">
-                        Title
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="title" className="admin-label">
+                            Title
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.title} />
+                    </div>
                     <input
                         id="title"
                         type="text"
@@ -152,9 +178,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="slug" className="admin-label">
-                        Slug
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="slug" className="admin-label">
+                            Slug
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.slug} />
+                    </div>
                     <input
                         id="slug"
                         type="text"
@@ -167,9 +196,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="description" className="admin-label">
-                        Description
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="description" className="admin-label">
+                            Description
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.description} />
+                    </div>
                     <textarea
                         id="description"
                         rows={4}
@@ -184,9 +216,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="price" className="admin-label">
-                        Price
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="price" className="admin-label">
+                            Price
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.price} />
+                    </div>
                     <div className="relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-gray-500 sm:text-sm">$</span>
@@ -207,9 +242,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="original_price" className="admin-label">
-                        Original Price
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="original_price" className="admin-label">
+                            Original Price
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.original_price} />
+                    </div>
                     <div className="relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-gray-500 sm:text-sm">$</span>
@@ -237,9 +275,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="sku" className="admin-label">
-                        SKU
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="sku" className="admin-label">
+                            SKU
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.sku} />
+                    </div>
                     <input
                         id="sku"
                         type="text"
@@ -252,9 +293,15 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="inventory_count" className="admin-label">
-                        Inventory Count
-                    </label>
+                    <div className="flex items-center">
+                        <label
+                            htmlFor="inventory_count"
+                            className="admin-label"
+                        >
+                            Inventory Count
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.inventory_count} />
+                    </div>
                     <input
                         id="inventory_count"
                         type="number"
@@ -271,9 +318,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="medium" className="admin-label">
-                        Medium
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="medium" className="admin-label">
+                            Medium
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.medium} />
+                    </div>
                     <input
                         id="medium"
                         type="text"
@@ -283,9 +333,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="dimensions" className="admin-label">
-                        Dimensions
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="dimensions" className="admin-label">
+                            Dimensions
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.dimensions} />
+                    </div>
                     <input
                         id="dimensions"
                         type="text"
@@ -295,9 +348,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="year_created" className="admin-label">
-                        Year Created
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="year_created" className="admin-label">
+                            Year Created
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.year_created} />
+                    </div>
                     <input
                         id="year_created"
                         type="number"
@@ -307,9 +363,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="display_order" className="admin-label">
-                        Display Order
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="display_order" className="admin-label">
+                            Display Order
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.display_order} />
+                    </div>
                     <input
                         id="display_order"
                         type="number"
@@ -327,12 +386,15 @@ export default function ArtworkForm({
                         {...register('is_published')}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label
-                        htmlFor="is_published"
-                        className="ml-2 block text-sm text-gray-900"
-                    >
-                        Published (visible to public)
-                    </label>
+                    <div className="flex items-center ml-2">
+                        <label
+                            htmlFor="is_published"
+                            className="block text-sm font-medium text-gray-900"
+                        >
+                            Published
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.is_published} />
+                    </div>
                 </div>
 
                 <div className="flex items-center">
@@ -342,12 +404,15 @@ export default function ArtworkForm({
                         {...register('is_featured')}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label
-                        htmlFor="is_featured"
-                        className="ml-2 block text-sm text-gray-900"
-                    >
-                        Featured (highlighted on home page)
-                    </label>
+                    <div className="flex items-center ml-2">
+                        <label
+                            htmlFor="is_featured"
+                            className="block text-sm font-medium text-gray-900"
+                        >
+                            Featured
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.is_featured} />
+                    </div>
                 </div>
 
                 <div className="flex items-center">
@@ -357,20 +422,28 @@ export default function ArtworkForm({
                         {...register('is_limited_edition')}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label
-                        htmlFor="is_limited_edition"
-                        className="ml-2 block text-sm text-gray-900"
-                    >
-                        Limited Edition
-                    </label>
+                    <div className="flex items-center ml-2">
+                        <label
+                            htmlFor="is_limited_edition"
+                            className="block text-sm font-medium text-gray-900"
+                        >
+                            Limited Edition
+                        </label>
+                        <InfoBalloon
+                            text={fieldDescriptions.is_limited_edition}
+                        />
+                    </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 border-t border-gray-200 pt-6">
                 <div className="col-span-2 space-y-2">
-                    <label htmlFor="alt_text" className="admin-label">
-                        Alt Text
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="alt_text" className="admin-label">
+                            Alt Text
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.alt_text} />
+                    </div>
                     <input
                         id="alt_text"
                         type="text"
@@ -384,9 +457,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="col-span-2 space-y-2">
-                    <label htmlFor="tags" className="admin-label">
-                        Tags
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="tags" className="admin-label">
+                            Tags
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.tags} />
+                    </div>
                     <input
                         id="tags"
                         type="text"
@@ -400,9 +476,12 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="col-span-2 space-y-2">
-                    <label htmlFor="seo_title" className="admin-label">
-                        SEO Title
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="seo_title" className="admin-label">
+                            SEO Title
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.seo_title} />
+                    </div>
                     <input
                         id="seo_title"
                         type="text"
@@ -417,9 +496,15 @@ export default function ArtworkForm({
                 </div>
 
                 <div className="col-span-2 space-y-2">
-                    <label htmlFor="seo_description" className="admin-label">
-                        SEO Description
-                    </label>
+                    <div className="flex items-center">
+                        <label
+                            htmlFor="seo_description"
+                            className="admin-label"
+                        >
+                            SEO Description
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.seo_description} />
+                    </div>
                     <textarea
                         id="seo_description"
                         rows={3}

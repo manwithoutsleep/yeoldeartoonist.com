@@ -7,6 +7,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { z } from 'zod';
+import { InfoBalloon } from '@/components/ui/InfoBalloon';
 
 // Use the input type which has all fields as optional before defaults are applied
 type ProjectFormInput = z.input<typeof projectSchema>;
@@ -15,6 +16,18 @@ interface ProjectFormProps {
     initialData?: Partial<ProjectFormData>;
     onSubmit?: (data: ProjectFormData) => Promise<void> | void;
 }
+
+const fieldDescriptions = {
+    title: 'The title of the project.',
+    slug: 'The URL-friendly version of the title. Usually auto-generated from the title.',
+    description: 'A detailed description of the project.',
+    status: 'The current status of the project.',
+    progress_percentage: 'The progress of the project, as a percentage.',
+    expected_completion_date:
+        'The estimated date of completion for the project.',
+    is_published: 'Whether the project is visible to the public.',
+    display_order: 'The order in which the project appears in lists.',
+};
 
 export default function ProjectForm({
     initialData,
@@ -91,9 +104,12 @@ export default function ProjectForm({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Title */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="title" className="admin-label">
-                        Title
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="title" className="admin-label">
+                            Title
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.title} />
+                    </div>
                     <input
                         id="title"
                         type="text"
@@ -107,9 +123,12 @@ export default function ProjectForm({
 
                 {/* Slug */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="slug" className="admin-label">
-                        Slug
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="slug" className="admin-label">
+                            Slug
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.slug} />
+                    </div>
                     <input
                         id="slug"
                         type="text"
@@ -123,9 +142,12 @@ export default function ProjectForm({
 
                 {/* Description */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="description" className="admin-label">
-                        Description
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="description" className="admin-label">
+                            Description
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.description} />
+                    </div>
                     <textarea
                         id="description"
                         rows={4}
@@ -141,9 +163,12 @@ export default function ProjectForm({
 
                 {/* Status */}
                 <div className="space-y-2">
-                    <label htmlFor="status" className="admin-label">
-                        Status
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="status" className="admin-label">
+                            Status
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.status} />
+                    </div>
                     <select
                         id="status"
                         {...register('status')}
@@ -161,12 +186,17 @@ export default function ProjectForm({
 
                 {/* Progress Percentage */}
                 <div className="space-y-2">
-                    <label
-                        htmlFor="progress_percentage"
-                        className="admin-label"
-                    >
-                        Progress (%)
-                    </label>
+                    <div className="flex items-center">
+                        <label
+                            htmlFor="progress_percentage"
+                            className="admin-label"
+                        >
+                            Progress (%)
+                        </label>
+                        <InfoBalloon
+                            text={fieldDescriptions.progress_percentage}
+                        />
+                    </div>
                     <input
                         id="progress_percentage"
                         type="number"
@@ -186,12 +216,17 @@ export default function ProjectForm({
 
                 {/* Expected Completion Date */}
                 <div className="space-y-2">
-                    <label
-                        htmlFor="expected_completion_date"
-                        className="admin-label"
-                    >
-                        Expected Completion Date
-                    </label>
+                    <div className="flex items-center">
+                        <label
+                            htmlFor="expected_completion_date"
+                            className="admin-label"
+                        >
+                            Expected Completion Date
+                        </label>
+                        <InfoBalloon
+                            text={fieldDescriptions.expected_completion_date}
+                        />
+                    </div>
                     <input
                         id="expected_completion_date"
                         type="date"
@@ -207,9 +242,12 @@ export default function ProjectForm({
 
                 {/* Display Order */}
                 <div className="space-y-2">
-                    <label htmlFor="display_order" className="admin-label">
-                        Display Order
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="display_order" className="admin-label">
+                            Display Order
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.display_order} />
+                    </div>
                     <input
                         id="display_order"
                         type="number"
@@ -231,9 +269,14 @@ export default function ProjectForm({
                             {...register('is_published')}
                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">
-                            Published
-                        </span>
+                        <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-700">
+                                Published
+                            </span>
+                            <InfoBalloon
+                                text={fieldDescriptions.is_published}
+                            />
+                        </div>
                     </label>
                     {errors.is_published && (
                         <p className="admin-error">

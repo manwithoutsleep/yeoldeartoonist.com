@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { AdminRow } from '@/lib/db/admin/administrators';
+import { InfoBalloon } from '@/components/ui/InfoBalloon';
 
 // Separate interfaces for create and edit modes
 export interface CreateAdminFormData {
@@ -51,6 +52,16 @@ interface EditAdminFormProps {
 
 // Union of both prop types
 type AdminFormProps = CreateAdminFormProps | EditAdminFormProps;
+
+const fieldDescriptions = {
+    name: 'The full name of the administrator.',
+    email: 'The email address used for logging in. Cannot be changed after creation.',
+    role: 'The role of the administrator. Super admins have unrestricted access.',
+    password:
+        'The password for the administrator account. Minimum 8 characters.',
+    passwordConfirm: 'Please retype the password to confirm.',
+    is_active: 'Inactive administrators cannot log in.',
+};
 
 export function AdminForm(props: AdminFormProps) {
     const {
@@ -180,12 +191,15 @@ export function AdminForm(props: AdminFormProps) {
             )}
 
             <div>
-                <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    Name *
-                </label>
+                <div className="flex items-center">
+                    <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-gray-700"
+                    >
+                        Name *
+                    </label>
+                    <InfoBalloon text={fieldDescriptions.name} />
+                </div>
                 <input
                     type="text"
                     id="name"
@@ -204,12 +218,15 @@ export function AdminForm(props: AdminFormProps) {
 
             {mode === 'create' && (
                 <div>
-                    <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Email *
-                    </label>
+                    <div className="flex items-center">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Email *
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.email} />
+                    </div>
                     <input
                         type="email"
                         id="email"
@@ -233,12 +250,15 @@ export function AdminForm(props: AdminFormProps) {
             )}
 
             <div>
-                <label
-                    htmlFor="role"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    Role *
-                </label>
+                <div className="flex items-center">
+                    <label
+                        htmlFor="role"
+                        className="block text-sm font-medium text-gray-700"
+                    >
+                        Role *
+                    </label>
+                    <InfoBalloon text={fieldDescriptions.role} />
+                </div>
                 <select
                     id="role"
                     name="role"
@@ -263,12 +283,15 @@ export function AdminForm(props: AdminFormProps) {
             </div>
 
             <div>
-                <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    Password {mode === 'create' ? '*' : '(optional)'}
-                </label>
+                <div className="flex items-center">
+                    <label
+                        htmlFor="password"
+                        className="block text-sm font-medium text-gray-700"
+                    >
+                        Password {mode === 'create' ? '*' : '(optional)'}
+                    </label>
+                    <InfoBalloon text={fieldDescriptions.password} />
+                </div>
                 <input
                     type="password"
                     id="password"
@@ -293,12 +316,15 @@ export function AdminForm(props: AdminFormProps) {
             </div>
 
             <div>
-                <label
-                    htmlFor="passwordConfirm"
-                    className="block text-sm font-medium text-gray-700"
-                >
-                    Retype Password {mode === 'create' ? '*' : '(optional)'}
-                </label>
+                <div className="flex items-center">
+                    <label
+                        htmlFor="passwordConfirm"
+                        className="block text-sm font-medium text-gray-700"
+                    >
+                        Retype Password {mode === 'create' ? '*' : '(optional)'}
+                    </label>
+                    <InfoBalloon text={fieldDescriptions.passwordConfirm} />
+                </div>
                 <input
                     type="password"
                     id="passwordConfirm"
@@ -337,12 +363,15 @@ export function AdminForm(props: AdminFormProps) {
                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isLoading || disableActiveToggle}
                         />
-                        <label
-                            htmlFor="is_active"
-                            className="ml-2 block text-sm text-gray-900"
-                        >
-                            Active
-                        </label>
+                        <div className="flex items-center ml-2">
+                            <label
+                                htmlFor="is_active"
+                                className="block text-sm font-medium text-gray-900"
+                            >
+                                Active
+                            </label>
+                            <InfoBalloon text={fieldDescriptions.is_active} />
+                        </div>
                     </div>
                     {disableActiveToggle && (
                         <p className="mt-1 text-sm text-amber-600">

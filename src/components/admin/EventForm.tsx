@@ -7,6 +7,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { z } from 'zod';
+import { InfoBalloon } from '@/components/ui/InfoBalloon';
 
 // Use the input type which has all fields as optional before defaults are applied
 type EventFormInput = z.input<typeof eventSchema>;
@@ -15,6 +16,19 @@ interface EventFormProps {
     initialData?: Partial<EventFormData>;
     onSubmit?: (data: EventFormData) => Promise<void> | void;
 }
+
+const fieldDescriptions = {
+    title: 'The title of the event.',
+    slug: 'The URL-friendly version of the title. Usually auto-generated from the title.',
+    description: 'A detailed description of the event.',
+    start_date: 'The start date of the event.',
+    end_date: 'The end date of the event.',
+    location: 'The city and state where the event is taking place.',
+    venue_name: 'The name of the venue (e.g., convention center, hotel).',
+    booth_number: 'The booth number or location at the venue.',
+    convention_url: 'The official website of the convention or event.',
+    is_published: 'Whether the event is visible to the public.',
+};
 
 export default function EventForm({ initialData, onSubmit }: EventFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,9 +103,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Title */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="title" className="admin-label">
-                        Title
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="title" className="admin-label">
+                            Title
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.title} />
+                    </div>
                     <input
                         id="title"
                         type="text"
@@ -105,9 +122,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Slug */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="slug" className="admin-label">
-                        Slug
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="slug" className="admin-label">
+                            Slug
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.slug} />
+                    </div>
                     <input
                         id="slug"
                         type="text"
@@ -121,9 +141,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Description */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="description" className="admin-label">
-                        Description
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="description" className="admin-label">
+                            Description
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.description} />
+                    </div>
                     <textarea
                         id="description"
                         rows={4}
@@ -139,9 +162,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Start Date */}
                 <div className="space-y-2">
-                    <label htmlFor="start_date" className="admin-label">
-                        Start Date
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="start_date" className="admin-label">
+                            Start Date
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.start_date} />
+                    </div>
                     <input
                         id="start_date"
                         type="date"
@@ -157,9 +183,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* End Date */}
                 <div className="space-y-2">
-                    <label htmlFor="end_date" className="admin-label">
-                        End Date
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="end_date" className="admin-label">
+                            End Date
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.end_date} />
+                    </div>
                     <input
                         id="end_date"
                         type="date"
@@ -173,9 +202,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Location */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="location" className="admin-label">
-                        Location
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="location" className="admin-label">
+                            Location
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.location} />
+                    </div>
                     <input
                         id="location"
                         type="text"
@@ -189,9 +221,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Venue Name */}
                 <div className="space-y-2">
-                    <label htmlFor="venue_name" className="admin-label">
-                        Venue Name
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="venue_name" className="admin-label">
+                            Venue Name
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.venue_name} />
+                    </div>
                     <input
                         id="venue_name"
                         type="text"
@@ -207,9 +242,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Booth Number */}
                 <div className="space-y-2">
-                    <label htmlFor="booth_number" className="admin-label">
-                        Booth Number
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="booth_number" className="admin-label">
+                            Booth Number
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.booth_number} />
+                    </div>
                     <input
                         id="booth_number"
                         type="text"
@@ -225,9 +263,12 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
 
                 {/* Convention URL */}
                 <div className="md:col-span-2 space-y-2">
-                    <label htmlFor="convention_url" className="admin-label">
-                        Convention URL
-                    </label>
+                    <div className="flex items-center">
+                        <label htmlFor="convention_url" className="admin-label">
+                            Convention URL
+                        </label>
+                        <InfoBalloon text={fieldDescriptions.convention_url} />
+                    </div>
                     <input
                         id="convention_url"
                         type="url"
@@ -250,9 +291,14 @@ export default function EventForm({ initialData, onSubmit }: EventFormProps) {
                             {...register('is_published')}
                             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">
-                            Published
-                        </span>
+                        <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-700">
+                                Published
+                            </span>
+                            <InfoBalloon
+                                text={fieldDescriptions.is_published}
+                            />
+                        </div>
                     </label>
                     {errors.is_published && (
                         <p className="admin-error">

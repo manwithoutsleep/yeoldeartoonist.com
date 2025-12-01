@@ -1,0 +1,262 @@
+# Phase 4-01: Tests for Cart Context and useCart Hook
+
+## Parent Specification
+
+This is sub-task 01 of the parent specification: `phase-4-shopping-cart-checkout-00-coordinator.md`
+
+## Objective
+
+Add comprehensive TDD tests for the existing `CartContext` and `useCart` hook to ensure cart state management is reliable before building UI and checkout features on top of it.
+
+## Dependencies
+
+**Prerequisites** (must be completed before this task):
+
+- None - This task can start immediately
+
+**Blocks** (tasks that depend on this one):
+
+- None - Other tasks can proceed in parallel
+
+**Parallel Opportunities**:
+
+- Task 02: Cart UI Components
+- Task 03: Server Validation & Order Functions
+- Task 04: Stripe Payment Integration
+
+## Scope
+
+### In Scope
+
+- Comprehensive unit tests for `src/context/CartContext.tsx`
+- Unit tests for `src/hooks/useCart.ts`
+- Test coverage for all cart operations:
+    - Adding items to cart (new and duplicate)
+    - Removing items from cart
+    - Updating quantities
+    - Clearing cart
+    - Calculating totals
+    - Getting item count
+- localStorage persistence tests
+- Edge case testing:
+    - Duplicate items (should increment quantity)
+    - Zero/negative quantities
+    - Large quantities
+    - Malformed localStorage data
+    - localStorage unavailable
+    - Concurrent cart updates
+- Context provider tests
+- Hook error handling (using outside provider)
+
+### Out of Scope
+
+- UI component tests (covered in Task 02)
+- Server-side validation tests (covered in Task 03)
+- Integration tests with checkout (covered in Task 06)
+- E2E tests (covered in Task 06)
+
+## Implementation Requirements
+
+### Testing Framework
+
+- Use Vitest with @testing-library/react
+- Follow existing test patterns from Phase 2.5
+- Mock localStorage for consistent test environment
+- Use @testing-library/react-hooks for hook testing
+
+### Test Coverage Goals
+
+- 100% coverage for CartContext
+- 100% coverage for useCart hook
+- All branches tested (if/else, try/catch)
+- All edge cases covered
+
+### Test Organization
+
+```
+__tests__/
+├── context/
+│   └── CartContext.test.tsx    # CartContext provider tests
+└── hooks/
+    └── useCart.test.ts         # useCart hook tests
+```
+
+## Files to Create/Modify
+
+- `__tests__/context/CartContext.test.tsx` - New file with CartContext tests
+- `__tests__/hooks/useCart.test.ts` - New file with useCart hook tests
+
+**No modifications** to existing source files - this task only adds tests for existing functionality.
+
+## Testing Requirements
+
+### CartContext Tests
+
+#### Basic Initialization
+
+- [ ] Provider renders children without errors
+- [ ] Cart initializes with empty items array
+- [ ] Cart initializes from localStorage if available
+- [ ] Malformed localStorage data is handled gracefully
+
+#### Adding Items
+
+- [ ] Can add new item to empty cart
+- [ ] Can add new item to cart with existing items
+- [ ] Adding duplicate item increments quantity instead of creating duplicate
+- [ ] Adding item updates cart.lastUpdated timestamp
+- [ ] Adding item persists to localStorage
+
+#### Removing Items
+
+- [ ] Can remove item from cart
+- [ ] Removing non-existent item doesn't error
+- [ ] Removing item updates cart.lastUpdated timestamp
+- [ ] Removing item persists to localStorage
+
+#### Updating Quantities
+
+- [ ] Can increase item quantity
+- [ ] Can decrease item quantity
+- [ ] Setting quantity to 0 removes item
+- [ ] Setting negative quantity removes item
+- [ ] Updating quantity updates cart.lastUpdated timestamp
+- [ ] Updating quantity persists to localStorage
+
+#### Clearing Cart
+
+- [ ] Clearing cart removes all items
+- [ ] Clearing cart updates lastUpdated timestamp
+- [ ] Clearing cart persists to localStorage
+
+#### Calculations
+
+- [ ] getTotal() returns 0 for empty cart
+- [ ] getTotal() correctly sums item prices × quantities
+- [ ] getItemCount() returns 0 for empty cart
+- [ ] getItemCount() correctly sums quantities
+
+#### Edge Cases
+
+- [ ] Handles localStorage quota exceeded
+- [ ] Handles localStorage unavailable (SSR/disabled)
+- [ ] Handles concurrent state updates correctly
+- [ ] Preserves cart state across provider remounts
+
+### useCart Hook Tests
+
+- [ ] Hook throws error when used outside CartProvider
+- [ ] Hook returns cart context when used inside CartProvider
+- [ ] Hook provides access to all cart operations
+- [ ] Hook updates trigger re-renders in components
+
+## Success Criteria
+
+- [ ] All CartContext tests pass
+- [ ] All useCart hook tests pass
+- [ ] Test coverage ≥100% for CartContext
+- [ ] Test coverage ≥100% for useCart hook
+- [ ] No TypeScript errors in test files
+- [ ] Tests follow existing project patterns
+- [ ] Tests run in <5 seconds
+- [ ] All tests are deterministic (no flaky tests)
+- [ ] Edge cases thoroughly covered
+- [ ] The verify-code skill has been successfully executed
+
+## Implementation Notes
+
+### localStorage Mocking
+
+Mock localStorage in test setup:
+
+```typescript
+const localStorageMock = {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+};
+
+global.localStorage = localStorageMock as any;
+```
+
+### Testing Context Providers
+
+Use @testing-library/react to render providers:
+
+```typescript
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <CartProvider>{children}</CartProvider>
+);
+
+const { result } = renderHook(() => useCart(), { wrapper });
+```
+
+### Testing State Updates
+
+Use `act()` and `waitFor()` for async state updates:
+
+```typescript
+act(() => {
+    result.current.addItem(mockItem);
+});
+
+expect(result.current.cart.items).toHaveLength(1);
+```
+
+### Sample Test Cases
+
+**Test: Adding duplicate item increments quantity**
+
+```typescript
+it('should increment quantity when adding duplicate item', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    const item = {
+        artworkId: '123',
+        title: 'Test Art',
+        price: 50,
+        quantity: 1,
+        slug: 'test-art',
+    };
+
+    act(() => {
+        result.current.addItem(item);
+        result.current.addItem(item);
+    });
+
+    expect(result.current.cart.items).toHaveLength(1);
+    expect(result.current.cart.items[0].quantity).toBe(2);
+});
+```
+
+**Test: Setting quantity to 0 removes item**
+
+```typescript
+it('should remove item when quantity set to 0', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    const item = {
+        artworkId: '123',
+        title: 'Test Art',
+        price: 50,
+        quantity: 1,
+        slug: 'test-art',
+    };
+
+    act(() => {
+        result.current.addItem(item);
+        result.current.updateQuantity('123', 0);
+    });
+
+    expect(result.current.cart.items).toHaveLength(0);
+});
+```
+
+## Notes
+
+- This task only adds tests - no changes to source code
+- Tests validate existing implementation is correct
+- Identifies any bugs in current cart logic before building on it
+- Provides confidence for refactoring in future tasks
+- Sets testing pattern for other Phase 4 tasks to follow

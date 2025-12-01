@@ -158,7 +158,7 @@ describe('AdminForm', () => {
             expect(mockOnSubmit).not.toHaveBeenCalled();
         });
 
-        it.skip('validates email format', async () => {
+        it('validates email format', async () => {
             render(
                 <AdminForm
                     mode="create"
@@ -169,13 +169,20 @@ describe('AdminForm', () => {
 
             const nameInput = screen.getByLabelText(/Name/i);
             const emailInput = screen.getByLabelText(/Email/i);
-            const passwordInput = screen.getByLabelText(/Password/i);
+            const passwordInput = screen.getByLabelText(/^Password \*$/);
+            const passwordConfirmInput =
+                screen.getByLabelText(/^Retype Password \*$/);
 
             fireEvent.change(nameInput, { target: { value: 'Test User' } });
             fireEvent.change(passwordInput, {
                 target: { value: 'password123' },
             });
-            fireEvent.change(emailInput, { target: { value: 'notanemail' } });
+            fireEvent.change(passwordConfirmInput, {
+                target: { value: 'password123' },
+            });
+            fireEvent.change(emailInput, {
+                target: { value: 'invalid@email' },
+            });
 
             const submitButton = screen.getByRole('button', {
                 name: /Create Admin/i,

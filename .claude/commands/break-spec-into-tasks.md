@@ -1,5 +1,5 @@
 ---
-argument-hint: [spec-name]
+argument-hint: [spec-name] [notes]
 description: Break down a large spec file into manageable sub-tasks
 ---
 
@@ -32,6 +32,8 @@ This prompt expects the following input parameter:
 **{{spec-name}}** - The name/path of the specification file to break down (e.g.,
 "phase-3-implementation" or ".specs/phase-3-implementation.md")
 
+**{{notes}}** - Additional notes to consider when completing this objective.
+
 </input_parameters>
 
 <requirements>
@@ -47,6 +49,9 @@ This prompt expects the following input parameter:
     - Dependencies between different parts of the work
     - Existing vs. new functionality
     - Testing requirements
+3. Consider these additional notes:
+
+{{notes}}
 
 </step_1_read_specification>
 

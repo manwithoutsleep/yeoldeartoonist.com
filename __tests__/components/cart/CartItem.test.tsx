@@ -19,6 +19,7 @@ const mockItem: CartItem = {
     quantity: 2,
     imageUrl: '/images/test.jpg',
     slug: 'test-artwork',
+    maxQuantity: 10,
 };
 
 describe('CartItem', () => {

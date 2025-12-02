@@ -190,14 +190,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                         <div className="space-y-2">
                             <Link
-                                href="/cart"
+                                href="/shoppe/cart"
                                 onClick={onClose}
                                 className="block w-full text-center px-4 py-2 border border-black text-black font-medium rounded hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                             >
                                 View Cart
                             </Link>
                             <Link
-                                href="/checkout"
+                                href="/shoppe/checkout"
                                 onClick={onClose}
                                 className="block w-full text-center px-4 py-2 bg-black text-white font-medium rounded hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                             >

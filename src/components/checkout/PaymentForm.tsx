@@ -97,15 +97,15 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="payment-form">
-            <div className="payment-element-container">
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="p-4 border-2 border-gray-300 rounded">
                 <PaymentElement />
             </div>
 
             <button
                 type="submit"
                 disabled={!stripe || isProcessing}
-                className="payment-submit-button"
+                className="w-full bg-black text-white px-6 py-3 rounded font-semibold hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 aria-busy={isProcessing}
             >
                 {isProcessing ? 'Processing...' : 'Pay Now'}

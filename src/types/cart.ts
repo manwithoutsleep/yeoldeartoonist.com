@@ -11,6 +11,7 @@ export interface CartItem {
     quantity: number;
     imageUrl?: string;
     slug: string;
+    maxQuantity?: number; // Maximum inventory available (optional for backward compatibility)
 }
 
 export interface Cart {

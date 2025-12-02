@@ -13,6 +13,15 @@ import { validateCart } from '@/lib/cart/validation';
 /**
  * Schema for checkout request validation
  */
+const AddressSchema = z.object({
+    line1: z.string().min(1, 'Address is required'),
+    line2: z.string().optional(),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(2, 'State is required'),
+    zip: z.string().min(5, 'ZIP code is required'),
+    country: z.string().min(2, 'Country is required'),
+});
+
 const CheckoutSchema = z.object({
     items: z.array(
         z.object({
@@ -25,6 +34,9 @@ const CheckoutSchema = z.object({
     ),
     customerName: z.string().min(1, 'Customer name is required'),
     customerEmail: z.string().email('Valid email is required'),
+    shippingAddress: AddressSchema,
+    billingAddress: AddressSchema,
+    orderNotes: z.string().optional(),
 });
 
 /**
@@ -72,7 +84,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { items, customerName, customerEmail } = parsed.data;
+        const {
+            items,
+            customerName,
+            customerEmail,
+            shippingAddress,
+            billingAddress,
+            orderNotes,
+        } = parsed.data;
 
         // Validate cart server-side (prevents price tampering, checks inventory, etc.)
         const validatedCart = await validateCart(items);
@@ -88,16 +107,33 @@ export async function POST(request: NextRequest) {
         }
 
         // Create Stripe payment intent with validated total
+        // Store all checkout data in metadata for webhook retrieval
+        // Note: Stripe metadata values are limited to 500 chars each
         const paymentIntent = await createPaymentIntent(
             validatedCart.total,
             'usd',
             {
                 customerName,
                 customerEmail,
-                // Store cart data for webhook retrieval
+                // Store addresses as JSON strings
+                shippingAddress: JSON.stringify(shippingAddress),
+                billingAddress: JSON.stringify(billingAddress),
+                // Store items as JSON string for order creation
+                items: JSON.stringify(
+                    items.map((item) => ({
+                        artworkId: item.artworkId,
+                        quantity: item.quantity,
+                        price: item.price,
+                    }))
+                ),
+                // Store validated totals
                 itemCount: items.length.toString(),
                 subtotal: validatedCart.subtotal.toFixed(2),
                 shippingCost: validatedCart.shippingCost.toFixed(2),
+                taxAmount: validatedCart.taxAmount.toFixed(2),
+                total: validatedCart.total.toFixed(2),
+                // Store order notes if provided
+                ...(orderNotes && { orderNotes }),
             }
         );
 

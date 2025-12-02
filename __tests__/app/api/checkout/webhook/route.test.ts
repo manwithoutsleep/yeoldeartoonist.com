@@ -132,11 +132,35 @@ describe('POST /api/checkout/webhook', () => {
         );
     });
 
-    it('should handle payment_intent.succeeded event', async () => {
+    it('should handle payment_intent.succeeded event and create order', async () => {
+        const shippingAddress = {
+            line1: '123 Main St',
+            line2: 'Apt 4B',
+            city: 'Portland',
+            state: 'OR',
+            zip: '97201',
+            country: 'US',
+        };
+        const items = [
+            {
+                artworkId: '123e4567-e89b-12d3-a456-426614174000',
+                quantity: 1,
+                price: 100,
+            },
+        ];
+
         const payload = createPaymentIntentEvent('payment_intent.succeeded', {
             metadata: {
                 customerName: 'John Doe',
                 customerEmail: 'john@example.com',
+                shippingAddress: JSON.stringify(shippingAddress),
+                billingAddress: JSON.stringify(shippingAddress),
+                items: JSON.stringify(items),
+                subtotal: '100.00',
+                shippingCost: '5.00',
+                taxAmount: '0.00',
+                total: '105.00',
+                orderNotes: 'Test order',
             },
         });
         const signature = 't=123,v1=valid_signature';
@@ -147,6 +171,31 @@ describe('POST /api/checkout/webhook', () => {
 
         expect(response.status).toBe(200);
         expect(data.received).toBe(true);
+
+        // Verify createOrder was called with correct data
+        expect(createOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+                orderNumber: 'YOA-20250112-0001',
+                customerName: 'John Doe',
+                customerEmail: 'john@example.com',
+                shippingAddress,
+                billingAddress: shippingAddress,
+                orderNotes: 'Test order',
+                subtotal: 100,
+                shippingCost: 5,
+                taxAmount: 0,
+                total: 105,
+                paymentIntentId: 'pi_test_123',
+                items: [
+                    {
+                        artworkId: '123e4567-e89b-12d3-a456-426614174000',
+                        quantity: 1,
+                        priceAtPurchase: 100,
+                        lineSubtotal: 100,
+                    },
+                ],
+            })
+        );
     });
 
     it('should handle payment_intent.payment_failed event', async () => {
@@ -189,10 +238,29 @@ describe('POST /api/checkout/webhook', () => {
             new Error('Database error')
         );
 
-        const payload = createPaymentIntentEvent(
-            'payment_intent.succeeded',
-            {}
-        );
+        const shippingAddress = {
+            line1: '123 Main St',
+            city: 'Portland',
+            state: 'OR',
+            zip: '97201',
+            country: 'US',
+        };
+
+        const payload = createPaymentIntentEvent('payment_intent.succeeded', {
+            metadata: {
+                customerName: 'John Doe',
+                customerEmail: 'john@example.com',
+                shippingAddress: JSON.stringify(shippingAddress),
+                billingAddress: JSON.stringify(shippingAddress),
+                items: JSON.stringify([
+                    { artworkId: 'test-id', quantity: 1, price: 100 },
+                ]),
+                subtotal: '100.00',
+                shippingCost: '5.00',
+                taxAmount: '0.00',
+                total: '105.00',
+            },
+        });
         const signature = 't=123,v1=valid_signature';
         const request = createMockRequest(payload, signature);
 

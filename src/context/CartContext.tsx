@@ -15,7 +15,13 @@
  * @note This is a stub - full implementation deferred to Phase 3
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { Cart, CartItem } from '@/types/cart';
 
 export interface CartContextType {
@@ -62,7 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
 
-    const addItem = (item: CartItem) => {
+    const addItem = useCallback((item: CartItem) => {
         setCart((prev) => {
             const existing = prev.items.find(
                 (i) => i.artworkId === item.artworkId
@@ -83,49 +89,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 lastUpdated: timestamp,
             };
         });
-    };
+    }, []);
 
-    const removeItem = (artworkId: string) => {
+    const removeItem = useCallback((artworkId: string) => {
         setCart((prev) => ({
             items: prev.items.filter((i) => i.artworkId !== artworkId),
             lastUpdated: Date.now(),
         }));
-    };
+    }, []);
 
-    const updateQuantity = (artworkId: string, quantity: number) => {
-        if (quantity <= 0) {
-            removeItem(artworkId);
-            return;
-        }
-        setCart((prev) => {
-            const timestamp = Date.now();
-            return {
-                items: prev.items.map((i) =>
-                    i.artworkId === artworkId ? { ...i, quantity } : i
-                ),
-                lastUpdated: timestamp,
-            };
-        });
-    };
+    const updateQuantity = useCallback(
+        (artworkId: string, quantity: number) => {
+            if (quantity <= 0) {
+                removeItem(artworkId);
+                return;
+            }
+            setCart((prev) => {
+                const timestamp = Date.now();
+                return {
+                    items: prev.items.map((i) =>
+                        i.artworkId === artworkId ? { ...i, quantity } : i
+                    ),
+                    lastUpdated: timestamp,
+                };
+            });
+        },
+        [removeItem]
+    );
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         const timestamp = Date.now();
         setCart({
             items: [],
             lastUpdated: timestamp,
         });
-    };
+    }, []);
 
-    const getTotal = () => {
+    const getTotal = useCallback(() => {
         return cart.items.reduce(
             (sum, item) => sum + item.price * item.quantity,
             0
         );
-    };
+    }, [cart]);
 
-    const getItemCount = () => {
+    const getItemCount = useCallback(() => {
         return cart.items.reduce((sum, item) => sum + item.quantity, 0);
-    };
+    }, [cart]);
 
     return (
         <CartContext.Provider

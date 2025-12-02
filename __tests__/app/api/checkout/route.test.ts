@@ -59,6 +59,23 @@ describe('POST /api/checkout', () => {
         ],
         customerName: 'John Doe',
         customerEmail: 'john@example.com',
+        shippingAddress: {
+            line1: '123 Main St',
+            line2: 'Apt 4B',
+            city: 'Portland',
+            state: 'OR',
+            zip: '97201',
+            country: 'US',
+        },
+        billingAddress: {
+            line1: '123 Main St',
+            line2: 'Apt 4B',
+            city: 'Portland',
+            state: 'OR',
+            zip: '97201',
+            country: 'US',
+        },
+        orderNotes: 'Please handle with care',
     };
 
     function createMockRequest(body: unknown): NextRequest {
@@ -84,7 +101,7 @@ describe('POST /api/checkout', () => {
         expect(validateCart).toHaveBeenCalledWith(validRequestBody.items);
     });
 
-    it('should call createPaymentIntent with correct amount', async () => {
+    it('should call createPaymentIntent with correct amount and metadata', async () => {
         const request = createMockRequest(validRequestBody);
         await POST(request);
 
@@ -94,6 +111,20 @@ describe('POST /api/checkout', () => {
             expect.objectContaining({
                 customerName: 'John Doe',
                 customerEmail: 'john@example.com',
+                // Verify addresses are stored as JSON strings
+                shippingAddress: JSON.stringify(
+                    validRequestBody.shippingAddress
+                ),
+                billingAddress: JSON.stringify(validRequestBody.billingAddress),
+                // Verify items are stored as JSON string
+                items: expect.any(String),
+                // Verify totals
+                subtotal: '100.00',
+                shippingCost: '5.00',
+                taxAmount: '0.00',
+                total: '105.00',
+                // Verify order notes
+                orderNotes: 'Please handle with care',
             })
         );
     });
@@ -154,6 +185,37 @@ describe('POST /api/checkout', () => {
                     quantity: 0,
                 },
             ],
+        };
+
+        const request = createMockRequest(invalidBody);
+        const response = await POST(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.error).toBe('Invalid checkout data');
+    });
+
+    it('should return 400 for missing shipping address', async () => {
+        const invalidBody = {
+            ...validRequestBody,
+            shippingAddress: undefined,
+        };
+
+        const request = createMockRequest(invalidBody);
+        const response = await POST(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.error).toBe('Invalid checkout data');
+    });
+
+    it('should return 400 for invalid shipping address (missing city)', async () => {
+        const invalidBody = {
+            ...validRequestBody,
+            shippingAddress: {
+                ...validRequestBody.shippingAddress,
+                city: '',
+            },
         };
 
         const request = createMockRequest(invalidBody);

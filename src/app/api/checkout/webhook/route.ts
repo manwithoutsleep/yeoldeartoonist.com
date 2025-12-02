@@ -6,8 +6,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { constructWebhookEvent } from '@/lib/payments/stripe';
+import {
+    constructWebhookEvent,
+    generateOrderNumber,
+} from '@/lib/payments/stripe';
+import { createOrder } from '@/lib/db/orders';
 import Stripe from 'stripe';
+import type { Address } from '@/types/order';
 
 /**
  * POST /api/checkout/webhook
@@ -74,16 +79,72 @@ export async function POST(request: NextRequest) {
                     customer: paymentIntent.metadata.customerEmail,
                 });
 
-                // NOTE: For MVP, order creation is handled on the client side after payment confirmation
-                // In a production system, you would:
-                // 1. Store cart data in payment intent metadata or a temporary database table
-                // 2. Retrieve that data here
-                // 3. Create the order record
-                // 4. Decrement inventory
-                // 5. Send confirmation email
+                // Create order from payment intent metadata
+                try {
+                    // Parse metadata
+                    const shippingAddress: Address = JSON.parse(
+                        paymentIntent.metadata.shippingAddress
+                    );
+                    const billingAddress: Address = JSON.parse(
+                        paymentIntent.metadata.billingAddress
+                    );
+                    const items: Array<{
+                        artworkId: string;
+                        quantity: number;
+                        price: number;
+                    }> = JSON.parse(paymentIntent.metadata.items);
 
-                // For now, we just log the successful payment
-                // The client-side success handler will create the order
+                    // Generate unique order number
+                    const orderNumber = generateOrderNumber();
+
+                    // Create order in database
+                    const { data: order, error: orderError } =
+                        await createOrder({
+                            orderNumber,
+                            customerName: paymentIntent.metadata.customerName,
+                            customerEmail: paymentIntent.metadata.customerEmail,
+                            shippingAddress,
+                            billingAddress,
+                            orderNotes: paymentIntent.metadata.orderNotes,
+                            subtotal: parseFloat(
+                                paymentIntent.metadata.subtotal
+                            ),
+                            shippingCost: parseFloat(
+                                paymentIntent.metadata.shippingCost
+                            ),
+                            taxAmount: parseFloat(
+                                paymentIntent.metadata.taxAmount
+                            ),
+                            total: parseFloat(paymentIntent.metadata.total),
+                            paymentIntentId: paymentIntent.id,
+                            items: items.map((item) => ({
+                                artworkId: item.artworkId,
+                                quantity: item.quantity,
+                                priceAtPurchase: item.price,
+                                lineSubtotal: item.price * item.quantity,
+                            })),
+                        });
+
+                    if (orderError) {
+                        console.error('Failed to create order:', orderError);
+                        // Log error but don't fail webhook response
+                        // Manual intervention may be needed to reconcile payment with order
+                    } else {
+                        console.log('Order created successfully:', {
+                            orderId: order?.id,
+                            orderNumber: order?.orderNumber,
+                        });
+
+                        // TODO: Send confirmation email (Phase 5)
+                        // await sendOrderConfirmationEmail(order);
+                    }
+                } catch (err) {
+                    console.error(
+                        'Error processing payment_intent.succeeded:',
+                        err
+                    );
+                    // Log error but don't fail webhook response
+                }
 
                 break;
             }

@@ -28,10 +28,14 @@ export function CartItem({ item }: CartItemProps) {
 
     const lineTotal = item.price * item.quantity;
 
+    // Calculate available quantity options (max 10 or inventory, whichever is lower)
+    // Default to 10 if maxQuantity is not available (e.g., from old cart data)
+    const maxSelectableQuantity = Math.min(item.maxQuantity ?? 10, 10);
+
     return (
         <div className="flex gap-4 py-4 border-b border-gray-200 last:border-b-0">
             {/* Product Image */}
-            <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden">
+            <div className="flex-shrink-0 w-20 h-20 rounded overflow-hidden">
                 {item.imageUrl ? (
                     <Image
                         src={item.imageUrl}
@@ -82,9 +86,12 @@ export function CartItem({ item }: CartItemProps) {
                             )
                         }
                         aria-label={`Quantity for ${item.title}`}
-                        className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-black"
+                        className="text-sm text-black border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-black"
                     >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                        {Array.from(
+                            { length: maxSelectableQuantity },
+                            (_, i) => i + 1
+                        ).map((n) => (
                             <option key={n} value={n}>
                                 {n}
                             </option>

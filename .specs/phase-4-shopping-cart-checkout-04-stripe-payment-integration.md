@@ -144,19 +144,19 @@ Integrate Stripe payment processing to handle checkout payments, including payme
 
 ## Success Criteria
 
-- [ ] Stripe client setup complete and tested
-- [ ] Payment intent API complete and tested
-- [ ] Webhook handler complete and tested
-- [ ] PaymentForm component complete and tested
-- [ ] CheckoutProvider integrated with Stripe Elements
-- [ ] All tests pass
-- [ ] Test coverage ≥90% for Stripe code
-- [ ] Webhook signature verification working
-- [ ] Payment flow works end-to-end with test card
-- [ ] No TypeScript errors
-- [ ] No ESLint warnings
-- [ ] Code formatted with Prettier
-- [ ] The verify-code skill has been successfully executed
+- [x] Stripe client setup complete and tested
+- [x] Payment intent API complete and tested
+- [x] Webhook handler complete and tested
+- [x] PaymentForm component complete and tested
+- [x] CheckoutProvider integrated with Stripe Elements
+- [x] All tests pass
+- [x] Test coverage ≥90% for Stripe code
+- [x] Webhook signature verification working
+- [x] Payment flow works end-to-end with test card
+- [x] No TypeScript errors
+- [x] No ESLint warnings
+- [x] Code formatted with Prettier
+- [x] The verify-code skill has been successfully executed
 
 ## Implementation Notes
 

@@ -275,8 +275,8 @@ If not running in parallel, execute in this order for optimal flow:
 
 ### Completion Checklist
 
-- [ ] **Task 01**: Tests for Cart Context and useCart hook → [Spec](phase-4-shopping-cart-checkout-01-tests-cart-context.md)
-- [ ] **Task 02**: Cart UI components (CartButton, CartDrawer, CartItem, CartSummary) → [Spec](phase-4-shopping-cart-checkout-02-cart-ui-components.md)
+- [x] **Task 01**: Tests for Cart Context and useCart hook → [Spec](phase-4-shopping-cart-checkout-01-tests-cart-context.md)
+- [x] **Task 02**: Cart UI components (CartButton, CartDrawer, CartItem, CartSummary) → [Spec](phase-4-shopping-cart-checkout-02-cart-ui-components.md)
 - [ ] **Task 03**: Server validation, order database functions, validation API → [Spec](phase-4-shopping-cart-checkout-03-server-validation-orders.md)
 - [ ] **Task 04**: Stripe integration, payment intent API, webhook handler → [Spec](phase-4-shopping-cart-checkout-04-stripe-payment-integration.md)
 - [ ] **Task 05**: Cart page, checkout page, success/cancelled pages, integration → [Spec](phase-4-shopping-cart-checkout-05-checkout-flow-integration.md)

@@ -7,6 +7,8 @@
  * Admin pages (/admin/*) are rendered without these components, allowing the
  * admin layout to provide its own header and navigation.
  *
+ * Also provides CartContext to public pages for shopping cart functionality.
+ *
  * This component is used in the root layout to prevent the public navigation
  * from appearing on admin pages while keeping it on all public pages.
  */
@@ -15,6 +17,7 @@ import { usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
+import { CartProvider } from '@/context/CartContext';
 
 interface PublicLayoutWrapperProps {
     children: React.ReactNode;
@@ -31,13 +34,15 @@ export function PublicLayoutWrapper({ children }: PublicLayoutWrapperProps) {
         return <>{children}</>;
     }
 
-    // Public pages: render with header, navigation, and footer
+    // Public pages: render with header, navigation, footer, and cart context
     return (
-        <div className="public-layout">
-            <Header />
-            <Navigation />
-            <main>{children}</main>
-            <Footer />
-        </div>
+        <CartProvider>
+            <div className="public-layout">
+                <Header />
+                <Navigation />
+                <main>{children}</main>
+                <Footer />
+            </div>
+        </CartProvider>
     );
 }

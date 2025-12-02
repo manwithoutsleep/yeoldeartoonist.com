@@ -45,11 +45,11 @@ describe('Header Component', () => {
         expect(header).toHaveClass('w-full');
     });
 
-    it('should display logo in a centered container', () => {
+    it('should display logo in a layout with cart button', () => {
         const { container } = render(<Header />);
-        const centerDiv = container.querySelector(
-            '.flex.items-center.justify-center'
+        const flexContainer = container.querySelector(
+            '.flex.items-center.justify-between'
         );
-        expect(centerDiv).toBeInTheDocument();
+        expect(flexContainer).toBeInTheDocument();
     });
 });

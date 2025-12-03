@@ -80,4 +80,123 @@ describe('Artwork Validation Schema', () => {
             ).toBeDefined();
         }
     });
+
+    describe('original_price validation', () => {
+        it('accepts null original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                original_price: null,
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(true);
+        });
+
+        it('accepts empty string original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                original_price: '',
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(true);
+        });
+
+        it('accepts undefined original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(true);
+        });
+
+        it('accepts valid number string for original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                original_price: '150.00',
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(true);
+        });
+
+        it('rejects invalid string for original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                original_price: 'abc',
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(
+                    result.error.flatten().fieldErrors.original_price
+                ).toBeDefined();
+                expect(
+                    result.error.flatten().fieldErrors.original_price?.[0]
+                ).toBe('Original price must be a valid positive number');
+            }
+        });
+
+        it('rejects negative number for original_price', () => {
+            const artwork = {
+                title: 'Test Art',
+                slug: 'test-art',
+                price: '100.00',
+                original_price: '-50.00',
+                inventory_count: 1,
+                is_published: true,
+                is_featured: false,
+                is_limited_edition: false,
+                display_order: 0,
+            };
+
+            const result = artworkSchema.safeParse(artwork);
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(
+                    result.error.flatten().fieldErrors.original_price
+                ).toBeDefined();
+                expect(
+                    result.error.flatten().fieldErrors.original_price?.[0]
+                ).toBe('Original price must be a valid positive number');
+            }
+        });
+    });
 });

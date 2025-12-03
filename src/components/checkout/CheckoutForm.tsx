@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -121,6 +121,15 @@ export function CheckoutForm({
     });
 
     const useSameAddress = watch('useSameAddressForBilling');
+
+    /**
+     * Scroll to top when payment form is shown
+     */
+    useEffect(() => {
+        if (showPayment) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [showPayment]);
 
     /**
      * Handles form submission and payment intent creation

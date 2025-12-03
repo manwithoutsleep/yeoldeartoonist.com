@@ -23,6 +23,7 @@ import React, {
     useCallback,
 } from 'react';
 import { Cart, CartItem } from '@/types/cart';
+import { useToast } from './ToastContext';
 
 export interface CartContextType {
     cart: Cart;
@@ -62,34 +63,41 @@ function initializeCart(): Cart {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<Cart>(initializeCart);
+    const { addToast } = useToast();
 
     // Save cart to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
 
-    const addItem = useCallback((item: CartItem) => {
-        setCart((prev) => {
-            const existing = prev.items.find(
-                (i) => i.artworkId === item.artworkId
-            );
-            const timestamp = Date.now();
-            if (existing) {
+    const addItem = useCallback(
+        (item: CartItem) => {
+            setCart((prev) => {
+                const existing = prev.items.find(
+                    (i) => i.artworkId === item.artworkId
+                );
+                const timestamp = Date.now();
+                if (existing) {
+                    return {
+                        items: prev.items.map((i) =>
+                            i.artworkId === item.artworkId
+                                ? { ...i, quantity: i.quantity + item.quantity }
+                                : i
+                        ),
+                        lastUpdated: timestamp,
+                    };
+                }
                 return {
-                    items: prev.items.map((i) =>
-                        i.artworkId === item.artworkId
-                            ? { ...i, quantity: i.quantity + item.quantity }
-                            : i
-                    ),
+                    items: [...prev.items, item],
                     lastUpdated: timestamp,
                 };
-            }
-            return {
-                items: [...prev.items, item],
-                lastUpdated: timestamp,
-            };
-        });
-    }, []);
+            });
+
+            // Show toast notification
+            addToast(`${item.title} added to cart`, 2000);
+        },
+        [addToast]
+    );
 
     const removeItem = useCallback((artworkId: string) => {
         setCart((prev) => ({

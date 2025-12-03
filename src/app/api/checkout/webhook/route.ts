@@ -97,7 +97,8 @@ export async function POST(request: NextRequest) {
                     // Generate unique order number
                     const orderNumber = generateOrderNumber();
 
-                    // Create order in database
+                    // Create order in database with succeeded payment status
+                    // This triggers the database trigger to decrement inventory
                     const { data: order, error: orderError } =
                         await createOrder({
                             orderNumber,
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
                             ),
                             total: parseFloat(paymentIntent.metadata.total),
                             paymentIntentId: paymentIntent.id,
+                            paymentStatus: 'succeeded',
                             items: items.map((item) => ({
                                 artworkId: item.artworkId,
                                 quantity: item.quantity,

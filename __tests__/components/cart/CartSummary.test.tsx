@@ -2,12 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 /**
- * Test helper: Render CartSummary with CartProvider
+ * Test helper: Render CartSummary with required providers
  */
 const renderWithCart = (ui: React.ReactElement) => {
-    return render(<CartProvider>{ui}</CartProvider>);
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
 };
 
 describe('CartSummary', () => {

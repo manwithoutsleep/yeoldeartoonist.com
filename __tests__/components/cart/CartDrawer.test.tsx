@@ -3,12 +3,24 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
 
 /**
  * Test helper: Render CartDrawer with CartProvider
  */
 const renderWithCart = (ui: React.ReactElement) => {
-    return render(<CartProvider>{ui}</CartProvider>);
+    return renderWithProviders(ui);
 };
 
 describe('CartDrawer', () => {
@@ -23,9 +35,11 @@ describe('CartDrawer', () => {
 
         // Open the drawer
         rerender(
-            <CartProvider>
-                <CartDrawer isOpen={true} onClose={onClose} />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartDrawer isOpen={true} onClose={onClose} />
+                </CartProvider>
+            </ToastProvider>
         );
 
         // Drawer should be visible

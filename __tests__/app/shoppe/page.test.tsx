@@ -12,6 +12,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { render, screen } from '@testing-library/react';
 import ShoppePage from '@/app/shoppe/page';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 // Mock the database query function
 vi.mock('@/lib/db/artwork', () => ({
@@ -52,6 +53,17 @@ const mockProductItem: ArtworkRow = {
     updated_at: '2025-01-01',
 };
 
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
+
 describe('Shoppe Page', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -59,7 +71,7 @@ describe('Shoppe Page', () => {
 
     // Helper function to render with CartProvider
     const renderWithCart = (ui: React.ReactElement) => {
-        return render(<CartProvider>{ui}</CartProvider>);
+        return renderWithProviders(ui);
     };
 
     it('should render shoppe page with title', async () => {

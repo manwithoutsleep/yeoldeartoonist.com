@@ -11,6 +11,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CheckoutForm } from '@/components/checkout/CheckoutForm';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -66,14 +78,12 @@ describe('CheckoutForm', () => {
     });
 
     it('renders customer information section', () => {
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         expect(screen.getByText(/customer information/i)).toBeInTheDocument();
@@ -82,14 +92,12 @@ describe('CheckoutForm', () => {
     });
 
     it('renders shipping address section', () => {
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         expect(
@@ -98,14 +106,12 @@ describe('CheckoutForm', () => {
     });
 
     it('renders billing address section with same as shipping checkbox', () => {
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         expect(screen.getByText(/billing address/i)).toBeInTheDocument();
@@ -120,14 +126,12 @@ describe('CheckoutForm', () => {
     it('shows billing address fields when unchecking same as shipping', async () => {
         const user = userEvent.setup();
 
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         const checkbox = screen.getByLabelText(/same as shipping address/i);
@@ -141,14 +145,12 @@ describe('CheckoutForm', () => {
     });
 
     it('renders order notes section', () => {
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         expect(
@@ -160,14 +162,12 @@ describe('CheckoutForm', () => {
     });
 
     it('shows continue to payment button initially', () => {
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         expect(
@@ -178,14 +178,12 @@ describe('CheckoutForm', () => {
     it('validates required fields on submit', async () => {
         const user = userEvent.setup();
 
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         const submitButton = screen.getByRole('button', {
@@ -208,14 +206,12 @@ describe('CheckoutForm', () => {
             json: async () => ({ clientSecret: 'test_secret_123' }),
         });
 
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         // Fill in required fields
@@ -287,20 +283,18 @@ describe('CheckoutForm', () => {
             const [showPayment, setShowPayment] = React.useState(false);
 
             return (
-                <CartProvider>
-                    <CheckoutForm
-                        onClientSecretReceived={(secret) => {
-                            mockOnClientSecretReceived(secret);
-                            setShowPayment(true);
-                        }}
-                        onError={mockOnError}
-                        showPayment={showPayment}
-                    />
-                </CartProvider>
+                <CheckoutForm
+                    onClientSecretReceived={(secret) => {
+                        mockOnClientSecretReceived(secret);
+                        setShowPayment(true);
+                    }}
+                    onError={mockOnError}
+                    showPayment={showPayment}
+                />
             );
         }
 
-        render(<TestWrapper />);
+        renderWithProviders(<TestWrapper />);
 
         // Fill in required fields
         await user.type(screen.getByLabelText(/full name/i), 'John Doe');
@@ -331,14 +325,12 @@ describe('CheckoutForm', () => {
             json: async () => ({ error: 'Invalid cart items' }),
         });
 
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         // Fill in required fields
@@ -382,14 +374,12 @@ describe('CheckoutForm', () => {
                 )
         );
 
-        render(
-            <CartProvider>
-                <CheckoutForm
-                    onClientSecretReceived={mockOnClientSecretReceived}
-                    onError={mockOnError}
-                    showPayment={false}
-                />
-            </CartProvider>
+        renderWithProviders(
+            <CheckoutForm
+                onClientSecretReceived={mockOnClientSecretReceived}
+                onError={mockOnError}
+                showPayment={false}
+            />
         );
 
         // Fill in required fields

@@ -186,6 +186,7 @@ describe('POST /api/checkout/webhook', () => {
                 taxAmount: 0,
                 total: 105,
                 paymentIntentId: 'pi_test_123',
+                paymentStatus: 'succeeded',
                 items: [
                     {
                         artworkId: '123e4567-e89b-12d3-a456-426614174000',

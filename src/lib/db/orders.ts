@@ -44,6 +44,7 @@ export async function createOrder(
 
     try {
         // Create order record with flat address fields
+        // Always start with 'pending' status to avoid trigger firing before items exist
         const { data: orderRow, error: orderError } = await supabase
             .from('orders')
             .insert({
@@ -97,8 +98,28 @@ export async function createOrder(
             return { data: null, error: new Error(itemsError.message) };
         }
 
+        // If payment has already succeeded, update status to trigger inventory decrement
+        // This must happen AFTER order_items are created so the trigger can find them
+        if (payload.paymentStatus === 'succeeded') {
+            const { error: updateError } = await supabase
+                .from('orders')
+                .update({ payment_status: 'succeeded' })
+                .eq('id', orderRow.id);
+
+            if (updateError) {
+                // Log error but don't fail the order creation
+                console.error(
+                    'Failed to update payment status, inventory may not be decremented:',
+                    updateError
+                );
+            }
+
+            // Update local orderRow to reflect the change
+            orderRow.payment_status = 'succeeded';
+        }
+
         // Inventory is automatically decremented by database trigger:
-        // decrement_artwork_inventory() on order_items insert
+        // decrement_artwork_inventory() fires on UPDATE when payment_status changes to 'succeeded'
 
         // Convert database row to Order type (camelCase with nested addresses)
         const order: Order = {

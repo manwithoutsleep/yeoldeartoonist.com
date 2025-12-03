@@ -18,6 +18,8 @@ import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+import { Toast } from '@/components/Toast';
 
 interface PublicLayoutWrapperProps {
     children: React.ReactNode;
@@ -36,13 +38,16 @@ export function PublicLayoutWrapper({ children }: PublicLayoutWrapperProps) {
 
     // Public pages: render with header, navigation, footer, and cart context
     return (
-        <CartProvider>
-            <div className="public-layout">
-                <Header />
-                <Navigation />
-                <main>{children}</main>
-                <Footer />
-            </div>
-        </CartProvider>
+        <ToastProvider>
+            <CartProvider>
+                <div className="public-layout">
+                    <Header />
+                    <Navigation />
+                    <main>{children}</main>
+                    <Footer />
+                </div>
+                <Toast />
+            </CartProvider>
+        </ToastProvider>
     );
 }

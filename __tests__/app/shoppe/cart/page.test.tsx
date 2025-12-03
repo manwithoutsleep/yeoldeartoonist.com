@@ -9,6 +9,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CartPage from '@/app/shoppe/cart/page';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 // Mock cart components
 vi.mock('@/components/cart/CartItem', () => ({
@@ -37,9 +38,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument();
@@ -75,9 +78,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         expect(screen.getByText(/your cart/i)).toBeInTheDocument();
@@ -104,9 +109,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         expect(screen.getByTestId('cart-summary')).toBeInTheDocument();
@@ -131,9 +138,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         const checkoutLink = screen.getByRole('link', {
@@ -162,9 +171,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         const continueLink = screen.getByRole('link', {
@@ -193,9 +204,11 @@ describe('CartPage', () => {
         });
 
         const { container } = render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         // Check for grid layout classes
@@ -224,9 +237,11 @@ describe('CartPage', () => {
         });
 
         render(
-            <CartProvider>
-                <CartPage />
-            </CartProvider>
+            <ToastProvider>
+                <CartProvider>
+                    <CartPage />
+                </CartProvider>
+            </ToastProvider>
         );
 
         expect(

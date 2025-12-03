@@ -3,13 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect } from 'vitest';
 import { CartItem as CartItemComponent } from '@/components/cart/CartItem';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 import type { CartItem } from '@/types/cart';
 
 /**
- * Test helper: Render CartItem with CartProvider
+ * Test helper: Render CartItem with required providers
  */
 const renderWithCart = (ui: React.ReactElement) => {
-    return render(<CartProvider>{ui}</CartProvider>);
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
 };
 
 const mockItem: CartItem = {

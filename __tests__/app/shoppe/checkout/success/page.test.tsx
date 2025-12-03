@@ -8,6 +8,18 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CheckoutSuccessPage from '@/app/shoppe/checkout/success/page';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
 
 // Mock next/navigation
 const mockSearchParams = new URLSearchParams();
@@ -33,11 +45,7 @@ vi.mock('@/hooks/useCart', () => ({
 
 describe('CheckoutSuccessPage', () => {
     it('displays success message', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         expect(screen.getByText(/order confirmed!/i)).toBeInTheDocument();
         expect(
@@ -46,21 +54,13 @@ describe('CheckoutSuccessPage', () => {
     });
 
     it('clears the cart on mount', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         expect(mockClearCart).toHaveBeenCalled();
     });
 
     it('displays what happens next information', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         expect(screen.getByText(/what's next\?/i)).toBeInTheDocument();
         expect(
@@ -71,11 +71,7 @@ describe('CheckoutSuccessPage', () => {
     });
 
     it('provides link to return to gallery', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         const returnLink = screen.getByRole('link', {
             name: /return to gallery/i,
@@ -85,11 +81,7 @@ describe('CheckoutSuccessPage', () => {
     });
 
     it('uses success styling (green theme)', () => {
-        const { container } = render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        const { container } = renderWithProviders(<CheckoutSuccessPage />);
 
         // Check for green-themed elements
         const successBanner = container.querySelector('.bg-green-100');
@@ -97,22 +89,14 @@ describe('CheckoutSuccessPage', () => {
     });
 
     it('renders in centered layout', () => {
-        const { container } = render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        const { container } = renderWithProviders(<CheckoutSuccessPage />);
 
         const mainContainer = container.querySelector('.text-center');
         expect(mainContainer).toBeInTheDocument();
     });
 
     it('displays confirmation heading prominently', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         const heading = screen.getByRole('heading', {
             name: /order confirmed!/i,
@@ -122,11 +106,7 @@ describe('CheckoutSuccessPage', () => {
     });
 
     it('shows helpful next steps in list format', () => {
-        render(
-            <CartProvider>
-                <CheckoutSuccessPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutSuccessPage />);
 
         // Check for list items with checkmarks
         const listItems = screen.getAllByText(/✅/);

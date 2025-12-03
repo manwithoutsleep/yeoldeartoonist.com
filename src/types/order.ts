@@ -75,6 +75,7 @@ export interface CreateOrderPayload {
     taxAmount: number;
     total: number;
     paymentIntentId: string;
+    paymentStatus?: PaymentStatus;
     items: Array<{
         artworkId: string;
         quantity: number;

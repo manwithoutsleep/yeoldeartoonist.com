@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CheckoutPage from '@/app/shoppe/checkout/page';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -52,6 +53,17 @@ vi.mock('@/hooks/useCart', () => ({
     useCart: () => mockUseCart(),
 }));
 
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
+
 describe('CheckoutPage', () => {
     beforeEach(() => {
         mockPush.mockClear();
@@ -63,11 +75,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 0,
         });
 
-        render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         // Should redirect
         expect(mockPush).toHaveBeenCalledWith('/shoppe/cart');
@@ -90,11 +98,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         expect(
             screen.getByRole('heading', { name: /checkout/i })
@@ -118,11 +122,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         expect(screen.getByTestId('checkout-form')).toBeInTheDocument();
     });
@@ -144,11 +144,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         expect(
             screen.getByRole('heading', { name: /order summary/i })
@@ -173,11 +169,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         expect(screen.getByTestId('checkout-provider')).toBeInTheDocument();
     });
@@ -199,11 +191,7 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        const { container } = render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        const { container } = renderWithProviders(<CheckoutPage />);
 
         const grid = container.querySelector('.grid');
         expect(grid).toBeInTheDocument();
@@ -228,22 +216,11 @@ describe('CheckoutPage', () => {
             getItemCount: () => 1,
         });
 
-        const { rerender } = render(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
+        renderWithProviders(<CheckoutPage />);
 
         // Simulate error by clicking the mock error button
         const errorButton = screen.getByRole('button', { name: /mock error/i });
         errorButton.click();
-
-        // Re-render to see the error
-        rerender(
-            <CartProvider>
-                <CheckoutPage />
-            </CartProvider>
-        );
 
         // The component should handle the error state
         expect(screen.getByTestId('checkout-form')).toBeInTheDocument();

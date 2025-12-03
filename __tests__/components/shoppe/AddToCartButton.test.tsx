@@ -10,6 +10,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AddToCartButton } from '@/components/shoppe/AddToCartButton';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 // Mock CartContext
 const mockAddItem = vi.fn();
@@ -27,6 +28,15 @@ vi.mock('@/hooks/useCart', () => ({
     useCart: () => mockUseCart(),
 }));
 
+// Helper to wrap components with required providers
+function renderWithProviders(component: React.ReactElement) {
+    return render(
+        <ToastProvider>
+            <CartProvider>{component}</CartProvider>
+        </ToastProvider>
+    );
+}
+
 describe('AddToCartButton', () => {
     const defaultProps = {
         artworkId: 'artwork-123',
@@ -42,22 +52,14 @@ describe('AddToCartButton', () => {
     });
 
     it('renders with default quantity of 1', () => {
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         const quantitySelect = screen.getByLabelText(/quantity/i);
         expect(quantitySelect).toHaveValue('1');
     });
 
     it('renders Add to Cart button', () => {
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         const button = screen.getByRole('button', { name: /add to cart/i });
         expect(button).toBeInTheDocument();
@@ -65,10 +67,8 @@ describe('AddToCartButton', () => {
     });
 
     it('shows quantity options up to maxQuantity or 10, whichever is lower', () => {
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} maxQuantity={5} />
-            </CartProvider>
+        renderWithProviders(
+            <AddToCartButton {...defaultProps} maxQuantity={5} />
         );
 
         const quantitySelect = screen.getByLabelText(/quantity/i);
@@ -81,10 +81,8 @@ describe('AddToCartButton', () => {
     });
 
     it('limits quantity options to 10 even if maxQuantity is higher', () => {
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} maxQuantity={50} />
-            </CartProvider>
+        renderWithProviders(
+            <AddToCartButton {...defaultProps} maxQuantity={50} />
         );
 
         const quantitySelect = screen.getByLabelText(/quantity/i);
@@ -98,11 +96,7 @@ describe('AddToCartButton', () => {
     it('allows user to change quantity', async () => {
         const user = userEvent.setup();
 
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         const quantitySelect = screen.getByLabelText(/quantity/i);
 
@@ -114,11 +108,7 @@ describe('AddToCartButton', () => {
     it('adds item to cart with selected quantity when clicked', async () => {
         const user = userEvent.setup();
 
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         const quantitySelect = screen.getByLabelText(/quantity/i);
         await user.selectOptions(quantitySelect, '2');
@@ -143,11 +133,7 @@ describe('AddToCartButton', () => {
     it('shows "Added!" feedback briefly after adding to cart', async () => {
         const user = userEvent.setup();
 
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         const addButton = screen.getByRole('button', { name: /add to cart/i });
         await user.click(addButton);
@@ -177,11 +163,7 @@ describe('AddToCartButton', () => {
         const user = userEvent.setup();
         const propsWithoutImage = { ...defaultProps, imageUrl: undefined };
 
-        render(
-            <CartProvider>
-                <AddToCartButton {...propsWithoutImage} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...propsWithoutImage} />);
 
         const addButton = screen.getByRole('button', { name: /add to cart/i });
         await user.click(addButton);
@@ -200,11 +182,7 @@ describe('AddToCartButton', () => {
     });
 
     it('maintains accessibility with proper labels', () => {
-        render(
-            <CartProvider>
-                <AddToCartButton {...defaultProps} />
-            </CartProvider>
-        );
+        renderWithProviders(<AddToCartButton {...defaultProps} />);
 
         // Quantity select should have label
         expect(screen.getByLabelText(/quantity/i)).toBeInTheDocument();

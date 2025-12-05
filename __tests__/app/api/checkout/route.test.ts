@@ -18,6 +18,17 @@ vi.mock('@/lib/payments/stripe', () => ({
         currency: 'usd',
         metadata: {},
     }),
+    createPaymentIntentWithTax: vi.fn().mockResolvedValue({
+        paymentIntent: {
+            id: 'pi_test_123',
+            client_secret: 'pi_test_123_secret_abc',
+            amount: 11350,
+            currency: 'usd',
+            metadata: {},
+        },
+        taxAmount: 8.5,
+        total: 113.5,
+    }),
 }));
 
 vi.mock('@/lib/cart/validation', () => ({
@@ -39,7 +50,7 @@ vi.mock('@/lib/cart/validation', () => ({
     }),
 }));
 
-import { createPaymentIntent } from '@/lib/payments/stripe';
+import { createPaymentIntentWithTax } from '@/lib/payments/stripe';
 import { validateCart } from '@/lib/cart/validation';
 
 describe('POST /api/checkout', () => {
@@ -101,13 +112,20 @@ describe('POST /api/checkout', () => {
         expect(validateCart).toHaveBeenCalledWith(validRequestBody.items);
     });
 
-    it('should call createPaymentIntent with correct amount and metadata', async () => {
+    it('should call createPaymentIntentWithTax with correct amount and metadata', async () => {
         const request = createMockRequest(validRequestBody);
         await POST(request);
 
-        expect(createPaymentIntent).toHaveBeenCalledWith(
-            105, // total from validated cart
-            'usd',
+        expect(createPaymentIntentWithTax).toHaveBeenCalledWith(
+            105, // total from validated cart (subtotal + shipping)
+            expect.objectContaining({
+                line1: '123 Main St',
+                line2: 'Apt 4B',
+                city: 'Portland',
+                state: 'OR',
+                postal_code: '97201',
+                country: 'US',
+            }),
             expect.objectContaining({
                 customerName: 'John Doe',
                 customerEmail: 'john@example.com',
@@ -121,8 +139,6 @@ describe('POST /api/checkout', () => {
                 // Verify totals
                 subtotal: '100.00',
                 shippingCost: '5.00',
-                taxAmount: '0.00',
-                total: '105.00',
                 // Verify order notes
                 orderNotes: 'Please handle with care',
             })
@@ -247,9 +263,9 @@ describe('POST /api/checkout', () => {
     });
 
     it('should return 500 for Stripe API errors', async () => {
-        (createPaymentIntent as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-            new Error('Stripe API error')
-        );
+        (
+            createPaymentIntentWithTax as ReturnType<typeof vi.fn>
+        ).mockRejectedValueOnce(new Error('Stripe API error'));
 
         const request = createMockRequest(validRequestBody);
         const response = await POST(request);
@@ -263,14 +279,178 @@ describe('POST /api/checkout', () => {
         const request = createMockRequest(validRequestBody);
         await POST(request);
 
-        expect(createPaymentIntent).toHaveBeenCalledWith(
+        expect(createPaymentIntentWithTax).toHaveBeenCalledWith(
             105,
-            'usd',
+            expect.any(Object),
             expect.objectContaining({
                 itemCount: '1',
                 subtotal: '100.00',
                 shippingCost: '5.00',
             })
         );
+    });
+
+    describe('Tax calculation integration', () => {
+        it('should create PaymentIntent with automatic tax enabled', async () => {
+            const request = createMockRequest(validRequestBody);
+            await POST(request);
+
+            // Note: This test will pass when we update the route to use createPaymentIntentWithTax
+            expect(createPaymentIntentWithTax).toHaveBeenCalled();
+        });
+
+        it('should return tax amount in response body', async () => {
+            const request = createMockRequest(validRequestBody);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.taxAmount).toBeDefined();
+            expect(typeof data.taxAmount).toBe('number');
+        });
+
+        it('should return total including tax in response', async () => {
+            const request = createMockRequest(validRequestBody);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.total).toBeDefined();
+            expect(typeof data.total).toBe('number');
+            expect(data.total).toBeGreaterThan(data.amount); // Total should be amount + tax
+        });
+
+        it('should use shipping address for tax calculation', async () => {
+            const request = createMockRequest(validRequestBody);
+            await POST(request);
+
+            expect(createPaymentIntentWithTax).toHaveBeenCalledWith(
+                105, // Total from validated cart
+                expect.objectContaining({
+                    line1: '123 Main St',
+                    line2: 'Apt 4B',
+                    city: 'Portland',
+                    state: 'OR',
+                    postal_code: '97201',
+                    country: 'US',
+                }),
+                expect.any(Object) // metadata
+            );
+        });
+
+        it('should handle tax calculation errors gracefully', async () => {
+            (
+                createPaymentIntentWithTax as ReturnType<typeof vi.fn>
+            ).mockRejectedValueOnce(new Error('Tax calculation failed'));
+
+            const request = createMockRequest(validRequestBody);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(500);
+            expect(data.error).toBe('Failed to create payment intent');
+        });
+
+        it('should return correct response structure with tax', async () => {
+            const request = createMockRequest(validRequestBody);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data).toHaveProperty('clientSecret');
+            expect(data).toHaveProperty('amount');
+            expect(data).toHaveProperty('taxAmount');
+            expect(data).toHaveProperty('total');
+        });
+
+        it('should validate cart before calculating tax', async () => {
+            const request = createMockRequest(validRequestBody);
+            await POST(request);
+
+            // Verify validateCart is called before createPaymentIntentWithTax
+            const validateCallOrder = (validateCart as ReturnType<typeof vi.fn>)
+                .mock.invocationCallOrder[0];
+            const createPaymentCallOrder = (
+                createPaymentIntentWithTax as ReturnType<typeof vi.fn>
+            ).mock.invocationCallOrder[0];
+
+            expect(validateCallOrder).toBeLessThan(createPaymentCallOrder);
+        });
+
+        it('should include metadata in tax calculation', async () => {
+            const request = createMockRequest(validRequestBody);
+            await POST(request);
+
+            expect(createPaymentIntentWithTax).toHaveBeenCalledWith(
+                expect.any(Number),
+                expect.any(Object),
+                expect.objectContaining({
+                    customerName: 'John Doe',
+                    customerEmail: 'john@example.com',
+                })
+            );
+        });
+
+        it('should handle addresses in tax-free states', async () => {
+            (
+                createPaymentIntentWithTax as ReturnType<typeof vi.fn>
+            ).mockResolvedValueOnce({
+                paymentIntent: {
+                    id: 'pi_test_or',
+                    client_secret: 'pi_test_or_secret',
+                    amount: 10500,
+                    currency: 'usd',
+                    metadata: {},
+                },
+                taxAmount: 0, // No tax in Oregon
+                total: 105,
+            });
+
+            const request = createMockRequest(validRequestBody);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.taxAmount).toBe(0);
+            expect(data.total).toBe(105); // Same as subtotal + shipping
+        });
+
+        it('should handle addresses in high-tax states', async () => {
+            const californiaAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90001',
+                country: 'US',
+            };
+
+            const requestBodyCA = {
+                ...validRequestBody,
+                shippingAddress: californiaAddress,
+                billingAddress: californiaAddress,
+            };
+
+            (
+                createPaymentIntentWithTax as ReturnType<typeof vi.fn>
+            ).mockResolvedValueOnce({
+                paymentIntent: {
+                    id: 'pi_test_ca',
+                    client_secret: 'pi_test_ca_secret',
+                    amount: 11475,
+                    currency: 'usd',
+                    metadata: {},
+                },
+                taxAmount: 9.75, // CA tax
+                total: 114.75,
+            });
+
+            const request = createMockRequest(requestBodyCA);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.taxAmount).toBe(9.75);
+            expect(data.total).toBe(114.75);
+        });
     });
 });

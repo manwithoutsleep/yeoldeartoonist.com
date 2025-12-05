@@ -407,4 +407,157 @@ describe('CheckoutForm', () => {
             ).toBeDisabled();
         });
     });
+
+    describe('Tax handling', () => {
+        it('receives tax amount from API response', async () => {
+            const user = userEvent.setup();
+            const mockOnTaxCalculated = vi.fn();
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    clientSecret: 'test_secret_123',
+                    amount: 105,
+                    taxAmount: 8.5,
+                    total: 113.5,
+                }),
+            });
+
+            renderWithProviders(
+                <CheckoutForm
+                    onClientSecretReceived={mockOnClientSecretReceived}
+                    onError={mockOnError}
+                    showPayment={false}
+                    onTaxCalculated={mockOnTaxCalculated}
+                />
+            );
+
+            // Fill and submit form
+            await user.type(screen.getByLabelText(/full name/i), 'John Doe');
+            await user.type(
+                screen.getByLabelText(/^email/i),
+                'john@example.com'
+            );
+            await user.type(
+                screen.getByLabelText(/street address/i),
+                '123 Main St'
+            );
+            await user.type(screen.getByLabelText(/^city/i), 'Portland');
+            await user.type(screen.getByLabelText(/state/i), 'OR');
+            await user.type(screen.getByLabelText(/zip code/i), '97201');
+
+            await user.click(
+                screen.getByRole('button', { name: /continue to payment/i })
+            );
+
+            await waitFor(() => {
+                expect(mockOnTaxCalculated).toHaveBeenCalledWith({
+                    taxAmount: 8.5,
+                    total: 113.5,
+                });
+            });
+        });
+
+        it('handles tax calculation errors gracefully', async () => {
+            const user = userEvent.setup();
+            const mockOnTaxCalculated = vi.fn();
+
+            // API returns 200 but missing tax fields
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    clientSecret: 'test_secret_123',
+                    amount: 105,
+                    // Missing taxAmount and total
+                }),
+            });
+
+            renderWithProviders(
+                <CheckoutForm
+                    onClientSecretReceived={mockOnClientSecretReceived}
+                    onError={mockOnError}
+                    showPayment={false}
+                    onTaxCalculated={mockOnTaxCalculated}
+                />
+            );
+
+            // Fill and submit form
+            await user.type(screen.getByLabelText(/full name/i), 'John Doe');
+            await user.type(
+                screen.getByLabelText(/^email/i),
+                'john@example.com'
+            );
+            await user.type(
+                screen.getByLabelText(/street address/i),
+                '123 Main St'
+            );
+            await user.type(screen.getByLabelText(/^city/i), 'Portland');
+            await user.type(screen.getByLabelText(/state/i), 'OR');
+            await user.type(screen.getByLabelText(/zip code/i), '97201');
+
+            await user.click(
+                screen.getByRole('button', { name: /continue to payment/i })
+            );
+
+            // Should default to 0 for missing tax
+            await waitFor(() => {
+                expect(mockOnTaxCalculated).toHaveBeenCalledWith({
+                    taxAmount: 0,
+                    total: 105,
+                });
+            });
+        });
+
+        it('handles different tax amounts for different states', async () => {
+            const user = userEvent.setup();
+            const mockOnTaxCalculated = vi.fn();
+
+            // California - high tax
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    clientSecret: 'test_secret_ca',
+                    amount: 105,
+                    taxAmount: 9.75,
+                    total: 114.75,
+                }),
+            });
+
+            renderWithProviders(
+                <CheckoutForm
+                    onClientSecretReceived={mockOnClientSecretReceived}
+                    onError={mockOnError}
+                    showPayment={false}
+                    onTaxCalculated={mockOnTaxCalculated}
+                />
+            );
+
+            await user.type(screen.getByLabelText(/full name/i), 'Jane Doe');
+            await user.type(
+                screen.getByLabelText(/^email/i),
+                'jane@example.com'
+            );
+            await user.type(
+                screen.getByLabelText(/street address/i),
+                '123 Main St'
+            );
+            await user.type(screen.getByLabelText(/^city/i), 'Los Angeles');
+            await user.type(screen.getByLabelText(/state/i), 'CA');
+            await user.type(screen.getByLabelText(/zip code/i), '90001');
+
+            await user.click(
+                screen.getByRole('button', { name: /continue to payment/i })
+            );
+
+            await waitFor(() => {
+                expect(mockOnTaxCalculated).toHaveBeenCalledWith({
+                    taxAmount: 9.75,
+                    total: 114.75,
+                });
+            });
+        });
+    });
 });

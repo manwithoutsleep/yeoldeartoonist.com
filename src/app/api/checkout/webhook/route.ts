@@ -94,6 +94,25 @@ export async function POST(request: NextRequest) {
                         price: number;
                     }> = JSON.parse(paymentIntent.metadata.items);
 
+                    // Extract tax amount from automatic_tax (not metadata)
+                    // Tax is calculated by Stripe and returned in cents
+                    const taxAmountCents =
+                        (
+                            paymentIntent as Stripe.PaymentIntent & {
+                                automatic_tax?: { amount?: number };
+                            }
+                        ).automatic_tax?.amount ?? 0;
+                    const taxAmount = taxAmountCents / 100;
+
+                    // Calculate totals
+                    const subtotal = parseFloat(
+                        paymentIntent.metadata.subtotal
+                    );
+                    const shippingCost = parseFloat(
+                        paymentIntent.metadata.shippingCost
+                    );
+                    const total = subtotal + shippingCost + taxAmount;
+
                     // Generate unique order number
                     const orderNumber = generateOrderNumber();
 
@@ -107,16 +126,10 @@ export async function POST(request: NextRequest) {
                             shippingAddress,
                             billingAddress,
                             orderNotes: paymentIntent.metadata.orderNotes,
-                            subtotal: parseFloat(
-                                paymentIntent.metadata.subtotal
-                            ),
-                            shippingCost: parseFloat(
-                                paymentIntent.metadata.shippingCost
-                            ),
-                            taxAmount: parseFloat(
-                                paymentIntent.metadata.taxAmount
-                            ),
-                            total: parseFloat(paymentIntent.metadata.total),
+                            subtotal,
+                            shippingCost,
+                            taxAmount,
+                            total,
                             paymentIntentId: paymentIntent.id,
                             paymentStatus: 'succeeded',
                             items: items.map((item) => ({

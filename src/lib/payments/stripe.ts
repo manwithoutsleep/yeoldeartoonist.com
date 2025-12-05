@@ -68,6 +68,108 @@ export async function createPaymentIntent(
 }
 
 /**
+ * Result type for payment intent creation with tax calculation
+ */
+export interface PaymentIntentWithTaxResult {
+    paymentIntent: Stripe.PaymentIntent;
+    taxAmount: number; // In dollars
+    total: number; // In dollars
+}
+
+/**
+ * Creates a Stripe payment intent with automatic tax calculation.
+ *
+ * This function:
+ * - Enables Stripe Tax API for automatic tax calculation
+ * - Includes shipping address for tax jurisdiction determination
+ * - Returns tax amount and total (subtotal + tax)
+ * - Handles cases where tax is not calculated (returns 0)
+ *
+ * @param amount - Payment amount in dollars before tax (e.g., 105.00)
+ * @param shippingAddress - Customer shipping address for tax calculation
+ * @param metadata - Additional data to attach to payment intent
+ * @returns PaymentIntent with calculated tax amount and total
+ *
+ * @example
+ * ```typescript
+ * const result = await createPaymentIntentWithTax(
+ *   105.00,
+ *   {
+ *     line1: '123 Main St',
+ *     city: 'Los Angeles',
+ *     state: 'CA',
+ *     postal_code: '90001',
+ *     country: 'US',
+ *   },
+ *   {
+ *     customerName: 'John Doe',
+ *     customerEmail: 'john@example.com',
+ *   }
+ * );
+ * // result.taxAmount = 9.19 (calculated by Stripe Tax)
+ * // result.total = 114.19
+ * ```
+ */
+export async function createPaymentIntentWithTax(
+    amount: number,
+    shippingAddress: {
+        line1: string;
+        line2?: string;
+        city: string;
+        state: string;
+        postal_code: string;
+        country: string;
+    },
+    metadata: Record<string, string> = {}
+): Promise<PaymentIntentWithTaxResult> {
+    // Note: automatic_tax is supported by Stripe API but not yet in TypeScript definitions
+    // Using type assertion to enable this feature
+    const params: Stripe.PaymentIntentCreateParams & {
+        automatic_tax?: { enabled: boolean };
+    } = {
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: 'usd',
+        metadata,
+        automatic_payment_methods: {
+            enabled: true,
+        },
+        automatic_tax: {
+            enabled: true,
+        },
+        shipping: {
+            name: metadata.customerName || 'Customer',
+            address: {
+                line1: shippingAddress.line1,
+                line2: shippingAddress.line2,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                postal_code: shippingAddress.postal_code,
+                country: shippingAddress.country,
+            },
+        },
+    };
+
+    const paymentIntent = await stripe.paymentIntents.create(params);
+
+    // Extract tax amount (in cents, convert to dollars)
+    // Using type assertion as automatic_tax may not be in current type definitions
+    const taxAmountCents =
+        (
+            paymentIntent as Stripe.PaymentIntent & {
+                automatic_tax?: { amount?: number };
+            }
+        ).automatic_tax?.amount ?? 0;
+    const taxAmount = taxAmountCents / 100;
+    const total = amount + taxAmount;
+
+    return {
+        paymentIntent,
+        taxAmount,
+        total,
+    };
+}
+
+/**
  * Constructs and verifies a Stripe webhook event from raw request data.
  *
  * This function:

@@ -49,6 +49,7 @@ vi.mock('stripe', () => {
 import {
     stripe,
     createPaymentIntent,
+    createPaymentIntentWithTax,
     constructWebhookEvent,
     generateOrderNumber,
 } from '@/lib/payments/stripe';
@@ -166,6 +167,253 @@ describe('Stripe Utilities', () => {
 
             await expect(createPaymentIntent(100)).rejects.toThrow(
                 'Stripe API error'
+            );
+        });
+    });
+
+    describe('createPaymentIntentWithTax', () => {
+        beforeEach(() => {
+            // Reset mock to default behavior
+            mockPaymentIntentCreate.mockResolvedValue({
+                id: 'pi_test_123',
+                amount: 10000,
+                currency: 'usd',
+                metadata: {},
+                automatic_payment_methods: { enabled: true },
+                automatic_tax: {
+                    enabled: true,
+                    status: 'complete',
+                    amount: 850, // $8.50 tax in cents
+                },
+                client_secret: 'pi_test_123_secret_abc',
+            });
+        });
+
+        it('should create PaymentIntent with automatic_tax enabled', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                postal_code: '90001',
+                country: 'US',
+            };
+
+            await createPaymentIntentWithTax(100, shippingAddress);
+
+            expect(mockPaymentIntentCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    automatic_tax: {
+                        enabled: true,
+                    },
+                })
+            );
+        });
+
+        it('should include shipping address for tax calculation', async () => {
+            const shippingAddress = {
+                line1: '456 Broadway',
+                line2: 'Apt 3B',
+                city: 'New York',
+                state: 'NY',
+                postal_code: '10001',
+                country: 'US',
+            };
+
+            await createPaymentIntentWithTax(200, shippingAddress, {
+                customerName: 'Jane Doe',
+            });
+
+            expect(mockPaymentIntentCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    shipping: {
+                        name: 'Jane Doe',
+                        address: {
+                            line1: '456 Broadway',
+                            line2: 'Apt 3B',
+                            city: 'New York',
+                            state: 'NY',
+                            postal_code: '10001',
+                            country: 'US',
+                        },
+                    },
+                })
+            );
+        });
+
+        it('should return tax amount from PaymentIntent', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                postal_code: '90001',
+                country: 'US',
+            };
+
+            const result = await createPaymentIntentWithTax(
+                100,
+                shippingAddress
+            );
+
+            expect(result.taxAmount).toBe(8.5); // $8.50 tax (850 cents / 100)
+            expect(result.total).toBe(108.5); // $100 + $8.50
+            expect(result.paymentIntent).toBeDefined();
+            expect(result.paymentIntent.id).toBe('pi_test_123');
+        });
+
+        it('should handle addresses in tax-free states', async () => {
+            // Mock response for tax-free state (Oregon)
+            mockPaymentIntentCreate.mockResolvedValueOnce({
+                id: 'pi_test_or',
+                amount: 10000,
+                currency: 'usd',
+                metadata: {},
+                automatic_payment_methods: { enabled: true },
+                automatic_tax: {
+                    enabled: true,
+                    status: 'complete',
+                    amount: 0, // No tax in Oregon
+                },
+                client_secret: 'pi_test_or_secret',
+            });
+
+            const oregonAddress = {
+                line1: '321 Pine St',
+                city: 'Portland',
+                state: 'OR',
+                postal_code: '97201',
+                country: 'US',
+            };
+
+            const result = await createPaymentIntentWithTax(100, oregonAddress);
+
+            expect(result.taxAmount).toBe(0);
+            expect(result.total).toBe(100);
+        });
+
+        it('should handle addresses in high-tax states', async () => {
+            // Mock response for high-tax state (California)
+            mockPaymentIntentCreate.mockResolvedValueOnce({
+                id: 'pi_test_ca',
+                amount: 10000,
+                currency: 'usd',
+                metadata: {},
+                automatic_payment_methods: { enabled: true },
+                automatic_tax: {
+                    enabled: true,
+                    status: 'complete',
+                    amount: 975, // 9.75% tax = $9.75
+                },
+                client_secret: 'pi_test_ca_secret',
+            });
+
+            const californiaAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                postal_code: '90001',
+                country: 'US',
+            };
+
+            const result = await createPaymentIntentWithTax(
+                100,
+                californiaAddress
+            );
+
+            expect(result.taxAmount).toBe(9.75);
+            expect(result.total).toBe(109.75);
+        });
+
+        it('should handle invalid addresses gracefully', async () => {
+            // Mock Stripe API error for invalid address
+            mockPaymentIntentCreate.mockRejectedValueOnce(
+                new Error('Invalid address provided')
+            );
+
+            const invalidAddress = {
+                line1: '',
+                city: '',
+                state: 'XX',
+                postal_code: '00000',
+                country: 'XX',
+            };
+
+            await expect(
+                createPaymentIntentWithTax(100, invalidAddress)
+            ).rejects.toThrow('Invalid address provided');
+        });
+
+        it('should use correct metadata structure', async () => {
+            const shippingAddress = {
+                line1: '789 Oak St',
+                city: 'Austin',
+                state: 'TX',
+                postal_code: '78701',
+                country: 'US',
+            };
+
+            const metadata = {
+                customerName: 'Bob Smith',
+                customerEmail: 'bob@example.com',
+                subtotal: '100.00',
+                shippingCost: '5.00',
+            };
+
+            await createPaymentIntentWithTax(105, shippingAddress, metadata);
+
+            expect(mockPaymentIntentCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    metadata,
+                })
+            );
+        });
+
+        it('should handle PaymentIntent without automatic_tax field (backwards compatibility)', async () => {
+            // Mock old PaymentIntent without automatic_tax
+            mockPaymentIntentCreate.mockResolvedValueOnce({
+                id: 'pi_test_old',
+                amount: 10000,
+                currency: 'usd',
+                metadata: {},
+                automatic_payment_methods: { enabled: true },
+                // No automatic_tax field
+                client_secret: 'pi_test_old_secret',
+            });
+
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Portland',
+                state: 'OR',
+                postal_code: '97201',
+                country: 'US',
+            };
+
+            const result = await createPaymentIntentWithTax(
+                100,
+                shippingAddress
+            );
+
+            // Should default to 0 if automatic_tax is missing
+            expect(result.taxAmount).toBe(0);
+            expect(result.total).toBe(100);
+        });
+
+        it('should default customer name if not provided in metadata', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Portland',
+                state: 'OR',
+                postal_code: '97201',
+                country: 'US',
+            };
+
+            await createPaymentIntentWithTax(100, shippingAddress, {});
+
+            expect(mockPaymentIntentCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    shipping: expect.objectContaining({
+                        name: 'Customer', // Default name
+                    }),
+                })
             );
         });
     });

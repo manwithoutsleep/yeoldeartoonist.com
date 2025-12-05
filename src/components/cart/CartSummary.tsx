@@ -8,8 +8,8 @@
  * Features:
  * - Subtotal calculation
  * - Shipping cost ($5.00 flat rate)
- * - Tax estimate placeholder
- * - Total calculation
+ * - Tax display (actual or estimate placeholder)
+ * - Total calculation (with or without tax)
  * - Formatted currency display
  */
 
@@ -18,12 +18,33 @@ import { formatCurrency } from '@/lib/utils/currency';
 
 const SHIPPING_COST = 5.0;
 
-export function CartSummary() {
+export interface CartSummaryProps {
+    /**
+     * Optional tax amount calculated at checkout
+     */
+    taxAmount?: number;
+
+    /**
+     * Optional total including tax
+     */
+    total?: number;
+}
+
+export function CartSummary({
+    taxAmount,
+    total: providedTotal,
+}: CartSummaryProps = {}) {
     const { getTotal } = useCart();
 
     const subtotal = getTotal();
     const shipping = SHIPPING_COST;
-    const total = subtotal + shipping;
+    const calculatedTotal = subtotal + shipping;
+
+    // Use provided total if available, otherwise calculate
+    const total = providedTotal ?? calculatedTotal;
+
+    // Determine if we should show actual tax or placeholder
+    const showActualTax = taxAmount !== undefined;
 
     return (
         <div className="border-t border-gray-200 pt-4 space-y-2">
@@ -46,9 +67,15 @@ export function CartSummary() {
             {/* Tax */}
             <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Tax</span>
-                <span className="text-gray-500 text-xs">
-                    Calculated at checkout
-                </span>
+                {showActualTax ? (
+                    <span className="font-medium text-gray-900">
+                        {formatCurrency(taxAmount)}
+                    </span>
+                ) : (
+                    <span className="text-gray-500 text-xs">
+                        Calculated at checkout
+                    </span>
+                )}
             </div>
 
             {/* Total */}

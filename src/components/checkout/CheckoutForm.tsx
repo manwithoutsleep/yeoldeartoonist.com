@@ -60,6 +60,11 @@ export interface CheckoutFormProps {
      * Whether to show the payment form
      */
     showPayment: boolean;
+
+    /**
+     * Optional callback when tax is calculated
+     */
+    onTaxCalculated?: (tax: { taxAmount: number; total: number }) => void;
 }
 
 /**
@@ -98,6 +103,7 @@ export function CheckoutForm({
     onClientSecretReceived,
     onError,
     showPayment,
+    onTaxCalculated,
 }: CheckoutFormProps) {
     const { cart } = useCart();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,7 +171,17 @@ export function CheckoutForm({
                 );
             }
 
-            const { clientSecret } = await response.json();
+            const { clientSecret, taxAmount, total, amount } =
+                await response.json();
+
+            // Call tax calculation callback if provided
+            if (onTaxCalculated) {
+                onTaxCalculated({
+                    taxAmount: taxAmount ?? 0, // Default to 0 for backwards compatibility
+                    total: total ?? amount ?? 0, // Default to amount if total missing, then 0
+                });
+            }
+
             onClientSecretReceived(clientSecret);
         } catch (err) {
             onError(

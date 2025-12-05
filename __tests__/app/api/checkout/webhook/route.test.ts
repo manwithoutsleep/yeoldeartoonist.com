@@ -293,4 +293,270 @@ describe('POST /api/checkout/webhook', () => {
         // Restore for other tests
         process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret';
     });
+
+    describe('Tax extraction from PaymentIntent', () => {
+        it('should extract tax from PaymentIntent.automatic_tax.amount', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90001',
+                country: 'US',
+            };
+            const items = [
+                {
+                    artworkId: '123e4567-e89b-12d3-a456-426614174000',
+                    quantity: 1,
+                    price: 100,
+                },
+            ];
+
+            const payload = createPaymentIntentEvent(
+                'payment_intent.succeeded',
+                {
+                    automatic_tax: {
+                        enabled: true,
+                        status: 'complete',
+                        amount: 850, // $8.50 tax in cents
+                    },
+                    metadata: {
+                        customerName: 'John Doe',
+                        customerEmail: 'john@example.com',
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        billingAddress: JSON.stringify(shippingAddress),
+                        items: JSON.stringify(items),
+                        subtotal: '100.00',
+                        shippingCost: '5.00',
+                    },
+                } as Partial<Stripe.PaymentIntent> & {
+                    automatic_tax?: {
+                        enabled: boolean;
+                        status: string;
+                        amount: number;
+                    };
+                }
+            );
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    taxAmount: 8.5, // Converted from cents to dollars
+                    total: 113.5, // subtotal + shipping + tax
+                })
+            );
+        });
+
+        it('should create order with correct tax amount', async () => {
+            const shippingAddress = {
+                line1: '456 Broadway',
+                city: 'New York',
+                state: 'NY',
+                zip: '10001',
+                country: 'US',
+            };
+
+            const payload = createPaymentIntentEvent(
+                'payment_intent.succeeded',
+                {
+                    automatic_tax: {
+                        enabled: true,
+                        status: 'complete',
+                        amount: 975, // $9.75 tax
+                    },
+                    metadata: {
+                        customerName: 'Jane Doe',
+                        customerEmail: 'jane@example.com',
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        billingAddress: JSON.stringify(shippingAddress),
+                        items: JSON.stringify([
+                            {
+                                artworkId:
+                                    '123e4567-e89b-12d3-a456-426614174000',
+                                quantity: 1,
+                                price: 100,
+                            },
+                        ]),
+                        subtotal: '100.00',
+                        shippingCost: '5.00',
+                    },
+                } as Partial<Stripe.PaymentIntent> & {
+                    automatic_tax?: {
+                        enabled: boolean;
+                        status: string;
+                        amount: number;
+                    };
+                }
+            );
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    subtotal: 100,
+                    shippingCost: 5,
+                    taxAmount: 9.75,
+                    total: 114.75,
+                })
+            );
+        });
+
+        it('should handle PaymentIntents without tax (backwards compatibility)', async () => {
+            const shippingAddress = {
+                line1: '321 Pine St',
+                city: 'Portland',
+                state: 'OR',
+                zip: '97201',
+                country: 'US',
+            };
+
+            // Old PaymentIntent without automatic_tax field
+            const payload = createPaymentIntentEvent(
+                'payment_intent.succeeded',
+                {
+                    // No automatic_tax field
+                    metadata: {
+                        customerName: 'John Doe',
+                        customerEmail: 'john@example.com',
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        billingAddress: JSON.stringify(shippingAddress),
+                        items: JSON.stringify([
+                            {
+                                artworkId:
+                                    '123e4567-e89b-12d3-a456-426614174000',
+                                quantity: 1,
+                                price: 100,
+                            },
+                        ]),
+                        subtotal: '100.00',
+                        shippingCost: '5.00',
+                    },
+                }
+            );
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    taxAmount: 0, // Should default to 0
+                    total: 105, // subtotal + shipping only
+                })
+            );
+        });
+
+        it('should convert tax from cents to dollars correctly', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Austin',
+                state: 'TX',
+                zip: '78701',
+                country: 'US',
+            };
+
+            const payload = createPaymentIntentEvent(
+                'payment_intent.succeeded',
+                {
+                    automatic_tax: {
+                        enabled: true,
+                        status: 'complete',
+                        amount: 863, // $8.63 in cents
+                    },
+                    metadata: {
+                        customerName: 'Bob Smith',
+                        customerEmail: 'bob@example.com',
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        billingAddress: JSON.stringify(shippingAddress),
+                        items: JSON.stringify([
+                            {
+                                artworkId:
+                                    '123e4567-e89b-12d3-a456-426614174000',
+                                quantity: 1,
+                                price: 100,
+                            },
+                        ]),
+                        subtotal: '100.00',
+                        shippingCost: '5.00',
+                    },
+                } as Partial<Stripe.PaymentIntent> & {
+                    automatic_tax?: {
+                        enabled: boolean;
+                        status: string;
+                        amount: number;
+                    };
+                }
+            );
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    taxAmount: 8.63, // Precisely converted
+                })
+            );
+        });
+
+        it('should calculate order total including tax', async () => {
+            const shippingAddress = {
+                line1: '123 Main St',
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90001',
+                country: 'US',
+            };
+
+            const payload = createPaymentIntentEvent(
+                'payment_intent.succeeded',
+                {
+                    automatic_tax: {
+                        enabled: true,
+                        status: 'complete',
+                        amount: 1950, // $19.50 tax for larger order
+                    },
+                    metadata: {
+                        customerName: 'Alice Johnson',
+                        customerEmail: 'alice@example.com',
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        billingAddress: JSON.stringify(shippingAddress),
+                        items: JSON.stringify([
+                            {
+                                artworkId:
+                                    '123e4567-e89b-12d3-a456-426614174000',
+                                quantity: 2,
+                                price: 100,
+                            },
+                        ]),
+                        subtotal: '200.00',
+                        shippingCost: '5.00',
+                    },
+                } as Partial<Stripe.PaymentIntent> & {
+                    automatic_tax?: {
+                        enabled: boolean;
+                        status: string;
+                        amount: number;
+                    };
+                }
+            );
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    subtotal: 200,
+                    shippingCost: 5,
+                    taxAmount: 19.5,
+                    total: 224.5, // 200 + 5 + 19.5
+                })
+            );
+        });
+    });
 });

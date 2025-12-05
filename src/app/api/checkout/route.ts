@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createPaymentIntent } from '@/lib/payments/stripe';
+import { createPaymentIntentWithTax } from '@/lib/payments/stripe';
 import { validateCart } from '@/lib/cart/validation';
 
 /**
@@ -50,7 +50,7 @@ const CheckoutSchema = z.object({
  * - customerEmail: Customer's email address
  *
  * Response:
- * - 200: { clientSecret: string, amount: number }
+ * - 200: { clientSecret: string, amount: number, taxAmount: number, total: number }
  * - 400: { error: string, details?: unknown } - Invalid request or cart validation failed
  * - 500: { error: string } - Server error during payment intent creation
  *
@@ -62,10 +62,12 @@ const CheckoutSchema = z.object({
  *   body: JSON.stringify({
  *     items: [{ artworkId: '...', title: 'Art', price: 50, quantity: 2, slug: 'art' }],
  *     customerName: 'John Doe',
- *     customerEmail: 'john@example.com'
+ *     customerEmail: 'john@example.com',
+ *     shippingAddress: { line1: '123 Main St', city: 'Portland', state: 'OR', zip: '97201', country: 'US' },
+ *     billingAddress: { line1: '123 Main St', city: 'Portland', state: 'OR', zip: '97201', country: 'US' }
  *   })
  * });
- * const { clientSecret, amount } = await response.json();
+ * const { clientSecret, amount, taxAmount, total } = await response.json();
  * ```
  */
 export async function POST(request: NextRequest) {
@@ -106,42 +108,54 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create Stripe payment intent with validated total
-        // Store all checkout data in metadata for webhook retrieval
-        // Note: Stripe metadata values are limited to 500 chars each
-        const paymentIntent = await createPaymentIntent(
-            validatedCart.total,
-            'usd',
-            {
-                customerName,
-                customerEmail,
-                // Store addresses as JSON strings
-                shippingAddress: JSON.stringify(shippingAddress),
-                billingAddress: JSON.stringify(billingAddress),
-                // Store items as JSON string for order creation
-                items: JSON.stringify(
-                    items.map((item) => ({
-                        artworkId: item.artworkId,
-                        quantity: item.quantity,
-                        price: item.price,
-                    }))
-                ),
-                // Store validated totals
-                itemCount: items.length.toString(),
-                subtotal: validatedCart.subtotal.toFixed(2),
-                shippingCost: validatedCart.shippingCost.toFixed(2),
-                taxAmount: validatedCart.taxAmount.toFixed(2),
-                total: validatedCart.total.toFixed(2),
-                // Store order notes if provided
-                ...(orderNotes && { orderNotes }),
-            }
-        );
+        // Create Stripe payment intent with automatic tax calculation
+        // Transform shipping address format (zip -> postal_code)
+        const shippingAddressForStripe = {
+            line1: shippingAddress.line1,
+            line2: shippingAddress.line2,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            postal_code: shippingAddress.zip,
+            country: shippingAddress.country,
+        };
 
-        // Return client secret for client-side confirmation
+        // Create payment intent with tax calculation
+        // Note: Stripe metadata values are limited to 500 chars each
+        const { paymentIntent, taxAmount, total } =
+            await createPaymentIntentWithTax(
+                validatedCart.subtotal + validatedCart.shippingCost,
+                shippingAddressForStripe,
+                {
+                    customerName,
+                    customerEmail,
+                    // Store addresses as JSON strings
+                    shippingAddress: JSON.stringify(shippingAddress),
+                    billingAddress: JSON.stringify(billingAddress),
+                    // Store items as JSON string for order creation
+                    items: JSON.stringify(
+                        items.map((item) => ({
+                            artworkId: item.artworkId,
+                            quantity: item.quantity,
+                            price: item.price,
+                        }))
+                    ),
+                    // Store validated totals
+                    itemCount: items.length.toString(),
+                    subtotal: validatedCart.subtotal.toFixed(2),
+                    shippingCost: validatedCart.shippingCost.toFixed(2),
+                    // Tax is calculated by Stripe, not stored in metadata initially
+                    // Store order notes if provided
+                    ...(orderNotes && { orderNotes }),
+                }
+            );
+
+        // Return client secret and tax details for client-side confirmation
         return NextResponse.json(
             {
                 clientSecret: paymentIntent.client_secret,
-                amount: validatedCart.total,
+                amount: validatedCart.subtotal + validatedCart.shippingCost,
+                taxAmount,
+                total,
             },
             { status: 200 }
         );

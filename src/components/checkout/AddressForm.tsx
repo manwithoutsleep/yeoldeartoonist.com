@@ -60,15 +60,17 @@ export function AddressForm<T extends FieldValues = FieldValues>({
     // Helper to get nested error messages
     const getError = (fieldName: string) => {
         const keys = fieldName.split('.');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let error: any = errors;
+        let error: FieldErrors<T> | undefined = errors;
 
         for (const key of keys) {
-            error = error?.[key];
+            if (!error || typeof error !== 'object') return null;
+            error = error[key as keyof typeof error] as
+                | FieldErrors<T>
+                | undefined;
             if (!error) return null;
         }
 
-        return error?.message as string | undefined;
+        return (error as { message?: string })?.message;
     };
 
     return (

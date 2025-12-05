@@ -12,8 +12,7 @@ import type Stripe from 'stripe';
 
 // Mock dependencies
 vi.mock('@/lib/payments/stripe', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    constructWebhookEvent: vi.fn((payload, signature, _secret) => {
+    constructWebhookEvent: vi.fn((payload, signature) => {
         if (signature === 'invalid_signature') {
             throw new Error('Invalid signature');
         }
@@ -91,8 +90,7 @@ describe('POST /api/checkout/webhook', () => {
         const request = createMockRequest(payload, '');
 
         // Override the headers to return null for signature
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        request.headers.get = (_name: string) => null;
+        request.headers.get = () => null;
 
         const response = await POST(request);
         const data = await response.json();

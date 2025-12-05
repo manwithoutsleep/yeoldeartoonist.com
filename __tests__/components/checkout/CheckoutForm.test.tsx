@@ -56,8 +56,13 @@ vi.mock('@/hooks/useCart', () => ({
 
 // Mock PaymentForm
 vi.mock('@/components/checkout/PaymentForm', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    PaymentForm: ({ onSuccess, onError }: any) => (
+    PaymentForm: ({
+        onSuccess,
+        onError,
+    }: {
+        onSuccess: () => void;
+        onError: (error: string) => void;
+    }) => (
         <div data-testid="payment-form">
             <button onClick={onSuccess}>Mock Pay</button>
             <button onClick={() => onError('Payment failed')}>
@@ -73,8 +78,7 @@ describe('CheckoutForm', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global.fetch as any).mockClear();
+        (global.fetch as Mock).mockClear();
     });
 
     it('renders customer information section', () => {
@@ -200,8 +204,7 @@ describe('CheckoutForm', () => {
     it('submits form and creates payment intent with valid data', async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as Mock).mockResolvedValueOnce({
             ok: true,
             json: async () => ({ clientSecret: 'test_secret_123' }),
         });
@@ -272,8 +275,7 @@ describe('CheckoutForm', () => {
     it('shows payment form after successful payment intent creation', async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as Mock).mockResolvedValueOnce({
             ok: true,
             json: async () => ({ clientSecret: 'test_secret_123' }),
         });
@@ -319,8 +321,7 @@ describe('CheckoutForm', () => {
     it('handles payment intent creation error', async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as Mock).mockResolvedValueOnce({
             ok: false,
             json: async () => ({ error: 'Invalid cart items' }),
         });
@@ -357,8 +358,7 @@ describe('CheckoutForm', () => {
         const user = userEvent.setup();
 
         // Mock a delayed response
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (global.fetch as any).mockImplementationOnce(
+        (global.fetch as Mock).mockImplementationOnce(
             () =>
                 new Promise((resolve) =>
                     setTimeout(
@@ -413,8 +413,7 @@ describe('CheckoutForm', () => {
             const user = userEvent.setup();
             const mockOnTaxCalculated = vi.fn();
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (global.fetch as any).mockResolvedValueOnce({
+            (global.fetch as Mock).mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     clientSecret: 'test_secret_123',
@@ -464,8 +463,7 @@ describe('CheckoutForm', () => {
             const mockOnTaxCalculated = vi.fn();
 
             // API returns 200 but missing tax fields
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (global.fetch as any).mockResolvedValueOnce({
+            (global.fetch as Mock).mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     clientSecret: 'test_secret_123',
@@ -515,8 +513,7 @@ describe('CheckoutForm', () => {
             const mockOnTaxCalculated = vi.fn();
 
             // California - high tax
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (global.fetch as any).mockResolvedValueOnce({
+            (global.fetch as Mock).mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     clientSecret: 'test_secret_ca',

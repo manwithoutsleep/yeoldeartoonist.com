@@ -13,8 +13,7 @@ import { ToastProvider } from '@/context/ToastContext';
 
 // Mock cart components
 vi.mock('@/components/cart/CartItem', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CartItem: ({ item }: any) => (
+    CartItem: ({ item }: { item: { artworkId: string; title: string } }) => (
         <div data-testid={`cart-item-${item.artworkId}`}>{item.title}</div>
     ),
 }));

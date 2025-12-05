@@ -20,8 +20,13 @@ vi.mock('next/navigation', () => ({
 
 // Mock CheckoutForm
 vi.mock('@/components/checkout/CheckoutForm', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckoutForm: ({ onClientSecretReceived, onError }: any) => (
+    CheckoutForm: ({
+        onClientSecretReceived,
+        onError,
+    }: {
+        onClientSecretReceived: (secret: string) => void;
+        onError: (error: string) => void;
+    }) => (
         <div data-testid="checkout-form">
             <button onClick={() => onClientSecretReceived('test_secret')}>
                 Mock Receive Secret
@@ -38,8 +43,13 @@ vi.mock('@/components/cart/CartSummary', () => ({
 
 // Mock CheckoutProvider
 vi.mock('@/components/checkout/CheckoutProvider', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CheckoutProvider: ({ children, clientSecret }: any) => (
+    CheckoutProvider: ({
+        children,
+        clientSecret,
+    }: {
+        children: React.ReactNode;
+        clientSecret: string | null;
+    }) => (
         <div data-testid="checkout-provider" data-client-secret={clientSecret}>
             {children}
         </div>

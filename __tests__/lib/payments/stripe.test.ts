@@ -9,8 +9,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock Stripe before importing our module
 vi.mock('stripe', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-    function MockStripe(this: any, _apiKey: string, _config: unknown) {
+    function MockStripe(this: {
+        paymentIntents: unknown;
+        webhooks: unknown;
+        _emitter: unknown;
+    }) {
         this.paymentIntents = {
             create: vi.fn().mockResolvedValue({
                 id: 'pi_test_123',
@@ -22,8 +25,7 @@ vi.mock('stripe', () => {
             }),
         };
         this.webhooks = {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            constructEvent: vi.fn((payload, signature, _secret) => {
+            constructEvent: vi.fn((payload, signature) => {
                 // Simple mock that throws on invalid input
                 if (
                     signature === 'invalid_signature' ||

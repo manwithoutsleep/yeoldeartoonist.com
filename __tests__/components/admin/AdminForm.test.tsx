@@ -670,7 +670,6 @@ describe('AdminForm', () => {
         });
 
         it('defaults is_active to true in edit mode when not provided', () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { is_active, ...adminWithoutActive } = mockAdminData;
 
             render(

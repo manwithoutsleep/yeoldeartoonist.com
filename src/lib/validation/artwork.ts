@@ -23,7 +23,8 @@ export const artworkSchema = z.object({
         .nullable()
         .refine(
             (val) => {
-                if (!val) return true;
+                // Allow null, undefined, or empty string (they'll be converted to null later)
+                if (!val || val === '') return true;
                 const num = parseFloat(val);
                 return !isNaN(num) && num >= 0;
             },

@@ -131,24 +131,24 @@ Build reusable cart UI components that provide a complete shopping cart interfac
 
 ### CartButton Tests
 
-- [ ] Renders cart icon
+- [x] Renders cart icon
 - [ ] Shows badge with correct item count
-- [ ] Hides badge when cart is empty
-- [ ] Opens drawer when clicked
+- [x] Hides badge when cart is empty
+- [x] Opens drawer when clicked
 - [ ] Badge updates when items added/removed
-- [ ] Accessible (aria-label, keyboard nav)
+- [x] Accessible (aria-label, keyboard nav)
 
 ### CartDrawer Tests
 
-- [ ] Opens and closes correctly
-- [ ] Shows empty state when no items
+- [x] Opens and closes correctly
+- [x] Shows empty state when no items
 - [ ] Displays all cart items
 - [ ] Shows CartSummary
-- [ ] Closes on overlay click
-- [ ] Closes on Escape key
-- [ ] Closes on close button click
+- [x] Closes on overlay click
+- [x] Closes on Escape key
+- [x] Closes on close button click
 - [ ] "View Cart" and "Checkout" buttons render
-- [ ] Accessible (focus trap, ARIA)
+- [x] Accessible (focus trap, ARIA)
 
 ### CartItem Tests
 

@@ -257,11 +257,7 @@ export default function ArtworkForm({
                             type="text"
                             {...register('original_price', {
                                 setValueAs: (v) =>
-                                    v === ''
-                                        ? ''
-                                        : v === null
-                                          ? null
-                                          : String(v),
+                                    v === '' || !v ? null : String(v),
                             })}
                             className="admin-input !pl-6"
                             placeholder="0.00"

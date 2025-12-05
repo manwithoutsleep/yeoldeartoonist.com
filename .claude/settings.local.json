@@ -49,7 +49,9 @@
             "Skill(verify-code)",
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
-            "WebSearch"
+            "WebSearch",
+            "Bash(npx next build:*)",
+            "Bash(npm run test:e2e:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

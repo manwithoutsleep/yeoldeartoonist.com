@@ -50,7 +50,6 @@ export async function createAdminAction(
     }
 
     // Remove passwordConfirm before creating admin (only needed for validation)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordConfirm, ...adminData } = validation.data;
 
     // Create admin
@@ -160,7 +159,6 @@ export async function updateAdminAction(
     }
 
     // Remove passwordConfirm before updating admin (only needed for validation)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordConfirm, ...adminData } = validation.data;
 
     if (process.env.NODE_ENV === 'development') {

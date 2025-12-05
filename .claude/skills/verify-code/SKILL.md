@@ -56,6 +56,7 @@ space-separated paths:
     - Runs tests related to modified files
     - Expectation depends on TDD phase (see tdd_handling)
     - If unexpected failures, fix implementation or tests
+    - The tests hang on occasion. If they have not completed in 2 minutes, kill the process and retry it.
       </verification_sequence>
 
 <failure_handling> For each command that fails:

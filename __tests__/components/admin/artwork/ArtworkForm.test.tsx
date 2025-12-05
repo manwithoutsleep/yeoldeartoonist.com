@@ -339,4 +339,150 @@ describe('ArtworkForm', () => {
             );
         });
     });
+
+    describe('original_price field validation', () => {
+        it('submits with empty original_price field (converts to null)', async () => {
+            const user = userEvent.setup();
+            const mockSubmit = vi.fn();
+            render(<ArtworkForm onSubmit={mockSubmit} />);
+
+            await user.type(screen.getByLabelText(/^title$/i), 'Test Art');
+            await user.type(screen.getByLabelText(/^slug$/i), 'test-art');
+            await user.type(screen.getByLabelText(/^price$/i), '100');
+            // Leave original_price empty
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(mockSubmit).toHaveBeenCalled();
+            });
+
+            // Verify original_price was converted to null
+            const submitData = mockSubmit.mock.calls[0][0];
+            expect(submitData.original_price).toBeNull();
+        });
+
+        it('displays error for invalid original_price', async () => {
+            const user = userEvent.setup();
+            render(<ArtworkForm />);
+
+            const originalPriceInput = screen.getByLabelText(/original price/i);
+            await user.type(originalPriceInput, 'abc');
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText(
+                        /original price must be a valid positive number/i
+                    )
+                ).toBeDefined();
+            });
+        });
+
+        it('displays inline error next to original_price field', async () => {
+            const user = userEvent.setup();
+            render(<ArtworkForm />);
+
+            // Fill required fields
+            await user.type(screen.getByLabelText(/^title$/i), 'Test Art');
+            await user.type(screen.getByLabelText(/^slug$/i), 'test-art');
+            await user.type(screen.getByLabelText(/^price$/i), '100');
+
+            // Enter invalid original_price
+            const originalPriceInput = screen.getByLabelText(/original price/i);
+            await user.type(originalPriceInput, 'not-a-number');
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                const errorMessage = screen.getByText(
+                    /original price must be a valid positive number/i
+                );
+                expect(errorMessage).toBeDefined();
+
+                // Verify error appears near the input field (has admin-error class)
+                expect(errorMessage.className).toContain('admin-error');
+            });
+        });
+
+        it('accepts valid original_price', async () => {
+            const user = userEvent.setup();
+            const mockSubmit = vi.fn();
+            render(<ArtworkForm onSubmit={mockSubmit} />);
+
+            await user.type(screen.getByLabelText(/^title$/i), 'Test Art');
+            await user.type(screen.getByLabelText(/^slug$/i), 'test-art');
+            await user.type(screen.getByLabelText(/^price$/i), '100');
+            await user.type(screen.getByLabelText(/original price/i), '150.00');
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(mockSubmit).toHaveBeenCalled();
+            });
+
+            // Verify original_price was submitted correctly
+            const submitData = mockSubmit.mock.calls[0][0];
+            expect(submitData.original_price).toBe('150.00');
+        });
+
+        it('rejects negative original_price', async () => {
+            const user = userEvent.setup();
+            render(<ArtworkForm />);
+
+            const originalPriceInput = screen.getByLabelText(/original price/i);
+            await user.type(originalPriceInput, '-50.00');
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText(
+                        /original price must be a valid positive number/i
+                    )
+                ).toBeDefined();
+            });
+        });
+
+        it('clears original_price validation error when field is emptied', async () => {
+            const user = userEvent.setup();
+            render(<ArtworkForm />);
+
+            const originalPriceInput = screen.getByLabelText(/original price/i);
+
+            // Enter invalid value
+            await user.type(originalPriceInput, 'abc');
+
+            const submitButton = screen.getByRole('button', { name: /save/i });
+            fireEvent.click(submitButton);
+
+            // Verify error appears
+            await waitFor(() => {
+                expect(
+                    screen.getByText(
+                        /original price must be a valid positive number/i
+                    )
+                ).toBeDefined();
+            });
+
+            // Clear the field
+            await user.clear(originalPriceInput);
+            fireEvent.click(submitButton);
+
+            // Error should be gone since empty is valid
+            await waitFor(() => {
+                expect(
+                    screen.queryByText(
+                        /original price must be a valid positive number/i
+                    )
+                ).toBeNull();
+            });
+        });
+    });
 });

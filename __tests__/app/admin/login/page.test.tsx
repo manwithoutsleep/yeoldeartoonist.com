@@ -60,10 +60,8 @@ describe('Admin Login Page', () => {
 
         // Store original window.location and mock it
         originalLocation = window.location;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (window as any).location;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).location = {
+        delete (window as { location?: Location }).location;
+        (window as { location: Partial<Location> }).location = {
             ...originalLocation,
             href: '',
         };
@@ -71,8 +69,7 @@ describe('Admin Login Page', () => {
 
     afterEach(() => {
         // Restore original window.location
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).location = originalLocation;
+        (window as { location: Location }).location = originalLocation;
     });
 
     describe('Page Rendering', () => {

@@ -13,6 +13,18 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CartProvider, useCart } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
 
 /**
  * Test component that uses the useCart hook
@@ -75,21 +87,13 @@ describe('CartContext', () => {
 
     describe('Context Provider Setup', () => {
         it('should render CartProvider without errors', () => {
-            const { container } = render(
-                <CartProvider>
-                    <div>Test Content</div>
-                </CartProvider>
-            );
+            const { container } = renderWithProviders(<div>Test Content</div>);
             expect(container).toBeInTheDocument();
             expect(screen.getByText('Test Content')).toBeInTheDocument();
         });
 
         it('should provide cart context to children', () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('item-count')).toBeInTheDocument();
             expect(screen.getByTestId('total')).toBeInTheDocument();
@@ -116,11 +120,7 @@ describe('CartContext', () => {
 
     describe('Cart State Initialization', () => {
         it('should initialize with empty cart', () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('items-length')).toHaveTextContent('0');
             expect(screen.getByTestId('item-count')).toHaveTextContent('0');
@@ -143,11 +143,7 @@ describe('CartContext', () => {
 
             localStorage.setItem('cart', JSON.stringify(mockCart));
 
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('items-length')).toHaveTextContent('1');
             expect(screen.getByTestId('item-count')).toHaveTextContent('2');
@@ -161,11 +157,7 @@ describe('CartContext', () => {
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
 
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('items-length')).toHaveTextContent('0');
 
@@ -175,11 +167,7 @@ describe('CartContext', () => {
 
     describe('Adding Items', () => {
         it('should add new item to empty cart', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('items-length')).toHaveTextContent('0');
 
@@ -197,11 +185,7 @@ describe('CartContext', () => {
         });
 
         it('should increment quantity when adding duplicate item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -262,11 +246,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Art 1').click();
@@ -283,11 +263,7 @@ describe('CartContext', () => {
         });
 
         it('should persist to localStorage after adding item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -305,11 +281,7 @@ describe('CartContext', () => {
 
     describe('Removing Items', () => {
         it('should remove item from cart', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -335,11 +307,7 @@ describe('CartContext', () => {
         });
 
         it('should safely remove non-existent item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             // Should not throw error
             act(() => {
@@ -387,11 +355,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Items').click();
@@ -411,11 +375,7 @@ describe('CartContext', () => {
         });
 
         it('should persist removal to localStorage', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -442,11 +402,7 @@ describe('CartContext', () => {
 
     describe('Updating Quantity', () => {
         it('should update quantity for existing item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -495,11 +451,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add').click();
@@ -547,11 +499,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add').click();
@@ -567,11 +515,7 @@ describe('CartContext', () => {
         });
 
         it('should persist quantity update to localStorage', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -596,11 +540,7 @@ describe('CartContext', () => {
 
     describe('Cart Calculations', () => {
         it('should calculate total correctly for single item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -642,11 +582,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Items').click();
@@ -659,21 +595,13 @@ describe('CartContext', () => {
         });
 
         it('should return 0 total for empty cart', () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('total')).toHaveTextContent('0.00');
         });
 
         it('should get correct item count for single item', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -715,11 +643,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Items').click();
@@ -732,11 +656,7 @@ describe('CartContext', () => {
         });
 
         it('should return 0 item count for empty cart', () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             expect(screen.getByTestId('item-count')).toHaveTextContent('0');
         });
@@ -774,11 +694,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Items').click();
@@ -815,11 +731,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Items').click();
@@ -834,11 +746,7 @@ describe('CartContext', () => {
 
     describe('Clearing Cart', () => {
         it('should clear all items from cart', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -864,11 +772,7 @@ describe('CartContext', () => {
         });
 
         it('should persist empty cart to localStorage', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -919,11 +823,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add').click();
@@ -984,11 +884,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add').click();
@@ -1027,11 +923,7 @@ describe('CartContext', () => {
 
             localStorage.setItem('cart', JSON.stringify(mockCart));
 
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             await waitFor(() => {
                 const stored = localStorage.getItem('cart');
@@ -1040,11 +932,7 @@ describe('CartContext', () => {
         });
 
         it('should update localStorage whenever cart changes', async () => {
-            render(
-                <CartProvider>
-                    <CartConsumer />
-                </CartProvider>
-            );
+            renderWithProviders(<CartConsumer />);
 
             act(() => {
                 screen.getByTestId('add-item').click();
@@ -1080,11 +968,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add').click();
@@ -1137,11 +1021,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Do Multiple Ops').click();
@@ -1180,11 +1060,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Expensive').click();
@@ -1235,11 +1111,7 @@ describe('CartContext', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             act(() => {
                 screen.getByText('Add Mix').click();

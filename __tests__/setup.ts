@@ -83,7 +83,6 @@ vi.mock('next/image', () => ({
         }
     ) => {
         // Remove Next.js-specific props that aren't valid HTML attributes
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { fill, priority, loading, sizes, ...imgProps } = props;
         return React.createElement('img', imgProps);
     },

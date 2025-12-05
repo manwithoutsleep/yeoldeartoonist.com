@@ -11,7 +11,19 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CartProvider, useCart } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 import type { CartContextType } from '@/context/CartContext';
+
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
 
 /**
  * Test component that uses the useCart hook to verify it works correctly
@@ -50,11 +62,7 @@ describe('useCart Hook', () => {
 
     describe('Hook Usage', () => {
         it('should provide cart context when used within CartProvider', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('hook-exists')).toHaveTextContent(
                 'Hook loaded'
@@ -62,11 +70,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide addItem function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-addItem')).toHaveTextContent(
                 'function'
@@ -74,11 +78,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide removeItem function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-removeItem')).toHaveTextContent(
                 'function'
@@ -86,11 +86,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide updateQuantity function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-updateQuantity')).toHaveTextContent(
                 'function'
@@ -98,11 +94,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide clearCart function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-clearCart')).toHaveTextContent(
                 'function'
@@ -110,11 +102,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide getTotal function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-getTotal')).toHaveTextContent(
                 'function'
@@ -122,11 +110,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide getItemCount function', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-getItemCount')).toHaveTextContent(
                 'function'
@@ -134,11 +118,7 @@ describe('useCart Hook', () => {
         });
 
         it('should provide cart object', () => {
-            render(
-                <CartProvider>
-                    <UseCartTestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<UseCartTestComponent />);
 
             expect(screen.getByTestId('has-cart')).toHaveTextContent('true');
         });
@@ -162,11 +142,7 @@ describe('useCart Hook', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             expect(screen.getByTestId('result')).toHaveTextContent('complete');
         });
@@ -185,7 +161,11 @@ describe('useCart Hook', () => {
             };
 
             expect(() => {
-                render(<InvalidComponent />);
+                render(
+                    <ToastProvider>
+                        <InvalidComponent />
+                    </ToastProvider>
+                );
             }).toThrow('useCart must be used within CartProvider');
 
             consoleSpy.mockRestore();
@@ -203,7 +183,11 @@ describe('useCart Hook', () => {
 
             let thrownError: Error | null = null;
             try {
-                render(<InvalidComponent />);
+                render(
+                    <ToastProvider>
+                        <InvalidComponent />
+                    </ToastProvider>
+                );
             } catch (e) {
                 thrownError = e as Error;
             }
@@ -225,16 +209,14 @@ describe('useCart Hook', () => {
                 return <div>Test</div>;
             };
 
-            const { rerender } = render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            const { rerender } = renderWithProviders(<TestComponent />);
 
             rerender(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
+                <ToastProvider>
+                    <CartProvider>
+                        <TestComponent />
+                    </CartProvider>
+                </ToastProvider>
             );
 
             // Cart object should be stable within the same provider
@@ -254,11 +236,11 @@ describe('useCart Hook', () => {
                 );
             };
 
-            render(
-                <CartProvider>
+            renderWithProviders(
+                <>
                     <Component1 />
                     <Component2 />
-                </CartProvider>
+                </>
             );
 
             expect(screen.getByTestId('comp1')).toBeInTheDocument();
@@ -288,11 +270,7 @@ describe('useCart Hook', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             expect(screen.getByTestId('valid')).toHaveTextContent('yes');
         });
@@ -311,11 +289,7 @@ describe('useCart Hook', () => {
                 );
             };
 
-            render(
-                <CartProvider>
-                    <TestComponent />
-                </CartProvider>
-            );
+            renderWithProviders(<TestComponent />);
 
             expect(screen.getByTestId('structure')).toHaveTextContent('valid');
         });

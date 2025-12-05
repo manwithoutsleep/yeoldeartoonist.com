@@ -11,6 +11,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { render, screen } from '@testing-library/react';
 import ShoppePage from '@/app/shoppe/page';
+import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 // Mock the database query function
 vi.mock('@/lib/db/artwork', () => ({
@@ -51,10 +53,26 @@ const mockProductItem: ArtworkRow = {
     updated_at: '2025-01-01',
 };
 
+/**
+ * Helper function to render components with required providers
+ */
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+        <ToastProvider>
+            <CartProvider>{ui}</CartProvider>
+        </ToastProvider>
+    );
+};
+
 describe('Shoppe Page', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
+
+    // Helper function to render with CartProvider
+    const renderWithCart = (ui: React.ReactElement) => {
+        return renderWithProviders(ui);
+    };
 
     it('should render shoppe page with title', async () => {
         mockGetAllArtwork.mockResolvedValue({
@@ -63,7 +81,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('Shoppe')).toBeInTheDocument();
     });
@@ -75,7 +93,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(
             screen.getByText(/Feel free to peruse my prints & curios/i)
@@ -89,7 +107,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('Test Print')).toBeInTheDocument();
         expect(screen.getByText('A beautiful test print')).toBeInTheDocument();
@@ -102,7 +120,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('$29.99')).toBeInTheDocument();
     });
@@ -119,7 +137,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('$39.99')).toBeInTheDocument();
     });
@@ -139,7 +157,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('Test Print')).toBeInTheDocument();
         expect(screen.queryByText('Out of Stock Item')).not.toBeInTheDocument();
@@ -157,7 +175,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText(/Only 3 left in stock/i)).toBeInTheDocument();
     });
@@ -169,7 +187,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(
             screen.queryByText(/Only.*left in stock/i)
@@ -183,25 +201,25 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         const quantityLabel = screen.getByText('Quantity:');
         expect(quantityLabel).toBeInTheDocument();
     });
 
-    it('should have disabled Add to Cart button', async () => {
+    it('should have enabled Add to Cart button', async () => {
         mockGetAllArtwork.mockResolvedValue({
             data: [mockProductItem],
             error: null,
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         const addToCartButton = screen.getByRole('button', {
             name: /Add to Cart/i,
         });
-        expect(addToCartButton).toBeDisabled();
+        expect(addToCartButton).toBeEnabled();
     });
 
     it('should have View Details link for each product', async () => {
@@ -211,7 +229,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         const detailsLink = screen.getByRole('link', {
             name: /View Details/i,
@@ -227,7 +245,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         const img = screen.getByAltText('Test') as HTMLImageElement;
         expect(img).toBeInTheDocument();
@@ -246,7 +264,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText('No image')).toBeInTheDocument();
     });
@@ -263,7 +281,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(
             screen.getByText(/New products coming soon/i)
@@ -281,7 +299,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        render(result);
+        renderWithCart(result);
 
         expect(screen.getByText(/Error loading products/i)).toBeInTheDocument();
         expect(
@@ -296,7 +314,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        const { container } = render(result);
+        const { container } = renderWithCart(result);
 
         const mainDiv = container.querySelector('.bg-white');
         expect(mainDiv).toBeInTheDocument();
@@ -309,7 +327,7 @@ describe('Shoppe Page', () => {
         });
 
         const result = await ShoppePage();
-        const { container } = render(result);
+        const { container } = renderWithCart(result);
 
         const description = container.querySelector('.line-clamp-2');
         expect(description).toBeInTheDocument();

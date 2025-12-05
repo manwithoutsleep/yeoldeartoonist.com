@@ -235,6 +235,7 @@ export function CheckoutForm({
                         <input
                             id="customerName"
                             type="text"
+                            data-testid="customer-name-input"
                             {...register('customerName')}
                             className="w-full border-2 border-black rounded px-3 py-2"
                         />
@@ -255,6 +256,7 @@ export function CheckoutForm({
                         <input
                             id="customerEmail"
                             type="email"
+                            data-testid="customer-email-input"
                             {...register('customerEmail')}
                             className="w-full border-2 border-black rounded px-3 py-2"
                         />
@@ -315,6 +317,7 @@ export function CheckoutForm({
             <button
                 type="submit"
                 disabled={isSubmitting}
+                data-testid="continue-to-payment-btn"
                 className="w-full bg-black text-white px-6 py-3 rounded font-semibold hover:bg-gray-800 disabled:opacity-50"
             >
                 {isSubmitting ? 'Processing...' : 'Continue to Payment'}

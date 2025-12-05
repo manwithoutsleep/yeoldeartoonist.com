@@ -36,9 +36,15 @@ export default function CartPage() {
                     <h1 className="text-4xl font-bold mb-4 text-black">
                         Your Cart
                     </h1>
-                    <p className="text-gray-600 mb-8">Your cart is empty</p>
+                    <p
+                        className="text-gray-600 mb-8"
+                        data-testid="empty-cart-message"
+                    >
+                        Your cart is empty
+                    </p>
                     <Link
                         href="/shoppe"
+                        data-testid="continue-shopping-link"
                         className="inline-block bg-black text-white px-6 py-3 rounded font-semibold hover:bg-gray-800"
                     >
                         Continue Shopping
@@ -69,12 +75,14 @@ export default function CartPage() {
                         <CartSummary />
                         <Link
                             href="/shoppe/checkout"
+                            data-testid="checkout-btn"
                             className="block w-full bg-black text-white text-center px-6 py-3 rounded font-semibold hover:bg-gray-800 mt-4"
                         >
                             Proceed to Checkout
                         </Link>
                         <Link
                             href="/shoppe"
+                            data-testid="continue-shopping-link"
                             className="block w-full text-center px-6 py-3 mt-2 text-gray-600 hover:text-black"
                         >
                             Continue Shopping

@@ -5,7 +5,7 @@
  * and order number generation.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock Stripe before importing our module
 vi.mock('stripe', () => {
@@ -47,11 +47,11 @@ vi.mock('stripe', () => {
 });
 
 import {
-    stripe,
+    constructWebhookEvent,
     createPaymentIntent,
     createPaymentIntentWithTax,
-    constructWebhookEvent,
     generateOrderNumber,
+    stripe,
 } from '@/lib/payments/stripe';
 
 describe('Stripe Utilities', () => {

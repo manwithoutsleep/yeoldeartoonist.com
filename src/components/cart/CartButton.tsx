@@ -27,6 +27,7 @@ export function CartButton() {
     return (
         <>
             <button
+                data-testid="cart-button"
                 onClick={() => setIsOpen(true)}
                 aria-label={`Shopping cart with ${itemCount} item${itemCount !== 1 ? 's' : ''}`}
                 className="relative p-2 text-black hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"

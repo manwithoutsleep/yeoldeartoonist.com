@@ -105,6 +105,7 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
             <button
                 type="submit"
                 disabled={!stripe || isProcessing}
+                data-testid="pay-now-btn"
                 className="w-full bg-black text-white px-6 py-3 rounded font-semibold hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 aria-busy={isProcessing}
             >

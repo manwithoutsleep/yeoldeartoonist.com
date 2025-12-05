@@ -33,7 +33,10 @@ export function CartItem({ item }: CartItemProps) {
     const maxSelectableQuantity = Math.min(item.maxQuantity ?? 10, 10);
 
     return (
-        <div className="flex gap-4 py-4 border-b border-gray-200 last:border-b-0">
+        <div
+            className="flex gap-4 py-4 border-b border-gray-200 last:border-b-0"
+            data-testid="cart-item"
+        >
             {/* Product Image */}
             <div className="flex-shrink-0 w-20 h-20 rounded overflow-hidden">
                 {item.imageUrl ? (
@@ -85,6 +88,7 @@ export function CartItem({ item }: CartItemProps) {
                                 parseInt(e.target.value)
                             )
                         }
+                        data-testid="quantity-select"
                         aria-label={`Quantity for ${item.title}`}
                         className="text-sm text-black border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-black"
                     >
@@ -101,6 +105,7 @@ export function CartItem({ item }: CartItemProps) {
                     {/* Remove Button */}
                     <button
                         onClick={() => removeItem(item.artworkId)}
+                        data-testid="remove-item-btn"
                         aria-label={`Remove ${item.title} from cart`}
                         className="text-sm text-gray-500 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 rounded px-1"
                     >
@@ -110,7 +115,10 @@ export function CartItem({ item }: CartItemProps) {
             </div>
 
             {/* Line Total */}
-            <div className="flex-shrink-0 text-sm font-medium text-gray-900">
+            <div
+                className="flex-shrink-0 text-sm font-medium text-gray-900"
+                data-testid="cart-item-total"
+            >
                 {formatCurrency(lineTotal)}
             </div>
         </div>

@@ -50,7 +50,8 @@
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
             "WebSearch",
-            "Bash(npx next build:*)"
+            "Bash(npx next build:*)",
+            "Bash(npm run test:e2e:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

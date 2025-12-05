@@ -81,7 +81,9 @@ export function CartSummary({
             {/* Total */}
             <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-2 mt-2">
                 <span className="text-gray-900">Total</span>
-                <span className="text-gray-900">{formatCurrency(total)}</span>
+                <span className="text-gray-900" data-testid="cart-total">
+                    {formatCurrency(total)}
+                </span>
             </div>
         </div>
     );

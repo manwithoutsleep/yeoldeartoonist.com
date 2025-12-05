@@ -133,6 +133,7 @@ export function AddToCartButton({
                 type="button"
                 onClick={handleAddToCart}
                 disabled={isAdding}
+                data-testid="add-to-cart-btn"
                 className="w-full bg-black text-white px-4 py-2 rounded font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
                 {isAdding ? 'Added!' : 'Add to Cart'}

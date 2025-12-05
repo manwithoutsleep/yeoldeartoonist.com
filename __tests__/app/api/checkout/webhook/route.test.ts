@@ -5,7 +5,7 @@
  * Tests signature verification, event handling, and error scenarios.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '@/app/api/checkout/webhook/route';
 import { NextRequest } from 'next/server';
 import type Stripe from 'stripe';

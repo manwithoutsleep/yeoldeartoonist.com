@@ -152,7 +152,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-4">
                     {hasItems ? (
-                        <div className="space-y-0">
+                        <div
+                            className="space-y-0"
+                            data-testid="cart-items-list"
+                        >
                             {cart.items.map((item) => (
                                 <CartItem key={item.artworkId} item={item} />
                             ))}
@@ -192,6 +195,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <Link
                                 href="/shoppe/cart"
                                 onClick={onClose}
+                                data-testid="view-cart-link"
                                 className="block w-full text-center px-4 py-2 border border-black text-black font-medium rounded hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                             >
                                 View Cart
@@ -199,6 +203,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <Link
                                 href="/shoppe/checkout"
                                 onClick={onClose}
+                                data-testid="drawer-checkout-btn"
                                 className="block w-full text-center px-4 py-2 bg-black text-white font-medium rounded hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                             >
                                 Checkout

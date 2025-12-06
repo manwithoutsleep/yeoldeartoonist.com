@@ -875,13 +875,32 @@ test('should complete checkout via Stripe Checkout', async ({ page }) => {
 
 ## Notes
 
-### Stripe Tax Requirements
+### Stripe Tax Requirements & Verification
 
 For Stripe Tax to work in production:
 
-1. Activate Stripe Tax in Dashboard
-2. Register for tax collection in applicable states
-3. Configure tax codes for products (default: `txcd_99999999` for general goods)
+1. **Activate Stripe Tax** in the Stripe Dashboard (Settings → Tax)
+2. **Register for tax collection** in applicable states where you have nexus
+3. **Verify tax code configuration:**
+    - Navigate to Product Catalog in Stripe Dashboard
+    - Confirm tax code `txcd_99999999` (General - Tangible Goods) is available
+    - Test a checkout session in test mode to verify tax calculation
+4. **Test in Stripe test mode before going live:**
+    - Create a test checkout with a US shipping address
+    - Verify that sales tax is calculated automatically
+    - Check that the tax amount appears in the order total
+
+⚠️ **IMPORTANT:** If Stripe Tax is not enabled or properly configured, the checkout will still succeed, but NO tax will be collected, which could result in legal compliance issues.
+
+#### PR Review Checklist
+
+Before merging any PR that affects checkout functionality:
+
+- [ ] Stripe Tax activated in production dashboard
+- [ ] Tax code `txcd_99999999` verified in Stripe dashboard
+- [ ] Test checkout completed with tax calculation working
+- [ ] Webhook endpoint configured and tested
+- [ ] All environment variables set correctly
 
 ### Testing in Development
 

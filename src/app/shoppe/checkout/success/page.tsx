@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/hooks/useCart';
@@ -17,12 +17,28 @@ import { useCart } from '@/hooks/useCart';
 function CheckoutSuccessContent() {
     const searchParams = useSearchParams();
     const { clearCart } = useCart();
-    const paymentIntent = searchParams.get('payment_intent');
+    const sessionId = searchParams.get('session_id');
+    const [orderNumber, setOrderNumber] = useState<string | null>(null);
+    const [loading, setLoading] = useState(!!sessionId);
 
-    // Clear cart after successful payment
+    // Clear cart and fetch order details after successful payment
     useEffect(() => {
         clearCart();
-    }, [clearCart]);
+
+        if (!sessionId) {
+            return;
+        }
+
+        fetch(`/api/checkout/session/${sessionId}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.order) {
+                    setOrderNumber(data.order.order_number);
+                }
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, [clearCart, sessionId]);
 
     return (
         <div className="bg-white min-h-screen">
@@ -38,6 +54,24 @@ function CheckoutSuccessContent() {
                     </p>
                 </div>
 
+                {/* Order Number */}
+                {loading ? (
+                    <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 mb-8">
+                        <p className="text-gray-600 text-center">
+                            Loading order details...
+                        </p>
+                    </div>
+                ) : orderNumber ? (
+                    <div className="bg-white border-2 border-black rounded-lg p-6 mb-8">
+                        <h2 className="text-2xl text-black font-bold mb-4">
+                            Order Number
+                        </h2>
+                        <p className="text-3xl font-mono text-center text-black">
+                            {orderNumber}
+                        </p>
+                    </div>
+                ) : null}
+
                 {/* What's Next */}
                 <div className="bg-white border-2 border-black rounded-lg p-6 mb-8">
                     <h2 className="text-2xl text-black font-bold mb-4">
@@ -52,13 +86,6 @@ function CheckoutSuccessContent() {
                         <li>✅ Track your order status in your email</li>
                     </ul>
                 </div>
-
-                {/* Payment Intent (for debugging/tracking) */}
-                {paymentIntent && (
-                    <div className="text-xs text-gray-600 mb-4">
-                        Order ID: {paymentIntent}
-                    </div>
-                )}
 
                 {/* Return to Gallery */}
                 <Link

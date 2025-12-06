@@ -36,6 +36,21 @@ vi.mock('@/lib/db/orders', () => ({
     }),
 }));
 
+vi.mock('@/lib/supabase/server', () => ({
+    createServiceRoleClient: vi.fn().mockResolvedValue({
+        from: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                        data: null, // No existing order by default
+                        error: null,
+                    }),
+                }),
+            }),
+        }),
+    }),
+}));
+
 import { constructWebhookEvent } from '@/lib/payments/stripe';
 import { createOrder } from '@/lib/db/orders';
 
@@ -553,6 +568,278 @@ describe('POST /api/checkout/webhook', () => {
                     shippingCost: 5,
                     taxAmount: 19.5,
                     total: 224.5, // 200 + 5 + 19.5
+                })
+            );
+        });
+    });
+
+    describe('Checkout Session Completed Event', () => {
+        function createCheckoutSessionEvent(
+            sessionData: Partial<Stripe.Checkout.Session>
+        ): string {
+            return JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        id: 'cs_test_123',
+                        object: 'checkout.session',
+                        payment_intent: 'pi_test_session_123',
+                        amount_total: 11350, // $113.50 in cents
+                        currency: 'usd',
+                        customer_email: 'test@example.com',
+                        metadata: {
+                            cartItems: JSON.stringify([
+                                {
+                                    artworkId:
+                                        '123e4567-e89b-12d3-a456-426614174000',
+                                    quantity: 1,
+                                    price: 100,
+                                },
+                            ]),
+                        },
+                        total_details: {
+                            amount_tax: 850, // $8.50 tax
+                            amount_shipping: 500, // $5.00 shipping
+                        },
+                        shipping_details: {
+                            name: 'John Doe',
+                            address: {
+                                line1: '123 Main St',
+                                line2: 'Apt 4B',
+                                city: 'Los Angeles',
+                                state: 'CA',
+                                postal_code: '90001',
+                                country: 'US',
+                            },
+                        },
+                        customer_details: {
+                            name: 'John Doe',
+                            email: 'test@example.com',
+                            address: {
+                                line1: '456 Oak Ave',
+                                line2: null,
+                                city: 'Los Angeles',
+                                state: 'CA',
+                                postal_code: '90001',
+                                country: 'US',
+                            },
+                        },
+                        ...sessionData,
+                    },
+                },
+            });
+        }
+
+        it('should handle checkout.session.completed event', async () => {
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.received).toBe(true);
+        });
+
+        it('should create order from session metadata', async () => {
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    orderNumber: 'YOA-20250112-0001',
+                    customerName: 'John Doe',
+                    customerEmail: 'test@example.com',
+                    paymentIntentId: 'pi_test_session_123',
+                    paymentStatus: 'succeeded',
+                })
+            );
+        });
+
+        it('should extract tax amount from session total_details', async () => {
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    taxAmount: 8.5, // Converted from 850 cents
+                })
+            );
+        });
+
+        it('should extract shipping address from session', async () => {
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    shippingAddress: {
+                        line1: '123 Main St',
+                        line2: 'Apt 4B',
+                        city: 'Los Angeles',
+                        state: 'CA',
+                        zip: '90001',
+                        country: 'US',
+                    },
+                })
+            );
+        });
+
+        it('should extract billing address from session', async () => {
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    billingAddress: {
+                        line1: '456 Oak Ave',
+                        line2: undefined,
+                        city: 'Los Angeles',
+                        state: 'CA',
+                        zip: '90001',
+                        country: 'US',
+                    },
+                })
+            );
+        });
+
+        it('should handle sessions without customer email', async () => {
+            const payload = createCheckoutSessionEvent({
+                customer_email: null,
+                customer_details: {
+                    email: null,
+                    name: 'Jane Doe',
+                    address: {
+                        line1: '123 Main St',
+                        city: 'Portland',
+                        state: 'OR',
+                        postal_code: '97201',
+                        country: 'US',
+                    },
+                } as Stripe.Checkout.Session.CustomerDetails,
+            });
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    customerEmail: '',
+                })
+            );
+        });
+
+        it('should prevent duplicate order creation using payment_intent_id', async () => {
+            // Override Supabase mock to simulate existing order
+            const { createServiceRoleClient } = await import(
+                '@/lib/supabase/server'
+            );
+            vi.mocked(createServiceRoleClient).mockResolvedValueOnce({
+                from: vi.fn().mockReturnValue({
+                    select: vi.fn().mockReturnValue({
+                        eq: vi.fn().mockReturnValue({
+                            single: vi.fn().mockResolvedValue({
+                                data: {
+                                    id: 'existing_order_123',
+                                },
+                                error: null,
+                            }),
+                        }),
+                    }),
+                }),
+            } as unknown as Awaited<
+                ReturnType<typeof createServiceRoleClient>
+            >);
+
+            const payload = createCheckoutSessionEvent({});
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            const response = await POST(request);
+
+            // Should not create a duplicate order
+            expect(response.status).toBe(200);
+            expect(createOrder).not.toHaveBeenCalled();
+        });
+
+        it('should calculate correct totals from session', async () => {
+            const payload = createCheckoutSessionEvent({
+                amount_total: 22450, // $224.50
+                total_details: {
+                    amount_tax: 1950, // $19.50 tax
+                    amount_shipping: 500, // $5.00 shipping
+                    amount_discount: 0,
+                },
+            });
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    shippingCost: 5.0,
+                    taxAmount: 19.5,
+                    total: 224.5,
+                    subtotal: 200.0, // total - tax - shipping
+                })
+            );
+        });
+
+        it('should parse cart items from metadata', async () => {
+            const items = [
+                {
+                    artworkId: '123e4567-e89b-12d3-a456-426614174000',
+                    quantity: 2,
+                    price: 50,
+                },
+                {
+                    artworkId: '123e4567-e89b-12d3-a456-426614174001',
+                    quantity: 1,
+                    price: 100,
+                },
+            ];
+
+            const payload = createCheckoutSessionEvent({
+                metadata: {
+                    cartItems: JSON.stringify(items),
+                },
+            });
+            const signature = 't=123,v1=valid_signature';
+            const request = createMockRequest(payload, signature);
+
+            await POST(request);
+
+            expect(createOrder).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    items: [
+                        {
+                            artworkId: '123e4567-e89b-12d3-a456-426614174000',
+                            quantity: 2,
+                            priceAtPurchase: 50,
+                            lineSubtotal: 100,
+                        },
+                        {
+                            artworkId: '123e4567-e89b-12d3-a456-426614174001',
+                            quantity: 1,
+                            priceAtPurchase: 100,
+                            lineSubtotal: 100,
+                        },
+                    ],
                 })
             );
         });

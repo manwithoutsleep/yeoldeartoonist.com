@@ -144,11 +144,11 @@ describe('CartPage', () => {
             </ToastProvider>
         );
 
-        const checkoutLink = screen.getByRole('link', {
+        const checkoutButton = screen.getByRole('button', {
             name: /proceed to checkout/i,
         });
-        expect(checkoutLink).toBeInTheDocument();
-        expect(checkoutLink).toHaveAttribute('href', '/shoppe/checkout');
+        expect(checkoutButton).toBeInTheDocument();
+        expect(checkoutButton).not.toBeDisabled();
     });
 
     it('shows Continue Shopping link when cart has items', () => {

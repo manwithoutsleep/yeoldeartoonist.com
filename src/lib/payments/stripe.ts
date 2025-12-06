@@ -122,51 +122,94 @@ export async function createPaymentIntentWithTax(
     },
     metadata: Record<string, string> = {}
 ): Promise<PaymentIntentWithTaxResult> {
-    // Note: automatic_tax is supported by Stripe API but not yet in TypeScript definitions
-    // Using type assertion to enable this feature
-    const params: Stripe.PaymentIntentCreateParams & {
-        automatic_tax?: { enabled: boolean };
-    } = {
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: 'usd',
-        metadata,
-        automatic_payment_methods: {
-            enabled: true,
-        },
-        automatic_tax: {
-            enabled: true,
-        },
-        shipping: {
-            name: metadata.customerName || 'Customer',
-            address: {
-                line1: shippingAddress.line1,
-                line2: shippingAddress.line2,
-                city: shippingAddress.city,
-                state: shippingAddress.state,
-                postal_code: shippingAddress.postal_code,
-                country: shippingAddress.country,
+    // Try to create payment intent with automatic tax first
+    // If Stripe Tax is not enabled, fall back to payment intent without tax calculation
+    try {
+        // Note: automatic_tax is supported by Stripe API but not yet in TypeScript definitions
+        // Using type assertion to enable this feature
+        const params: Stripe.PaymentIntentCreateParams & {
+            automatic_tax?: { enabled: boolean };
+        } = {
+            amount: Math.round(amount * 100), // Convert to cents
+            currency: 'usd',
+            metadata,
+            automatic_payment_methods: {
+                enabled: true,
             },
-        },
-    };
+            automatic_tax: {
+                enabled: true,
+            },
+            shipping: {
+                name: metadata.customerName || 'Customer',
+                address: {
+                    line1: shippingAddress.line1,
+                    line2: shippingAddress.line2,
+                    city: shippingAddress.city,
+                    state: shippingAddress.state,
+                    postal_code: shippingAddress.postal_code,
+                    country: shippingAddress.country,
+                },
+            },
+        };
 
-    const paymentIntent = await stripe.paymentIntents.create(params);
+        const paymentIntent = await stripe.paymentIntents.create(params);
 
-    // Extract tax amount (in cents, convert to dollars)
-    // Using type assertion as automatic_tax may not be in current type definitions
-    const taxAmountCents =
-        (
-            paymentIntent as Stripe.PaymentIntent & {
-                automatic_tax?: { amount?: number };
-            }
-        ).automatic_tax?.amount ?? 0;
-    const taxAmount = taxAmountCents / 100;
-    const total = amount + taxAmount;
+        // Extract tax amount (in cents, convert to dollars)
+        // Using type assertion as automatic_tax may not be in current type definitions
+        const taxAmountCents =
+            (
+                paymentIntent as Stripe.PaymentIntent & {
+                    automatic_tax?: { amount?: number };
+                }
+            ).automatic_tax?.amount ?? 0;
+        const taxAmount = taxAmountCents / 100;
+        const total = amount + taxAmount;
 
-    return {
-        paymentIntent,
-        taxAmount,
-        total,
-    };
+        return {
+            paymentIntent,
+            taxAmount,
+            total,
+        };
+    } catch (error) {
+        // If automatic_tax parameter is not supported, fall back to creating
+        // payment intent without tax calculation (tax will be $0)
+        if (error instanceof Error && error.message.includes('automatic_tax')) {
+            console.warn(
+                'Stripe Tax not enabled. Creating payment intent without automatic tax calculation. ' +
+                    'To enable tax calculation, activate Stripe Tax in your Stripe Dashboard.'
+            );
+
+            // Create payment intent without automatic_tax parameter
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: Math.round(amount * 100),
+                currency: 'usd',
+                metadata,
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+                shipping: {
+                    name: metadata.customerName || 'Customer',
+                    address: {
+                        line1: shippingAddress.line1,
+                        line2: shippingAddress.line2,
+                        city: shippingAddress.city,
+                        state: shippingAddress.state,
+                        postal_code: shippingAddress.postal_code,
+                        country: shippingAddress.country,
+                    },
+                },
+            });
+
+            return {
+                paymentIntent,
+                taxAmount: 0,
+                total: amount,
+            };
+        }
+
+        // If it's a different error, rethrow it
+        throw error;
+    }
 }
 
 /**

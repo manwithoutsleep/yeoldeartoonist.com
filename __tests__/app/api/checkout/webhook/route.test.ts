@@ -45,6 +45,10 @@ vi.mock('@/lib/supabase/server', () => ({
                         data: null, // No existing order by default
                         error: null,
                     }),
+                    maybeSingle: vi.fn().mockResolvedValue({
+                        data: null, // No existing order by default
+                        error: null,
+                    }),
                 }),
             }),
         }),

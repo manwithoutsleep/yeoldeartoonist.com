@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
                     .from('orders')
                     .select('id')
                     .eq('payment_intent_id', session.payment_intent as string)
-                    .single();
+                    .maybeSingle(); // Use maybeSingle to avoid errors when no order exists
 
                 if (existingOrder) {
                     console.log(
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
                 // Generate order number
                 const orderNumber = generateOrderNumber();
 
-                // Create order
+                // Create order with error handling for duplicate key violation
                 const { data: order, error: orderError } = await createOrder({
                     orderNumber,
                     customerName:
@@ -274,6 +274,19 @@ export async function POST(request: NextRequest) {
                 });
 
                 if (orderError) {
+                    // Check if this is a duplicate key error (Postgres error code 23505)
+                    // Supabase returns errors with a code property for database constraint violations
+                    const errorCode = (orderError as { code?: string }).code;
+                    if (
+                        errorCode === '23505' &&
+                        orderError.message.includes('payment_intent_id')
+                    ) {
+                        console.log(
+                            'Order already created (concurrent webhook):',
+                            session.id
+                        );
+                        break; // Exit gracefully
+                    }
                     console.error(
                         'Failed to create order from session:',
                         orderError

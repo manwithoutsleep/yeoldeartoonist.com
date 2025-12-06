@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
                     currency: 'usd',
                     product_data: {
                         name: item.title,
+                        tax_code: 'txcd_99999999', // General - Tangible Goods (physical products)
                     },
                     unit_amount: Math.round(item.price * 100), // Convert to cents
                 },

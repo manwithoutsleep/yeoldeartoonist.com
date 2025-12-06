@@ -148,6 +148,20 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        if (!session.url) {
+            console.error(
+                'Checkout session created but no URL returned:',
+                session.id
+            );
+            return NextResponse.json(
+                {
+                    error: 'Failed to create checkout session',
+                    message: 'No checkout URL was generated',
+                },
+                { status: 500 }
+            );
+        }
+
         return NextResponse.json({ url: session.url }, { status: 200 });
     } catch (error) {
         console.error('Checkout session creation error:', error);

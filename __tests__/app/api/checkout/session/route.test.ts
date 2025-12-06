@@ -258,11 +258,9 @@ describe('POST /api/checkout/session', () => {
 
         expect(response.status).toBe(400);
         expect(data).toEqual({
-            error: 'Cart validation failed',
-            details: [
-                'Item "Test Artwork 1" not found',
-                'Item "Test Artwork 2" is no longer available',
-            ],
+            error: 'Unable to process checkout',
+            message:
+                'Some items in your cart are no longer available or have changed. Please review your cart and try again.',
         });
         const { stripe } = await import('@/lib/payments/stripe');
         expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();

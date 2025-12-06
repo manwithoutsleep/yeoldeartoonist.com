@@ -51,7 +51,7 @@ const CheckoutSessionSchema = z.object({
  *
  * Response:
  * - 200: { url: string } - Stripe Checkout URL to redirect to
- * - 400: { error: string, details: any } - Validation error
+ * - 400: { error: string, message: string, details?: any } - Validation error (details only in dev)
  * - 500: { error: string, message: string } - Server error
  *
  * @example
@@ -88,10 +88,19 @@ export async function POST(request: NextRequest) {
         const validatedCart = await validateCart(items);
 
         if (!validatedCart.isValid) {
+            // Log detailed errors for debugging
+            console.error('Cart validation failed:', validatedCart.errors);
+
+            // Return user-friendly error message
             return NextResponse.json(
                 {
-                    error: 'Cart validation failed',
-                    details: validatedCart.errors,
+                    error: 'Unable to process checkout',
+                    message:
+                        'Some items in your cart are no longer available or have changed. Please review your cart and try again.',
+                    // Only include details in development mode
+                    ...(process.env.NODE_ENV === 'development' && {
+                        details: validatedCart.errors,
+                    }),
                 },
                 { status: 400 }
             );

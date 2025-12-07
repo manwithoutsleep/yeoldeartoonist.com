@@ -20,6 +20,7 @@ function CheckoutSuccessContent() {
     const sessionId = searchParams.get('session_id');
     const [orderNumber, setOrderNumber] = useState<string | null>(null);
     const [loading, setLoading] = useState(!!sessionId);
+    const [error, setError] = useState<string | null>(null);
 
     // Clear cart and fetch order details after successful payment
     useEffect(() => {
@@ -30,14 +31,34 @@ function CheckoutSuccessContent() {
         }
 
         fetch(`/api/checkout/session/${sessionId}`)
-            .then((res) => res.json())
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('Failed to retrieve order details');
+                }
+                return res.json();
+            })
             .then((data) => {
                 if (data.order) {
                     setOrderNumber(data.order.order_number);
+                } else {
+                    setError('Order details not found');
                 }
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch((err) => {
+                setError(err.message || 'Failed to load order details');
+                setLoading(false);
+            });
+
+        // fetch(`/api/checkout/session/${sessionId}`)
+        //     .then((res) => res.json())
+        //     .then((data) => {
+        //         if (data.order) {
+        //             setOrderNumber(data.order.order_number);
+        //         }
+        //         setLoading(false);
+        //     })
+        //     .catch(() => setLoading(false));
     }, [clearCart, sessionId]);
 
     return (
@@ -68,6 +89,14 @@ function CheckoutSuccessContent() {
                         </h2>
                         <p className="text-3xl font-mono text-center text-black">
                             {orderNumber}
+                        </p>
+                    </div>
+                ) : error ? (
+                    <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
+                        <p className="text-yellow-800">
+                            {error}. Don&apos;t worry - your payment was
+                            successful and you&apos;ll receive a confirmation
+                            email shortly.
                         </p>
                     </div>
                 ) : null}

@@ -6,6 +6,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/hooks/useCart';
 import { CartItem } from '@/components/cart/CartItem';
@@ -27,6 +28,38 @@ import { CartSummary } from '@/components/cart/CartSummary';
  */
 export default function CartPage() {
     const { cart, getItemCount } = useCart();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleCheckout = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/checkout/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart.items,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.error || 'Failed to create checkout session'
+                );
+            }
+
+            const { url } = await response.json();
+
+            // Redirect to Stripe Checkout
+            window.location.href = url;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+            setIsLoading(false);
+        }
+    };
 
     // Empty cart state
     if (getItemCount() === 0) {
@@ -73,13 +106,24 @@ export default function CartPage() {
                     {/* Cart Summary and Actions */}
                     <div className="lg:col-span-1">
                         <CartSummary />
-                        <Link
-                            href="/shoppe/checkout"
+                        {error && (
+                            <div
+                                className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mt-4"
+                                data-testid="checkout-error"
+                            >
+                                {error}
+                            </div>
+                        )}
+                        <button
+                            onClick={handleCheckout}
+                            disabled={isLoading}
                             data-testid="checkout-btn"
-                            className="block w-full bg-black text-white text-center px-6 py-3 rounded font-semibold hover:bg-gray-800 mt-4"
+                            className="block w-full bg-black text-white text-center px-6 py-3 rounded font-semibold hover:bg-gray-800 mt-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            Proceed to Checkout
-                        </Link>
+                            {isLoading
+                                ? 'Redirecting to checkout...'
+                                : 'Proceed to Checkout'}
+                        </button>
                         <Link
                             href="/shoppe"
                             data-testid="continue-shopping-link"

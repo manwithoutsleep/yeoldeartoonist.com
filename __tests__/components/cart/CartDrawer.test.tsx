@@ -94,7 +94,7 @@ describe('CartDrawer', () => {
             screen.queryByRole('link', { name: /view cart/i })
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /checkout/i })
+            screen.queryByRole('button', { name: /checkout/i })
         ).not.toBeInTheDocument();
     });
 

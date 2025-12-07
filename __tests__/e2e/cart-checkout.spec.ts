@@ -6,7 +6,6 @@ import {
     goToCartPage,
     clearCart,
 } from './helpers/cart';
-import { fillCheckoutForm, goToCheckoutPage } from './helpers/checkout';
 
 /**
  * E2E tests for Cart and Checkout Flow
@@ -169,7 +168,7 @@ test.describe('Checkout Flow', () => {
         await addItemToCart(page);
     });
 
-    test('should navigate to checkout from cart page', async ({ page }) => {
+    test('should show checkout button on cart page', async ({ page }) => {
         // Navigate to cart page
         await goToCartPage(page);
 
@@ -178,64 +177,52 @@ test.describe('Checkout Flow', () => {
             page.locator('[data-testid="checkout-btn"]')
         ).toBeVisible();
 
-        // Click checkout button
-        await page.click('[data-testid="checkout-btn"]');
-
-        // Verify we're on checkout page
-        await expect(page).toHaveURL(/\/shoppe\/checkout/);
-
-        // Verify customer info section is visible
-        await expect(page.locator('text=Customer Information')).toBeVisible();
-    });
-
-    test('should display checkout form validation errors', async ({ page }) => {
-        // Navigate to checkout
-        await goToCheckoutPage(page);
-
-        // Try to submit empty form
-        await page.click('[data-testid="continue-to-payment-btn"]');
-
-        // Verify validation errors appear (the form should show errors for required fields)
-        // Since we're using native HTML5 validation or react-hook-form,
-        // we should wait a bit to see if errors appear
-        await page.waitForTimeout(500);
-
-        // Verify form is still on checkout page (didn't submit)
-        await expect(page).toHaveURL(/\/shoppe\/checkout/);
-    });
-
-    test('should fill out checkout form successfully', async ({ page }) => {
-        // Navigate to checkout
-        await goToCheckoutPage(page);
-
-        // Fill out the form
-        await fillCheckoutForm(page);
-
-        // Verify fields are filled
-        await expect(
-            page.locator('[data-testid="customer-name-input"]')
-        ).toHaveValue('Test Customer');
-        await expect(
-            page.locator('[data-testid="customer-email-input"]')
-        ).toHaveValue('test@example.com');
-    });
-
-    test('should allow toggling billing address', async ({ page }) => {
-        // Navigate to checkout
-        await goToCheckoutPage(page);
-
-        // Verify "same as shipping" checkbox is checked by default
-        const sameAddressCheckbox = page.locator(
-            '[name="useSameAddressForBilling"]'
+        // Verify button text
+        await expect(page.locator('[data-testid="checkout-btn"]')).toHaveText(
+            'Proceed to Checkout'
         );
-        await expect(sameAddressCheckbox).toBeChecked();
+    });
 
-        // Uncheck the checkbox
-        await sameAddressCheckbox.uncheck();
+    test('should show checkout button in cart drawer', async ({ page }) => {
+        // Open cart drawer
+        await openCartDrawer(page);
 
-        // Verify billing address fields appear
-        // (The exact implementation depends on your AddressForm component)
-        await page.waitForTimeout(500);
+        // Verify checkout button is visible
+        await expect(
+            page.locator('[data-testid="drawer-checkout-btn"]')
+        ).toBeVisible();
+
+        // Verify button text
+        await expect(
+            page.locator('[data-testid="drawer-checkout-btn"]')
+        ).toHaveText('Checkout');
+    });
+
+    test('should not show checkout button when cart is empty', async ({
+        page,
+    }) => {
+        // Navigate to cart page with items (from beforeEach)
+        await goToCartPage(page);
+
+        // Remove all items from cart
+        const removeButtons = page.locator('[data-testid="remove-item-btn"]');
+        const count = await removeButtons.count();
+        for (let i = 0; i < count; i++) {
+            // Always click the first button since the list shrinks after each removal
+            await removeButtons.first().click();
+            // Wait a bit for the UI to update
+            await page.waitForTimeout(200);
+        }
+
+        // Wait for empty cart message to be visible
+        await expect(
+            page.locator('[data-testid="empty-cart-message"]')
+        ).toBeVisible();
+
+        // Verify checkout button is not in the DOM when cart is empty
+        await expect(page.locator('[data-testid="checkout-btn"]')).toHaveCount(
+            0
+        );
     });
 });
 

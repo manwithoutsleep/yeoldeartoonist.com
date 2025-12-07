@@ -16,7 +16,7 @@
  * - Focus trap for accessibility
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/hooks/useCart';
 import { CartItem } from './CartItem';
@@ -31,6 +31,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const { cart } = useCart();
     const drawerRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     // Handle Escape key to close drawer
     useEffect(() => {
@@ -91,6 +93,39 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             document.body.style.overflow = '';
         };
     }, [isOpen]);
+
+    // Handle checkout via Stripe Checkout
+    const handleCheckout = async () => {
+        setIsCheckoutLoading(true);
+        setCheckoutError(null);
+
+        try {
+            const response = await fetch('/api/checkout/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart.items,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.error || 'Failed to create checkout session'
+                );
+            }
+
+            const { url } = await response.json();
+
+            // Redirect to Stripe Checkout
+            window.location.href = url;
+        } catch (err) {
+            setCheckoutError(
+                err instanceof Error ? err.message : 'Unknown error'
+            );
+            setIsCheckoutLoading(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -191,6 +226,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="border-t border-gray-200 p-4 space-y-4">
                         <CartSummary />
 
+                        {checkoutError && (
+                            <div
+                                className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm"
+                                data-testid="drawer-checkout-error"
+                            >
+                                {checkoutError}
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <Link
                                 href="/shoppe/cart"
@@ -200,14 +244,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             >
                                 View Cart
                             </Link>
-                            <Link
-                                href="/shoppe/checkout"
-                                onClick={onClose}
+                            <button
+                                onClick={handleCheckout}
+                                disabled={isCheckoutLoading}
                                 data-testid="drawer-checkout-btn"
-                                className="block w-full text-center px-4 py-2 bg-black text-white font-medium rounded hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                                className="block w-full text-center px-4 py-2 bg-black text-white font-medium rounded hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
-                                Checkout
-                            </Link>
+                                {isCheckoutLoading
+                                    ? 'Redirecting...'
+                                    : 'Checkout'}
+                            </button>
                         </div>
                     </div>
                 )}

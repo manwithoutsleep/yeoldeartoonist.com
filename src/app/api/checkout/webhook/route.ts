@@ -11,8 +11,23 @@ import {
     generateOrderNumber,
 } from '@/lib/payments/stripe';
 import { createOrder } from '@/lib/db/orders';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
 import type { Address } from '@/types/order';
+
+/**
+ * Helper function to extract address from Stripe address object
+ */
+function extractAddress(address: Stripe.Address | null | undefined): Address {
+    return {
+        line1: address?.line1 || '',
+        line2: address?.line2 || undefined,
+        city: address?.city || '',
+        state: address?.state || '',
+        zip: address?.postal_code || '',
+        country: address?.country || 'US',
+    };
+}
 
 /**
  * POST /api/checkout/webhook
@@ -23,6 +38,7 @@ import type { Address } from '@/types/order';
  * and bodyParser middleware as it requires raw request body for signature verification.
  *
  * Events handled:
+ * - checkout.session.completed: Creates order from Stripe Checkout session
  * - payment_intent.succeeded: Creates order record when payment succeeds
  * - payment_intent.payment_failed: Logs failed payment
  *
@@ -159,6 +175,143 @@ export async function POST(request: NextRequest) {
                         err
                     );
                     // Log error but don't fail webhook response
+                }
+
+                break;
+            }
+
+            case 'checkout.session.completed': {
+                const session = event.data.object as Stripe.Checkout.Session & {
+                    shipping_details?: {
+                        name?: string;
+                        address?: Stripe.Address;
+                    };
+                };
+
+                console.log('Checkout session completed:', {
+                    sessionId: session.id,
+                    amount: session.amount_total,
+                    customer: session.customer_email,
+                });
+
+                // Check for duplicate order using payment_intent_id
+                const supabase = await createServiceRoleClient();
+                const { data: existingOrder } = await supabase
+                    .from('orders')
+                    .select('id')
+                    .eq('payment_intent_id', session.payment_intent as string)
+                    .maybeSingle(); // Use maybeSingle to avoid errors when no order exists
+
+                if (existingOrder) {
+                    console.log(
+                        'Order already exists for session:',
+                        session.id
+                    );
+                    break;
+                }
+
+                // Parse metadata
+                const cartItems = JSON.parse(
+                    session.metadata?.cartItems || '[]'
+                );
+
+                // Extract tax from session
+                const taxAmountCents = session.total_details?.amount_tax || 0;
+                const taxAmount = taxAmountCents / 100;
+
+                // Extract shipping cost from session
+                const shippingCostCents =
+                    session.total_details?.amount_shipping || 0;
+                const shippingCost = shippingCostCents / 100;
+
+                // Extract addresses using helper
+                const shippingAddress = extractAddress(
+                    session.shipping_details?.address
+                );
+                const billingAddress = extractAddress(
+                    session.customer_details?.address
+                );
+
+                // Calculate totals
+                const amountTotal = (session.amount_total || 0) / 100;
+                const subtotal = amountTotal - taxAmount - shippingCost;
+
+                // Generate order number
+                const orderNumber = generateOrderNumber();
+
+                // Extract customer name with logging for missing data
+                const customerName =
+                    session.shipping_details?.name ||
+                    session.customer_details?.name ||
+                    null;
+
+                if (!customerName) {
+                    console.error(
+                        'Missing customer name in checkout session:',
+                        {
+                            sessionId: session.id,
+                            customerEmail: session.customer_email,
+                            shippingDetailsName: session.shipping_details?.name,
+                            customerDetailsName: session.customer_details?.name,
+                        }
+                    );
+                }
+
+                // Create order with error handling for duplicate key violation
+                const { data: order, error: orderError } = await createOrder({
+                    orderNumber,
+                    customerName:
+                        customerName || `Customer ${session.customer_email}`,
+                    customerEmail:
+                        session.customer_email ||
+                        session.customer_details?.email ||
+                        '',
+                    shippingAddress,
+                    billingAddress,
+                    orderNotes: undefined,
+                    subtotal,
+                    shippingCost,
+                    taxAmount,
+                    total: amountTotal,
+                    paymentIntentId: session.payment_intent as string,
+                    paymentStatus: 'succeeded',
+                    items: cartItems.map(
+                        (item: {
+                            artworkId: string;
+                            quantity: number;
+                            price: number;
+                        }) => ({
+                            artworkId: item.artworkId,
+                            quantity: item.quantity,
+                            priceAtPurchase: item.price,
+                            lineSubtotal: item.price * item.quantity,
+                        })
+                    ),
+                });
+
+                if (orderError) {
+                    // Check if this is a duplicate key error (Postgres error code 23505)
+                    // Supabase returns errors with a code property for database constraint violations
+                    const errorCode = (orderError as { code?: string }).code;
+                    if (
+                        errorCode === '23505' &&
+                        orderError.message.includes('payment_intent_id')
+                    ) {
+                        console.log(
+                            'Order already created (concurrent webhook):',
+                            session.id
+                        );
+                        break; // Exit gracefully
+                    }
+                    console.error(
+                        'Failed to create order from session:',
+                        orderError
+                    );
+                } else {
+                    console.log('Order created from session:', {
+                        orderId: order?.id,
+                        orderNumber: order?.orderNumber,
+                    });
                 }
 
                 break;

@@ -157,6 +157,22 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // Log checkout session creation for debugging and audit trail
+        const itemsTotal = validatedCart.items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+        console.log('Checkout session created:', {
+            sessionId: session.id,
+            customerEmail: customerEmail || 'not provided',
+            itemCount: validatedCart.items.length,
+            itemsSubtotal: itemsTotal,
+            shipping: SHIPPING_COST_CENTS / 100,
+            metadata: {
+                cartItemsCount: validatedCart.items.length,
+            },
+        });
+
         if (!session.url) {
             console.error(
                 'Checkout session created but no URL returned:',

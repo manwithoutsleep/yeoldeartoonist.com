@@ -239,13 +239,29 @@ export async function POST(request: NextRequest) {
                 // Generate order number
                 const orderNumber = generateOrderNumber();
 
+                // Extract customer name with logging for missing data
+                const customerName =
+                    session.shipping_details?.name ||
+                    session.customer_details?.name ||
+                    null;
+
+                if (!customerName) {
+                    console.error(
+                        'Missing customer name in checkout session:',
+                        {
+                            sessionId: session.id,
+                            customerEmail: session.customer_email,
+                            shippingDetailsName: session.shipping_details?.name,
+                            customerDetailsName: session.customer_details?.name,
+                        }
+                    );
+                }
+
                 // Create order with error handling for duplicate key violation
                 const { data: order, error: orderError } = await createOrder({
                     orderNumber,
                     customerName:
-                        session.shipping_details?.name ||
-                        session.customer_details?.name ||
-                        'Unknown',
+                        customerName || `Customer ${session.customer_email}`,
                     customerEmail:
                         session.customer_email ||
                         session.customer_details?.email ||

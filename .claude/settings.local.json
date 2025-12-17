@@ -26,11 +26,13 @@
             "Bash(npm run lint:*)",
             "Bash(npm run test:*)",
             "Bash(npm run test:coverage:*)",
+            "Bash(npm run test:e2e:*)",
             "Bash(npm run test:watch:*)",
             "Bash(npm test:*)",
             "Bash(npm view:*)",
             "Bash(npx eslint:*)",
             "Bash(npx lighthouse:*)",
+            "Bash(npx next build:*)",
             "Bash(npx next info)",
             "Bash(npx prettier:*)",
             "Bash(npx supabase status:*)",
@@ -49,9 +51,7 @@
             "Skill(verify-code)",
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
-            "WebSearch",
-            "Bash(npx next build:*)",
-            "Bash(npm run test:e2e:*)"
+            "WebSearch"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

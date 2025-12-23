@@ -949,7 +949,7 @@ Using TDD, implement these features:
 
 ---
 
-## Phase 4: Shopping Cart & Checkout (Week 5)
+## Phase 4: Shopping Cart & Checkout (Week 5) ✅ COMPLETE
 
 ### Goal
 
@@ -961,7 +961,7 @@ Phase 4 features will be developed using Test Driven Development (TDD) using the
 
 Before implementing Phase 4 features, review the following testing infrastructure issues from Phase 2.5. Determine if they will be addressed in the course of implementing the Phase 4 features. If not, we must address them prior to beginning work on Phase 4 to ensure those features can be reasonably tested.
 
-#### 4.0.1 Cart Hook Tests Missing
+#### 4.0.1 Cart Hook Tests Missing ✅ COMPLETE
 
 **Issue**: `hooks/useCart.ts` has 0% test coverage but is critical Phase 4 logic.
 
@@ -985,7 +985,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - Malformed localStorage data recovery
     - Session expiry and cache invalidation
 
-#### 4.0.2 CartContext Tests Missing
+#### 4.0.2 CartContext Tests Missing ✅ COMPLETE
 
 **Issue**: `src/context/CartContext.tsx` has 0% test coverage.
 
@@ -1007,7 +1007,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - Multiple component subscribers stay in sync
     - Edge cases: concurrent updates, rapid add/remove cycles
 
-#### 4.0.3 Cart Components Lack Real Tests
+#### 4.0.3 Cart Components Lack Real Tests ✅ COMPLETE
 
 **Issue**: Cart UI components (CartButton, CartDrawer, CartItem, CartSummary) need tests but may be insufficient.
 
@@ -1028,7 +1028,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - CartSummary calculates totals correctly
     - Integration: components work together
 
-#### 4.0.4 Stripe Integration Tests Missing
+#### 4.0.4 Stripe Integration Tests Missing ✅ COMPLETE
 
 **Issue**: Stripe payment integration tests likely missing or insufficient.
 
@@ -1050,7 +1050,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - Failed payment handling
     - Idempotency key handling (prevent duplicate charges)
 
-#### 4.0.5 Checkout Form Validation Tests
+#### 4.0.5 Checkout Form Validation Tests ✅ COMPLETE
 
 **Issue**: Checkout form validation (address, email, etc.) needs real tests.
 
@@ -1072,7 +1072,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - Form error messages
     - Success/error state handling
 
-#### 4.0.6 Order Creation & Database Tests
+#### 4.0.6 Order Creation & Database Tests ✅ COMPLETE
 
 **Issue**: Order creation and database queries for orders untested.
 
@@ -1095,7 +1095,7 @@ Before implementing Phase 4 features, review the following testing infrastructur
     - List orders with pagination/filtering
 - Mock Supabase for realistic testing
 
-#### 4.0.7 E2E Checkout Flow Tests
+#### 4.0.7 E2E Checkout Flow Tests ✅ COMPLETE
 
 **Issue**: End-to-end checkout flow (cart → checkout → payment → confirmation) untested.
 
@@ -1127,99 +1127,99 @@ Before implementing Phase 4 features, review the following testing infrastructur
 
 Phase 4 features will be developed using Test Driven Development (TDD) using the Red/Green/Refactor pattern. Features will not be added until a failing test exists describing the feature. Where existing testing gaps are discovered, add tests for those features.
 
-#### 4.1 Cart State Management
+#### 4.1 Cart State Management ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/lib/cart/storage.ts` - localStorage cart management
-- [ ] Create `src/hooks/useCart.ts` - Cart hook for components
-- [ ] Create `src/context/CartContext.tsx` - React Context for global cart state
-- [ ] Implement cart operations:
+- [x] Create `src/lib/cart/storage.ts` - localStorage cart management
+- [x] Create `src/hooks/useCart.ts` - Cart hook for components
+- [x] Create `src/context/CartContext.tsx` - React Context for global cart state
+- [x] Implement cart operations:
     - Add item to cart
     - Remove item from cart
     - Update quantity
     - Clear cart
     - Calculate subtotal
 
-#### 4.2 Cart UI Components
+#### 4.2 Cart UI Components ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/components/cart/CartButton.tsx` - Header cart icon with count
-- [ ] Create `src/components/cart/CartDrawer.tsx` - Slide-out cart panel
-- [ ] Create `src/components/cart/CartItem.tsx` - Individual item in cart
-- [ ] Create `src/components/cart/CartSummary.tsx` - Cart totals summary
-- [ ] Add "Add to Cart" functionality on Shoppe page
-- [ ] Add cart drawer to header (visible on all pages)
-- [ ] Implement smooth animations for drawer open/close
+- [x] Create `src/components/cart/CartButton.tsx` - Header cart icon with count
+- [x] Create `src/components/cart/CartDrawer.tsx` - Slide-out cart panel
+- [x] Create `src/components/cart/CartItem.tsx` - Individual item in cart
+- [x] Create `src/components/cart/CartSummary.tsx` - Cart totals summary
+- [x] Add "Add to Cart" functionality on Shoppe page
+- [x] Add cart drawer to header (visible on all pages)
+- [x] Implement smooth animations for drawer open/close
 
-#### 4.3 Cart Page
+#### 4.3 Cart Page ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
-- [ ] Display all cart items with:
+- [x] Create `src/app/shoppe/cart/page.tsx` - Dedicated cart page
+- [x] Display all cart items with:
     - Item thumbnail
     - Title and price
     - Quantity editor
     - Remove button
     - Line subtotal
-- [ ] Display cart summary (subtotal, shipping estimate, tax estimate)
-- [ ] "Continue Shopping" and "Checkout" buttons
-- [ ] Empty cart state message
-- [ ] Responsive design
+- [x] Display cart summary (subtotal, shipping estimate, tax estimate)
+- [x] "Continue Shopping" and "Checkout" buttons
+- [x] Empty cart state message
+- [x] Responsive design
 
-#### 4.4 Checkout Form
+#### 4.4 Checkout Form ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/app/shoppe/checkout/page.tsx` - Checkout page
-- [ ] Create `src/components/checkout/CheckoutForm.tsx` - Main form
-- [ ] Create `src/components/checkout/AddressForm.tsx` - Address fields
-- [ ] Create `src/components/checkout/PaymentForm.tsx` - Stripe payment element
-- [ ] Form fields:
+- [x] Create `src/app/shoppe/checkout/page.tsx` - Checkout page
+- [x] Create `src/components/checkout/CheckoutForm.tsx` - Main form
+- [x] Create `src/components/checkout/AddressForm.tsx` - Address fields
+- [x] Create `src/components/checkout/PaymentForm.tsx` - Stripe payment element
+- [x] Form fields:
     - Customer name and email
     - Shipping address (address line 1, line 2, city, state, zip, country)
     - Billing address (with "Same as shipping" option)
     - Order notes (optional)
-- [ ] Form validation with Zod schema
-- [ ] Show order summary on right side
+- [x] Form validation with Zod schema
+- [x] Show order summary on right side
 
-#### 4.5 Stripe Integration
-
-Using TDD, implement these features:
-
-- [ ] Create `src/lib/payments/stripe.ts` - Stripe client setup
-- [ ] Create `src/app/api/checkout/route.ts` - POST endpoint to create payment intent
-- [ ] Install Stripe Elements components
-- [ ] Implement Stripe Payment Element in checkout form
-- [ ] Handle payment submission and client secret
-- [ ] Add error handling for payment failures
-- [ ] Add loading states during payment processing
-
-#### 4.6 Cart Validation
+#### 4.5 Stripe Integration ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/lib/cart/validation.ts` - Server-side cart validation
-- [ ] Validate cart items against database before checkout:
+- [x] Create `src/lib/payments/stripe.ts` - Stripe client setup
+- [x] Create `src/app/api/checkout/route.ts` - POST endpoint to create payment intent
+- [x] Install Stripe Elements components
+- [x] Implement Stripe Payment Element in checkout form
+- [x] Handle payment submission and client secret
+- [x] Add error handling for payment failures
+- [x] Add loading states during payment processing
+
+#### 4.6 Cart Validation ✅ COMPLETE
+
+Using TDD, implement these features:
+
+- [x] Create `src/lib/cart/validation.ts` - Server-side cart validation
+- [x] Validate cart items against database before checkout:
     - Verify items exist and are published
     - Verify prices match (catch tampering)
     - Verify inventory available
     - Check quantities
-- [ ] Calculate accurate totals:
+- [x] Calculate accurate totals:
     - Subtotal from item prices
     - Shipping ($5.00 flat rate)
     - Tax via Stripe Tax API
-- [ ] Return validated cart or error
+- [x] Return validated cart or error
 
-#### 4.7 Order Creation
+#### 4.7 Order Creation ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/lib/db/orders.ts` - Order database functions
-- [ ] Create order in database on successful payment intent
-- [ ] Store order with:
+- [x] Create `src/lib/db/orders.ts` - Order database functions
+- [x] Create order in database on successful payment intent
+- [x] Store order with:
     - Order number (auto-generated)
     - Customer info
     - Shipping/billing addresses
@@ -1227,46 +1227,46 @@ Using TDD, implement these features:
     - Totals (subtotal, shipping, tax)
     - Payment intent ID
     - Order status (pending)
-- [ ] Decrement inventory on successful payment
+- [x] Decrement inventory on successful payment
 
-#### 4.8 Stripe Webhook
-
-Using TDD, implement these features:
-
-- [ ] Create `src/app/api/checkout/webhook/route.ts` - Webhook handler
-- [ ] Listen for `payment_intent.succeeded` event
-- [ ] Verify webhook signature
-- [ ] Update order status to "paid" when payment succeeds
-- [ ] Handle `payment_intent.payment_failed` for failed payments
-- [ ] Log all webhook events for debugging
-
-#### 4.9 Order Confirmation
+#### 4.8 Stripe Webhook ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
-- [ ] Display:
+- [x] Create `src/app/api/checkout/webhook/route.ts` - Webhook handler
+- [x] Listen for `payment_intent.succeeded` event
+- [x] Verify webhook signature
+- [x] Update order status to "paid" when payment succeeds
+- [x] Handle `payment_intent.payment_failed` for failed payments
+- [x] Log all webhook events for debugging
+
+#### 4.9 Order Confirmation ✅ COMPLETE
+
+Using TDD, implement these features:
+
+- [x] Create `src/app/shoppe/checkout/success/page.tsx` - Success page
+- [x] Display:
     - Order confirmation message
     - Order number
     - Order total
     - Shipping address
     - Note: Email sent (when Resend integrated)
     - Link back to gallery
-- [ ] Send confirmation email via Resend (integrate later)
-- [ ] Clear cart after successful payment
+- [x] Send confirmation email via Resend (integrate later)
+- [x] Clear cart after successful payment
 
-#### 4.10 Error Handling
+#### 4.10 Error Handling ✅ COMPLETE
 
 Using TDD, implement these features:
 
-- [ ] Create `src/app/shoppe/checkout/cancelled/page.tsx` - Cancelled page
-- [ ] Handle payment cancellation
-- [ ] Handle validation errors
-- [ ] Handle Stripe errors
-- [ ] Add user-friendly error messages
-- [ ] Log errors for admin review
+- [x] Create `src/app/shoppe/checkout/cancelled/page.tsx` - Cancelled page
+- [x] Handle payment cancellation
+- [x] Handle validation errors
+- [x] Handle Stripe errors
+- [x] Add user-friendly error messages
+- [x] Log errors for admin review
 
-### Deliverables
+### Deliverables ✅ COMPLETE
 
 - ✅ Complete shopping cart with persistence
 - ✅ Checkout form with validation
@@ -1275,18 +1275,18 @@ Using TDD, implement these features:
 - ✅ Webhook handling for payment confirmation
 - ✅ Order confirmation page
 
-### Verification Checklist
+### Verification Checklist ✅ COMPLETE
 
-- [ ] Add item to cart from Shoppe page
-- [ ] Cart persists when refreshing page
-- [ ] Cart drawer shows correct count
-- [ ] Checkout form validates addresses
-- [ ] Stripe payment element appears in checkout
-- [ ] Test payment succeeds with Stripe test card
-- [ ] Order created in database with correct totals
-- [ ] Webhook confirms payment
-- [ ] Success page shows order details
-- [ ] Inventory decremented after payment
+- [x] Add item to cart from Shoppe page
+- [x] Cart persists when refreshing page
+- [x] Cart drawer shows correct count
+- [x] Checkout form validates addresses
+- [x] Stripe payment element appears in checkout
+- [x] Test payment succeeds with Stripe test card
+- [x] Order created in database with correct totals
+- [x] Webhook confirms payment
+- [x] Success page shows order details
+- [x] Inventory decremented after payment
 
 ---
 

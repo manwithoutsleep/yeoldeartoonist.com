@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 05 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 05 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -346,28 +346,28 @@ If needed, create `.docs/API.md`:
 
 **Error Handling**:
 
-- [x] Error boundaries implemented and tested
-- [x] Custom 404 page created
-- [x] Custom 500 error handling via error.tsx
-- [x] Error logging implemented (console for MVP, Sentry optional)
-- [x] User-friendly error messages replace technical errors
-- [x] API error responses standardized
-- [x] Webhook failures logged properly
+- [ ] Error boundaries implemented and tested (no src/app/error.tsx or global-error.tsx)
+- [ ] Custom 404 page created (no src/app/not-found.tsx)
+- [ ] Custom 500 error handling via error.tsx (file doesn't exist)
+- [x] Error logging implemented (console for MVP, Sentry optional) - email send.ts has EmailSendError class
+- [ ] User-friendly error messages replace technical errors (only in email module, not comprehensive)
+- [ ] API error responses standardized (not standardized across all API routes)
+- [x] Webhook failures logged properly (webhook route has error handling)
 
 **Documentation**:
 
-- [x] README.md updated with project overview and quick start
-- [x] Deployment guide created and tested
-- [x] Admin user guide created with screenshots (optional)
-- [x] Environment variables fully documented
-- [x] Code comments added for complex logic
-- [x] Troubleshooting guide created with common issues
-- [x] API documentation created (if needed)
+- [ ] README.md updated with project overview and quick start (not verified)
+- [ ] Deployment guide created and tested (no .docs/DEPLOYMENT.md)
+- [ ] Admin user guide created with screenshots (optional) - no .docs/ADMIN_GUIDE.md
+- [x] Environment variables fully documented (.env.example exists and is complete)
+- [ ] Code comments added for complex logic (some exist, not comprehensive)
+- [ ] Troubleshooting guide created with common issues (no .docs/TROUBLESHOOTING.md)
+- [ ] API documentation created (if needed) - no .docs/API.md
 
 **General**:
 
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [ ] All tests pass
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

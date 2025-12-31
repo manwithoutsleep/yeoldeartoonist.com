@@ -1,13 +1,15 @@
 ---
 name: verify-code
-description: Automated code quality verification for TypeScript/Next.js projects using tsc, ESLint, Prettier, and Vitest. Use after making code changes to ensure compile, lint, format, and test standards are met. Detects TDD phases and adjusts test failure expectations accordingly.
+description: Automated code quality verification for TypeScript/Next.js projects using tsc, ESLint, Prettier, and Vitest. Used after making code changes to ensure compile, lint, format, and test standards are met. Detects TDD phases and adjusts test failure expectations accordingly.
 ---
 
 <objective>
-Enforce code quality at frequent intervals by automatically running TypeScript compilation checks, ESLint, Prettier formatting, and Vitest tests after code modifications. Prevent technical debt accumulation through continuous validation with smart TDD phase detection.
+Enforce code quality by automatically running TypeScript compilation checks, ESLint, Prettier formatting, and Vitest tests after code modifications. Prevent technical debt accumulation through continuous validation with smart TDD phase detection.
 </objective>
 
-<quick_start> After modifying files in a phase or when called manually,
+<quick_start>
+
+After modifying files in a phase or when called manually,
 automatically trigger verification:
 
 ```typescript
@@ -22,17 +24,24 @@ const modifiedFiles = ['src/app/admin/page.tsx', 'src/lib/validation/auth.ts'];
 ```
 
 All commands must pass before proceeding to next phase. If TDD Red phase
-detected (new tests added), expect test failures. </quick_start>
+detected (new tests added), expect test failures.
+
+</quick_start>
 
 <workflow>
 <phase_tracking>
+
 Track which files are modified in the current implementation phase:
 
 - Keep list of file paths edited or created
 - Update list as work progresses
-- Use list to generate verification commands </phase_tracking>
+- Use list to generate verification commands
 
-<verification_sequence> Run these commands in order, replacing {files} with
+</phase_tracking>
+
+<verification_sequence>
+
+Run these commands in order, replacing {files} with
 space-separated paths:
 
 1. **TypeScript compile**: `tsc --noEmit`
@@ -57,9 +66,12 @@ space-separated paths:
     - Expectation depends on TDD phase (see tdd_handling)
     - If unexpected failures, fix implementation or tests
     - The tests hang on occasion. If they have not completed in 2 minutes, kill the process and retry it.
-      </verification_sequence>
 
-<failure_handling> For each command that fails:
+</verification_sequence>
+
+<failure_handling>
+
+For each command that fails:
 
 1. Read error output carefully
 2. Fix the specific issue in code
@@ -75,9 +87,12 @@ After 3 consecutive failures on same command:
     - Files involved
     - What was attempted
 3. Use AskUserQuestion to request human guidance
-4. Do NOT proceed until issue resolved </failure_handling>
+4. Do NOT proceed until issue resolved
+
+</failure_handling>
 
 <timing>
+
 Trigger verification at these points:
 
 - **After completing a phase**: Before marking phase todo as complete
@@ -88,10 +103,16 @@ Trigger verification at these points:
 
 Do NOT verify after every single file edit (too frequent). DO verify before
 moving to next major step.
+
 </timing>
+
 </workflow>
 
-<tdd_handling> <phase_detection> Detect TDD phases by analyzing recent changes:
+<tdd_handling>
+
+<phase_detection>
+
+Detect TDD phases by analyzing recent changes:
 
 **Red Phase** (expect test failures):
 
@@ -130,7 +151,9 @@ if (newTestsAdded && !implementationModified) {
 
 </phase_detection>
 
-<test_expectations> **In Red phase**:
+<test_expectations>
+
+**In Red phase**:
 
 - Test failures are expected and correct
 - Verify failures match new test cases
@@ -151,26 +174,37 @@ if (newTestsAdded && !implementationModified) {
 - Document assumption in chat </test_expectations> </tdd_handling>
 
 <validation>
+
 <success_indicators>
+
 Verification succeeded when:
 
 - `tsc --noEmit` exits with code 0
 - `npx eslint --fix {files}` exits with code 0, no errors/warnings
 - `npx prettier --write {files}` exits with code 0
 - `npx vitest related run {files}` exits with code 0 (unless Red phase)
-- All files properly formatted and linted </success_indicators>
+- All files properly formatted and linted
 
-<failure_indicators> Verification failed when:
+</success_indicators>
+
+<failure_indicators>
+
+Verification failed when:
 
 - Any command exits with non-zero code
 - TypeScript errors reported
 - ESLint errors or warnings reported
 - Prettier cannot format files
 - Tests fail (outside Red phase)
-- Same command fails 3 times </failure_indicators>
-  </validation>
+- Same command fails 3 times
 
-<common_patterns> <single_file_change>
+</failure_indicators>
+
+</validation>
+
+<common_patterns>
+
+<single_file_change>
 
 ```bash
 # Modified: src/components/Button.tsx
@@ -226,29 +260,56 @@ npx vitest related run src/lib/auth.ts __tests__/lib/auth.test.ts
 # Action: If passing, proceed to next feature
 ```
 
-</tdd_green_phase> </common_patterns>
+</tdd_green_phase>
 
-<anti_patterns> <batching_verification> **Wrong**: Wait until 10 files modified,
+</common_patterns>
+
+<anti_patterns>
+
+<batching_verification>
+
+**Wrong**: Wait until 10 files modified,
 then verify once **Right**: Verify after each logical phase (1-3 files) **Why**:
-Early detection prevents cascading errors </batching_verification>
+Early detection prevents cascading errors
 
-<ignoring_warnings> **Wrong**: `npx eslint --fix {files} --max-warnings 100`
+</batching_verification>
+
+<ignoring_warnings>
+
+**Wrong**: `npx eslint --fix {files} --max-warnings 100`
 **Right**: `npx eslint --fix {files}` (zero warnings) **Why**: Warnings indicate
-code quality issues </ignoring_warnings>
+code quality issues
 
-<skipping_compile_check> **Wrong**: Only run eslint and prettier **Right**:
+</ignoring_warnings>
+
+<skipping_compile_check>
+
+**Wrong**: Only run eslint and prettier **Right**:
 Always run tsc first **Why**: Type errors can cause runtime failures
+
 </skipping_compile_check>
 
-<adding_eslint_disable> **Wrong**: Add `// eslint-disable-next-line` to bypass
+<adding_eslint_disable>
+
+**Wrong**: Add `// eslint-disable-next-line` to bypass
 rules **Right**: Fix the underlying code issue **Why**: Disabling rules hides
-problems </adding_eslint_disable>
+problems
 
-<assuming_tdd_phase> **Wrong**: Guess whether in Red/Green/Refactor **Right**:
+</adding_eslint_disable>
+
+<assuming_tdd_phase>
+
+**Wrong**: Guess whether in Red/Green/Refactor **Right**:
 Detect from file modifications or ask user **Why**: Wrong assumptions lead to
-false positives/negatives </assuming_tdd_phase> </anti_patterns>
+false positives/negatives
 
-<success_criteria> Verification is successful when:
+</assuming_tdd_phase>
+
+</anti_patterns>
+
+<success_criteria>
+
+Verification is successful when:
 
 - All four commands (tsc, eslint, prettier, vitest) complete without errors
 - Modified files are tracked accurately throughout the phase
@@ -256,7 +317,9 @@ false positives/negatives </assuming_tdd_phase> </anti_patterns>
 - Test failures in Red phase are recognized as expected
 - Failures in Green/Refactor phases trigger proper error handling
 - After 3 failures, work stops and human guidance is requested
-- Code is ready for commit or next implementation phase </success_criteria>
+- Code is ready for commit or next implementation phase
+
+</success_criteria>
 
 <output_format>
 

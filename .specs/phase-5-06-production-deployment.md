@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 06 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 06 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -446,49 +446,49 @@ First week:
 
 **Pre-Launch**:
 
-- [x] All pre-launch checklist items completed
-- [x] All tests passing
-- [x] Production build successful
-- [x] Security audit passed
+- [ ] All pre-launch checklist items completed (depends on tasks 01-05)
+- [ ] All tests passing
+- [ ] Production build successful
+- [ ] Security audit passed (task 04 incomplete)
 
 **Production Setup**:
 
-- [x] Production Supabase project configured
-- [x] Production Stripe account activated (or test mode configured)
-- [x] Production Resend domain verified
-- [x] Vercel environment variables set
-- [x] Custom domain DNS configured
-- [x] SSL certificate active (HTTPS working)
+- [ ] Production Supabase project configured
+- [ ] Production Stripe account activated (or test mode configured)
+- [ ] Production Resend domain verified
+- [ ] Vercel environment variables set
+- [ ] Custom domain DNS configured
+- [ ] SSL certificate active (HTTPS working)
 
 **Testing**:
 
-- [x] Final tests on production passed
-- [x] Payment flow working end-to-end
-- [x] Emails sending correctly
-- [x] Admin panel accessible and functional
-- [x] Cross-browser compatibility verified
-- [x] Mobile responsiveness verified
+- [ ] Final tests on production passed
+- [ ] Payment flow working end-to-end
+- [ ] Emails sending correctly
+- [ ] Admin panel accessible and functional
+- [ ] Cross-browser compatibility verified
+- [ ] Mobile responsiveness verified
 
 **Launch**:
 
-- [x] Monitoring setup (Vercel Analytics)
-- [x] Admin user created for client
-- [x] Handoff documentation complete
-- [x] Client trained on admin panel
-- [x] Production domain live and accessible
+- [ ] Monitoring setup (Vercel Analytics)
+- [ ] Admin user created for client
+- [ ] Handoff documentation complete (no .docs/HANDOFF.md)
+- [ ] Client trained on admin panel
+- [ ] Production domain live and accessible
 
 **Post-Launch**:
 
-- [x] Error rates monitored (first 24 hours)
-- [x] Client feedback collected
-- [x] Critical bugs fixed (if any)
-- [x] Performance optimized based on usage
-- [x] Backup procedures documented
+- [ ] Error rates monitored (first 24 hours)
+- [ ] Client feedback collected
+- [ ] Critical bugs fixed (if any)
+- [ ] Performance optimized based on usage
+- [ ] Backup procedures documented (no .docs/BACKUP_RESTORE.md)
 
 **General**:
 
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [ ] All tests pass
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

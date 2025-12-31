@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 04 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 04 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -323,33 +323,33 @@ Test in browser:
 
 **Accessibility**:
 
-- [x] All pages navigable with keyboard only
-- [x] Screen reader announces all content correctly
-- [x] Heading hierarchy is logical on all pages
-- [x] Color contrast meets WCAG AA (4.5:1 for text, 3:1 for large text)
-- [x] All forms are accessible with proper labels and error handling
-- [x] ARIA labels added where needed
-- [x] Focus indicators are visible on all interactive elements
-- [x] Skip link to main content works
-- [x] Lighthouse Accessibility score >90 on all pages
+- [ ] All pages navigable with keyboard only (not tested)
+- [ ] Screen reader announces all content correctly (not tested)
+- [ ] Heading hierarchy is logical on all pages (not verified)
+- [ ] Color contrast meets WCAG AA (4.5:1 for text, 3:1 for large text) - not tested
+- [ ] All forms are accessible with proper labels and error handling (not verified)
+- [ ] ARIA labels added where needed (not found in layout/components)
+- [ ] Focus indicators are visible on all interactive elements (not verified)
+- [ ] Skip link to main content works (no skip link found in src/app/layout.tsx)
+- [ ] Lighthouse Accessibility score >90 on all pages (not tested/documented)
 
 **Security**:
 
-- [x] RLS policies reviewed and tested
-- [x] Webhook signature verification confirmed
-- [x] All inputs validated with Zod
-- [x] No XSS vulnerabilities found
-- [x] CSRF protection verified
-- [x] Environment variables properly secured
-- [x] Admin authentication cannot be bypassed
-- [x] No SQL injection vulnerabilities
-- [x] Content Security Policy headers configured (if needed)
-- [x] Security documentation created
+- [x] RLS policies reviewed and tested (from Phase 1, in database migrations)
+- [x] Webhook signature verification confirmed (src/app/api/checkout/webhook/route.ts:74-85)
+- [x] All inputs validated with Zod (contact form validation exists)
+- [ ] No XSS vulnerabilities found (not explicitly tested)
+- [ ] CSRF protection verified (not documented, Next.js has built-in protection)
+- [x] Environment variables properly secured (.env.example documents all vars)
+- [x] Admin authentication cannot be bypassed (src/proxy.ts protection)
+- [ ] No SQL injection vulnerabilities (using Supabase but not explicitly tested)
+- [ ] Content Security Policy headers configured (if needed) - not found
+- [ ] Security documentation created (no .docs/SECURITY.md)
 
 **General**:
 
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [ ] All tests pass
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

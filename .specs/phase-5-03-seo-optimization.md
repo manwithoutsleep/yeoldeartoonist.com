@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 03 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 03 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -240,19 +240,19 @@ Implement JSON-LD structured data:
 
 ## Success Criteria
 
-- [x] All pages have unique, descriptive meta titles and descriptions
-- [x] Open Graph tags implemented on all pages
-- [x] Twitter Card tags implemented
-- [x] Canonical URLs configured correctly
-- [x] `robots.txt` created and accessible
-- [x] `sitemap.xml` generated dynamically with all public pages
-- [x] Structured data (Schema.org) implemented for Organization, Product, and WebPage
-- [x] All images have appropriate alt text
-- [x] Lighthouse SEO score >90 on all pages
-- [x] Open Graph and Twitter Card validators pass
-- [x] Google Rich Results Test passes for structured data
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [ ] All pages have unique, descriptive meta titles and descriptions (only root layout has default metadata)
+- [ ] Open Graph tags implemented on all pages (only root layout, need page-level exports)
+- [ ] Twitter Card tags implemented (only root layout, need page-level exports)
+- [ ] Canonical URLs configured correctly (metadataBase exists but needs verification per page)
+- [ ] `robots.txt` created and accessible (no public/robots.txt found)
+- [ ] `sitemap.xml` generated dynamically with all public pages (no src/app/sitemap.ts found)
+- [ ] Structured data (Schema.org) implemented for Organization, Product, and WebPage (not found)
+- [ ] All images have appropriate alt text (not verified)
+- [ ] Lighthouse SEO score >90 on all pages (not tested/documented)
+- [ ] Open Graph and Twitter Card validators pass (not tested)
+- [ ] Google Rich Results Test passes for structured data (no structured data to test)
+- [ ] All tests pass
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

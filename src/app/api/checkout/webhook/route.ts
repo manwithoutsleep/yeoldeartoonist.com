@@ -12,6 +12,7 @@ import {
 } from '@/lib/payments/stripe';
 import { createOrder } from '@/lib/db/orders';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { sendOrderEmails } from '@/lib/email/send';
 import Stripe from 'stripe';
 import type { Address } from '@/types/order';
 
@@ -166,8 +167,23 @@ export async function POST(request: NextRequest) {
                             orderNumber: order?.orderNumber,
                         });
 
-                        // TODO: Send confirmation email (Phase 5)
-                        // await sendOrderConfirmationEmail(order);
+                        // Send order confirmation and admin notification emails
+                        // Non-blocking: email failures won't prevent order creation
+                        if (order) {
+                            const emailResults = await sendOrderEmails(order);
+                            if (!emailResults.customer.success) {
+                                console.error(
+                                    'Failed to send customer confirmation email:',
+                                    emailResults.customer.error
+                                );
+                            }
+                            if (!emailResults.admin.success) {
+                                console.error(
+                                    'Failed to send admin notification email:',
+                                    emailResults.admin.error
+                                );
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error(
@@ -312,6 +328,24 @@ export async function POST(request: NextRequest) {
                         orderId: order?.id,
                         orderNumber: order?.orderNumber,
                     });
+
+                    // Send order confirmation and admin notification emails
+                    // Non-blocking: email failures won't prevent order creation
+                    if (order) {
+                        const emailResults = await sendOrderEmails(order);
+                        if (!emailResults.customer.success) {
+                            console.error(
+                                'Failed to send customer confirmation email:',
+                                emailResults.customer.error
+                            );
+                        }
+                        if (!emailResults.admin.success) {
+                            console.error(
+                                'Failed to send admin notification email:',
+                                emailResults.admin.error
+                            );
+                        }
+                    }
                 }
 
                 break;

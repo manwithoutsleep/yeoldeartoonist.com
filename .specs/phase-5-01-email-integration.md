@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 01 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 01 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -119,8 +119,8 @@ Implement complete email functionality using Resend API for transactional emails
 - [x] Emails contain accurate order information
 - [x] Email integration does not block order creation if sending fails
 - [x] Emails display correctly in major email clients
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [ ] All tests pass (no test files exist in `__tests__/lib/email/`)
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

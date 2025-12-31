@@ -2,7 +2,7 @@
 
 ## Parent Specification
 
-This is sub-task 02 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5)
+This is sub-task 02 of the parent specification: `2025-10-25T17-55-00-mvp-implementation-plan.md` (Phase 5). The coordinator spec `phase-5-00-coordinator.md` tracks completion of all Phase 5 tasks.
 
 ## Objective
 
@@ -152,17 +152,17 @@ Implement comprehensive performance optimization strategies to ensure fast page 
 
 ## Success Criteria
 
-- [x] Image caching headers configured correctly
-- [x] Vercel CDN caching strategy implemented
-- [x] Database queries reviewed and optimized
-- [x] Data caching implemented with `unstable_cache`
-- [x] ISR properly configured on all public pages
-- [x] Lighthouse score >90 on all pages (Performance, Accessibility, Best Practices, SEO)
-- [x] Page load times <3 seconds on 3G
-- [x] Core Web Vitals meet Google's "Good" thresholds
-- [x] Performance documentation created
-- [x] All tests pass
-- [x] The verify-code skill has been successfully executed
+- [x] Image caching headers configured correctly (next.config.ts lines 28-41)
+- [ ] Vercel CDN caching strategy implemented (no vercel.json found)
+- [ ] Database queries reviewed and optimized (no documentation of review)
+- [ ] Data caching implemented with `unstable_cache` (not found in db query files)
+- [x] ISR properly configured on all public pages (revalidate set on home, gallery, shoppe, in-the-works)
+- [ ] Lighthouse score >90 on all pages (Performance, Accessibility, Best Practices, SEO) - no baseline documented
+- [ ] Page load times <3 seconds on 3G (not tested/documented)
+- [ ] Core Web Vitals meet Google's "Good" thresholds (not tested/documented)
+- [ ] Performance documentation created (no .docs/PERFORMANCE.md)
+- [ ] All tests pass
+- [ ] The verify-code skill has been successfully executed
 
 ## Notes
 

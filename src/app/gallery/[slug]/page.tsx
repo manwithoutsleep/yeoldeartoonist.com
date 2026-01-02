@@ -1,7 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getArtworkBySlug, getAllArtworkSlugs } from '@/lib/db/artwork';
+import { siteConfig } from '@/config/site';
+import { StructuredData } from '@/components/seo/StructuredData';
+import {
+    getImageObjectSchema,
+    getWebPageSchema,
+} from '@/lib/seo/structured-data';
 
 /**
  * Gallery detail page - Individual artwork view
@@ -20,6 +27,54 @@ interface GalleryDetailPageProps {
 
 export const revalidate = 3600; // Revalidate every hour (ISR)
 
+export async function generateMetadata({
+    params,
+}: GalleryDetailPageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const { data: artwork } = await getArtworkBySlug(slug);
+
+    if (!artwork) {
+        return {
+            title: 'Artwork Not Found',
+        };
+    }
+
+    // Truncate description to 160 characters for meta description
+    const metaDescription = artwork.description
+        ? artwork.description.length > 160
+            ? `${artwork.description.substring(0, 157)}...`
+            : artwork.description
+        : `View ${artwork.title} by ${siteConfig.artist.name}`;
+
+    const imageUrl =
+        artwork.image_large_url || artwork.image_url || '/og-image.jpg';
+
+    return {
+        title: artwork.title,
+        description: metaDescription,
+        openGraph: {
+            title: `${artwork.title} - ${siteConfig.site.title}`,
+            description: metaDescription,
+            url: `${siteConfig.site.url}/gallery/${slug}`,
+            type: 'article',
+            images: [
+                {
+                    url: imageUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: artwork.alt_text || artwork.title,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${artwork.title} - ${siteConfig.site.title}`,
+            description: metaDescription,
+            images: [imageUrl],
+        },
+    };
+}
+
 export async function generateStaticParams() {
     const { data: slugs } = await getAllArtworkSlugs();
     return (slugs || []).map((item) => ({ slug: item.slug }));
@@ -35,8 +90,28 @@ export default async function GalleryDetailPage({
         notFound();
     }
 
+    const imageUrl =
+        artwork.image_large_url || artwork.image_url || '/og-image.jpg';
+
     return (
         <div className="bg-white text-black">
+            <StructuredData
+                data={[
+                    getWebPageSchema({
+                        name: artwork.title,
+                        description:
+                            artwork.description ||
+                            `View ${artwork.title} by ${siteConfig.artist.name}`,
+                        url: `${siteConfig.site.url}/gallery/${slug}`,
+                    }),
+                    getImageObjectSchema({
+                        name: artwork.title,
+                        description: artwork.description || undefined,
+                        url: imageUrl,
+                        author: siteConfig.artist.name,
+                    }),
+                ]}
+            />
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <Link
                     href="/gallery"

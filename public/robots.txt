@@ -1,0 +1,10 @@
+# Robots.txt for Ye Olde Artoonist
+# Control search engine crawler access
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /shoppe/checkout/
+
+Sitemap: https://yeoldeartoonist.com/sitemap.xml

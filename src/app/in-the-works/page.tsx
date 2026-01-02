@@ -1,6 +1,10 @@
 import Image from 'next/image';
+import type { Metadata } from 'next';
 import { getAllProjects } from '@/lib/db/projects';
 import { getUpcomingEvents } from '@/lib/db/events';
+import { siteConfig } from '@/config/site';
+import { StructuredData } from '@/components/seo/StructuredData';
+import { getWebPageSchema } from '@/lib/seo/structured-data';
 
 /**
  * In The Works page - Display projects and upcoming events
@@ -20,6 +24,31 @@ import { getUpcomingEvents } from '@/lib/db/events';
 
 export const revalidate = 3600; // Revalidate every hour (ISR)
 
+export const metadata: Metadata = {
+    title: 'Projects & Events',
+    description: `Upcoming projects, commissions, and convention appearances by ${siteConfig.artist.name}. Stay up to date with all the going ons!`,
+    openGraph: {
+        title: `Projects & Events - ${siteConfig.site.title}`,
+        description: `Upcoming projects, commissions, and convention appearances by ${siteConfig.artist.name}`,
+        url: `${siteConfig.site.url}/in-the-works`,
+        type: 'website',
+        images: [
+            {
+                url: '/images/section-headers/in the works.webp',
+                width: 1200,
+                height: 630,
+                alt: 'Ye Olde Artoonist - In The Works',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `Projects & Events - ${siteConfig.site.title}`,
+        description: `Upcoming projects, commissions, and convention appearances by ${siteConfig.artist.name}`,
+        images: ['/images/section-headers/in the works.webp'],
+    },
+};
+
 export default async function InTheWorksPage() {
     const [projectsRes, eventsRes] = await Promise.all([
         getAllProjects(),
@@ -32,6 +61,13 @@ export default async function InTheWorksPage() {
 
     return (
         <div className="bg-white text-black">
+            <StructuredData
+                data={getWebPageSchema({
+                    name: 'In The Works',
+                    description: `Upcoming projects, commissions, and convention appearances by ${siteConfig.artist.name}`,
+                    url: `${siteConfig.site.url}/in-the-works`,
+                })}
+            />
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <h1 className="text-5xl font-bold text-center mb-4">
                     In The Works

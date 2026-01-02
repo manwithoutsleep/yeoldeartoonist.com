@@ -51,7 +51,11 @@
             "Skill(verify-code)",
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
-            "WebSearch"
+            "WebSearch",
+            "Skill(fork-terminal)",
+            "Bash(python .claude/skills/fork-terminal/tools/fork_terminal.py:*)",
+            "Bash(npm run start)",
+            "Bash(node -e:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

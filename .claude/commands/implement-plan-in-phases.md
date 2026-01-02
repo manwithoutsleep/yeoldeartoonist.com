@@ -1,5 +1,6 @@
 ---
 argument-hint: [spec-name] [notes]
+allowed-tools: Skill(verify-code)
 description: Implement a finalized plan
 ---
 
@@ -35,36 +36,7 @@ Implement an implementation plan while maintaining code quality, security, and t
         <step>Proceed to the next phase and repeat this process</step>
     </phase_implementation>
 
-    <verification_procedure>
-        Run this verification procedure after completing EACH phase:
-
-        <verification_commands>
-            <cmd_compile>tsc --noEmit</cmd_compile>
-            <cmd_lint>npx eslint --fix {files}</cmd_lint>
-            <cmd_format>npx prettier --write {files}</cmd_format>
-            <cmd_test>npx vitest related run {files}</cmd_test>
-        </verification_commands>
-
-        <verification_steps>
-            1. Identify the specific file paths modified in the current phase
-            2. Run verification commands, replacing {files} with space-separated file paths:
-                - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
-                - ESLint: npx eslint --fix {files}
-                - Prettier: npx prettier --write {files}
-                - Vitest: npx vitest related run {files}
-            3. If any command fails:
-                - Fix the specific error
-                - Retry the verification step
-                - Note that during a TDD Red phase, newly-added tests would be expected to fail.
-            4. If failures persist beyond 3 attempts:
-                - Stop implementation
-                - Document the issue
-                - Ask for human guidance
-            5. Only proceed to next phase when ALL verifications pass for the current phase
-        </verification_steps>
-
-        This ensures code quality and prevents accumulation of technical debt after each phase.
-    </verification_procedure>
+    <verification_procedure>After implementation, use the verify-code skill to ensure TypeScript, linting, formatting, and testing issues are identified and resolved. This ensures code quality and prevents accumulation of technical debt.</verification_procedure>
 
 </instruction>
 <instruction>After all phases are complete, pause to allow human testing of the work locally before committing</instruction>

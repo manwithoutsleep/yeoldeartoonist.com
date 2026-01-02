@@ -15,6 +15,8 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendOrderEmails } from '@/lib/email/send';
 import Stripe from 'stripe';
 import type { Address } from '@/types/order';
+import { createApiErrorResponse } from '@/lib/errors/user-friendly';
+import { logError, logInfo } from '@/lib/errors/logger';
 
 /**
  * Helper function to extract address from Stripe address object
@@ -53,20 +55,26 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('stripe-signature');
 
     if (!signature) {
-        console.error('Webhook error: Missing Stripe signature header');
-        return NextResponse.json(
-            { error: 'Missing signature' },
-            { status: 400 }
-        );
+        logError(new Error('Missing Stripe signature header'), {
+            location: 'api/checkout/webhook',
+            action: 'verifySignature',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 400,
+        });
     }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-        console.error('Webhook error: STRIPE_WEBHOOK_SECRET not configured');
-        return NextResponse.json(
-            { error: 'Webhook not configured' },
-            { status: 500 }
-        );
+        logError(new Error('STRIPE_WEBHOOK_SECRET not configured'), {
+            location: 'api/checkout/webhook',
+            action: 'getWebhookSecret',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 500,
+        });
     }
 
     let event: Stripe.Event;
@@ -75,13 +83,14 @@ export async function POST(request: NextRequest) {
         // Verify webhook signature
         event = constructWebhookEvent(payload, signature, webhookSecret);
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
-        console.error('Webhook signature verification failed:', errorMessage);
-        return NextResponse.json(
-            { error: 'Invalid signature' },
-            { status: 400 }
-        );
+        logError(err, {
+            location: 'api/checkout/webhook',
+            action: 'constructWebhookEvent',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 400,
+        });
     }
 
     // Handle the event based on type
@@ -90,10 +99,14 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.succeeded': {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-                console.log('Payment succeeded:', {
-                    paymentIntentId: paymentIntent.id,
-                    amount: paymentIntent.amount,
-                    customer: paymentIntent.metadata.customerEmail,
+                logInfo('Payment succeeded', {
+                    location: 'api/checkout/webhook',
+                    action: 'handlePaymentIntentSucceeded',
+                    metadata: {
+                        paymentIntentId: paymentIntent.id,
+                        amount: paymentIntent.amount / 100,
+                        customer: paymentIntent.metadata.customerEmail,
+                    },
                 });
 
                 // Create order from payment intent metadata

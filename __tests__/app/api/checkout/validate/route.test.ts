@@ -91,8 +91,8 @@ describe('POST /api/checkout/validate', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Invalid cart data');
-        expect(data.details).toBeDefined();
+        expect(data.error.code).toBe('VALIDATION_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should return 400 for negative price', async () => {
@@ -118,7 +118,8 @@ describe('POST /api/checkout/validate', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Invalid cart data');
+        expect(data.error.code).toBe('VALIDATION_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should return 400 for negative or zero quantity', async () => {
@@ -144,7 +145,8 @@ describe('POST /api/checkout/validate', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Invalid cart data');
+        expect(data.error.code).toBe('VALIDATION_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should return 400 for cart validation failure', async () => {
@@ -304,7 +306,8 @@ describe('POST /api/checkout/validate', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.error).toBe('Internal server error');
+        expect(data.error.code).toBe('UNKNOWN_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should handle malformed JSON', async () => {
@@ -320,7 +323,8 @@ describe('POST /api/checkout/validate', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.error).toBe('Internal server error');
+        expect(data.error.code).toBe('UNKNOWN_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should validate empty cart', async () => {

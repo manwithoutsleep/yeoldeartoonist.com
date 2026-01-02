@@ -15,6 +15,8 @@ import { z } from 'zod';
 import type Stripe from 'stripe';
 import { stripe } from '@/lib/payments/stripe';
 import { validateCart } from '@/lib/cart/validation';
+import { createApiErrorResponse } from '@/lib/errors/user-friendly';
+import { logError } from '@/lib/errors/logger';
 
 /**
  * Constants for checkout session configuration
@@ -77,7 +79,10 @@ export async function POST(request: NextRequest) {
 
         if (!parsed.success) {
             return NextResponse.json(
-                { error: 'Invalid request', details: parsed.error.flatten() },
+                createApiErrorResponse(
+                    'VALIDATION_ERROR',
+                    parsed.error.flatten()
+                ),
                 { status: 400 }
             );
         }
@@ -89,19 +94,18 @@ export async function POST(request: NextRequest) {
 
         if (!validatedCart.isValid) {
             // Log detailed errors for debugging
-            console.error('Cart validation failed:', validatedCart.errors);
+            logError(new Error('Cart validation failed'), {
+                location: 'api/checkout/session',
+                action: 'validateCart',
+                metadata: { errors: validatedCart.errors },
+            });
 
-            // Return user-friendly error message
+            // Return user-friendly error message (VALIDATION_ERROR)
             return NextResponse.json(
-                {
-                    error: 'Unable to process checkout',
-                    message:
-                        'Some items in your cart are no longer available or have changed. Please review your cart and try again.',
-                    // Only include details in development mode
-                    ...(process.env.NODE_ENV === 'development' && {
-                        details: validatedCart.errors,
-                    }),
-                },
+                createApiErrorResponse(
+                    'VALIDATION_ERROR',
+                    validatedCart.errors
+                ),
                 { status: 400 }
             );
         }
@@ -174,28 +178,26 @@ export async function POST(request: NextRequest) {
         });
 
         if (!session.url) {
-            console.error(
-                'Checkout session created but no URL returned:',
-                session.id
-            );
-            return NextResponse.json(
-                {
-                    error: 'Failed to create checkout session',
-                    message: 'No checkout URL was generated',
-                },
-                { status: 500 }
-            );
+            logError(new Error('No checkout URL returned'), {
+                location: 'api/checkout/session',
+                action: 'createSession',
+                metadata: { sessionId: session.id },
+            });
+
+            return NextResponse.json(createApiErrorResponse('PAYMENT_ERROR'), {
+                status: 500,
+            });
         }
 
         return NextResponse.json({ url: session.url }, { status: 200 });
     } catch (error) {
-        console.error('Checkout session creation error:', error);
+        logError(error, {
+            location: 'api/checkout/session',
+            action: 'createSession',
+        });
+
         return NextResponse.json(
-            {
-                error: 'Failed to create checkout session',
-                message:
-                    error instanceof Error ? error.message : 'Unknown error',
-            },
+            createApiErrorResponse('PAYMENT_ERROR', error),
             { status: 500 }
         );
     }

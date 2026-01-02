@@ -14,6 +14,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCart } from '@/lib/cart/validation';
 import { z } from 'zod';
+import { createApiErrorResponse } from '@/lib/errors/user-friendly';
+import { logError } from '@/lib/errors/logger';
 
 /**
  * Zod schema for validating cart item structure
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
         // Return 400 if request body doesn't match schema
         if (!parsed.success) {
             return NextResponse.json(
-                { error: 'Invalid cart data', details: parsed.error },
+                createApiErrorResponse('VALIDATION_ERROR', parsed.error),
                 { status: 400 }
             );
         }
@@ -110,12 +112,15 @@ export async function POST(request: NextRequest) {
         // Return validated cart
         return NextResponse.json({ cart: validatedCart }, { status: 200 });
     } catch (error) {
-        // Log error for debugging (in production, use proper logging service)
-        console.error('Validation error:', error);
+        // Log error with context
+        logError(error, {
+            location: 'api/checkout/validate',
+            action: 'validateCart',
+        });
 
-        // Return 500 for unexpected errors
+        // Return standardized error response
         return NextResponse.json(
-            { error: 'Internal server error' },
+            createApiErrorResponse('UNKNOWN_ERROR', error),
             { status: 500 }
         );
     }

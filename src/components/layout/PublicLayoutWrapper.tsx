@@ -43,7 +43,7 @@ export function PublicLayoutWrapper({ children }: PublicLayoutWrapperProps) {
                 <div className="public-layout">
                     <Header />
                     <Navigation />
-                    <main>{children}</main>
+                    <main id="main-content">{children}</main>
                     <Footer />
                 </div>
                 <Toast />

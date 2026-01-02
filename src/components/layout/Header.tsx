@@ -33,7 +33,10 @@ const CartButton = dynamic(
  */
 export function Header() {
     return (
-        <header className="w-full bg-white border-b-2 border-black">
+        <header
+            className="w-full bg-white border-b-2 border-black"
+            role="banner"
+        >
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4">
                 <div className="flex items-center justify-between">
                     {/* Spacer for alignment */}
@@ -43,6 +46,7 @@ export function Header() {
                     <Link
                         href="/"
                         className="max-w-[150px] sm:max-w-[220px] lg:max-w-none flex-shrink-0"
+                        aria-label="Ye Olde Artoonist - Home"
                     >
                         <Image
                             src="/images/header-footer/logo.webp"

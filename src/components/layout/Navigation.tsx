@@ -28,15 +28,23 @@ export function Navigation() {
     ];
 
     return (
-        <nav className="w-full bg-white border-b-2 border-black">
+        <nav
+            className="w-full bg-white border-b-2 border-black"
+            role="navigation"
+            aria-label="Main navigation"
+        >
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Desktop Navigation - Image buttons */}
-                <div className="hidden md:flex justify-center gap-4 py-4 min-h-[120px] items-center">
+                <div
+                    className="hidden md:flex justify-center gap-4 py-4 min-h-[120px] items-center"
+                    role="list"
+                >
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="relative overflow-hidden rounded transition-transform hover:scale-105 w-[250px] aspect-[250/100]"
+                            className="relative overflow-hidden rounded transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 w-[250px] aspect-[250/100]"
+                            aria-label={`Navigate to ${item.label}`}
                         >
                             <Image
                                 src={`/images/navigation/${item.image}`}
@@ -54,8 +62,14 @@ export function Navigation() {
                 <div className="md:hidden flex items-center justify-between py-4 min-h-[50px]">
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="text-black text-2xl font-bold"
-                        aria-label="Toggle navigation"
+                        className="text-black text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-black p-2 rounded"
+                        aria-label={
+                            mobileOpen
+                                ? 'Close navigation menu'
+                                : 'Open navigation menu'
+                        }
+                        aria-expanded={mobileOpen}
+                        aria-controls="mobile-menu"
                     >
                         ☰
                     </button>
@@ -63,13 +77,18 @@ export function Navigation() {
 
                 {/* Mobile Navigation Menu */}
                 {mobileOpen && (
-                    <div className="md:hidden pb-4 space-y-2">
+                    <div
+                        id="mobile-menu"
+                        className="md:hidden pb-4 space-y-2"
+                        role="menu"
+                    >
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="block px-4 py-2 text-black hover:bg-gray-100 rounded transition-colors"
+                                className="block px-4 py-2 text-black hover:bg-gray-100 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-inset"
                                 onClick={() => setMobileOpen(false)}
+                                role="menuitem"
                             >
                                 {item.label}
                             </Link>

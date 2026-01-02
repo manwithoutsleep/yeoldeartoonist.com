@@ -19,9 +19,7 @@ Implement an implementation plan while maintaining code quality, security, and t
 <instruction>Design for future extensibility - use interfaces, avoid hard-coded dependencies, and create extension points without over-engineering</instruction>
 <instruction>Design for failure - assume external calls can fail and implement graceful fallbacks</instruction>
 <instruction>Maintain OWASP top 10 compliance and follow the principle of least privilege</instruction>
-<instruction>
-    After implementation, use the verify-code skill to ensure TypeScript, linting, formatting, and testing issues are identified and resolved. This ensures code quality and prevents accumulation of technical debt.
-</instruction>
+<instruction>After implementation, use the verify-code skill to ensure TypeScript, linting, formatting, and testing issues are identified and resolved. This ensures code quality and prevents accumulation of technical debt.</instruction>
 <instruction>Before committing changes, pause to allow human testing of the work locally</instruction>
 <instruction>When the task is complete, mark it as completed in the original {{spec-name}} file</instruction>
 <instruction>Consider these additional context notes: {{notes}}</instruction>

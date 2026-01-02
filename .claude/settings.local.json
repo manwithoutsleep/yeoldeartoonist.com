@@ -41,7 +41,7 @@
             "Bash(nul)",
             "Bash(ping:*)",
             "Bash(powershell -Command \"Get-Date -Format ''yyyy-MM-ddTHH-mm-ss''\")",
-            "Bash(sitemap \")",
+            "Bash(sitemap:*)",
             "Bash(tee:*)",
             "Bash(test:*)",
             "Bash(time:*)",

@@ -1,10 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 import { Database } from '@/types/database';
 
 /**
  * Projects database query functions
  *
  * Handles all queries related to projects (works in progress)
+ *
+ * Caching Strategy:
+ * - getAllProjects: 1 hour cache (revalidate: 3600)
+ * - getProjectBySlug: 1 hour cache (revalidate: 3600)
  */
 
 const supabase = createClient<Database>(
@@ -18,13 +23,9 @@ export interface ProjectQueryError {
 }
 
 /**
- * Get all published projects ordered by display_order
- *
- * @param limit Maximum number of items to return
- * @param offset Pagination offset
- * @returns Array of published projects or error
+ * Internal function to get all published projects
  */
-export async function getAllProjects(
+async function getAllProjectsInternal(
     limit: number = 50,
     offset: number = 0
 ): Promise<{
@@ -67,12 +68,25 @@ export async function getAllProjects(
 }
 
 /**
- * Get project by slug
+ * Get all published projects ordered by display_order (with caching)
  *
- * @param slug The project slug
- * @returns Single project or error
+ * @param limit Maximum number of items to return
+ * @param offset Pagination offset
+ * @returns Array of published projects or error
  */
-export async function getProjectBySlug(slug: string): Promise<{
+export const getAllProjects = unstable_cache(
+    getAllProjectsInternal,
+    ['projects-all'],
+    {
+        revalidate: 3600, // 1 hour
+        tags: ['projects'],
+    }
+);
+
+/**
+ * Internal function to get project by slug
+ */
+async function getProjectBySlugInternal(slug: string): Promise<{
     data: Database['public']['Tables']['projects']['Row'] | null;
     error: ProjectQueryError | null;
 }> {
@@ -110,3 +124,19 @@ export async function getProjectBySlug(slug: string): Promise<{
         };
     }
 }
+
+/**
+ * Get project by slug (with caching)
+ *
+ * @param slug The project slug
+ * @returns Single project or error
+ */
+export const getProjectBySlug = (slug: string) =>
+    unstable_cache(
+        () => getProjectBySlugInternal(slug),
+        ['project-by-slug', slug],
+        {
+            revalidate: 3600, // 1 hour
+            tags: ['projects', `project-${slug}`],
+        }
+    )();

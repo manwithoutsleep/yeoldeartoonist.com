@@ -101,6 +101,13 @@ vi.mock('next/link', () => ({
     },
 }));
 
+// Mock Next.js unstable_cache for database query caching
+vi.mock('next/cache', () => ({
+    unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+    revalidateTag: vi.fn(),
+    revalidatePath: vi.fn(),
+}));
+
 // Suppress console errors in tests using vi.spyOn for safer cleanup
 // This approach guarantees cleanup even if tests crash before afterAll runs
 let consoleErrorSpy: ReturnType<typeof vi.spyOn>;

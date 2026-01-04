@@ -10,7 +10,10 @@ description: Create a PR covering the current work
 <instructions>
     <instruction>Commit any outstanding changes on the current branch.</instruction>
     <instruction>Push the current branch to `origin`.</instruction>
-    <instruction>Create a PR with a comprehensive commit message describing the work done in ISSUE with reference to the CONTEXT, attaching the PR to the issue.</instruction>
+    <instruction>Review the scope of work described in ISSUE.</instruction>
+    <instruction>Check the actual work completed by reading the commit messages in the current branch</instruction>
+    <instruction>Create a PR with a comprehensive commit message describing the work done, with reference to the CONTEXT.</instruction>
+    <instruction>Attach the PR to the issue.</instruction>
 </instructions>
 
 <issue>

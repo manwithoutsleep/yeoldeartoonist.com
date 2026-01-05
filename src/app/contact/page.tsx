@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     },
 };
 
+// ISR revalidation: Contact page content rarely changes
+export const revalidate = 86400; // 24 hours
+
 export default function ContactPage() {
     return (
         <>

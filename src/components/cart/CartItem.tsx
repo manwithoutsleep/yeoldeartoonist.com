@@ -70,9 +70,9 @@ export function CartItem({ item }: CartItemProps) {
             {/* Item Details */}
             <div className="flex-1 flex flex-col justify-between">
                 <div>
-                    <h3 className="text-sm font-medium text-gray-900">
+                    <h2 className="text-sm font-medium text-gray-900">
                         {item.title}
-                    </h3>
+                    </h2>
                     <p className="mt-1 text-sm text-gray-500">
                         {formatCurrency(item.price)}
                     </p>

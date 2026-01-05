@@ -114,16 +114,9 @@ export default function LoginPage() {
                 return;
             }
 
-            console.log('[DEBUG] Starting sign-in...');
             const { data, error: signInError } = await signIn(email, password);
-            console.log('[DEBUG] Sign-in result:', {
-                hasData: !!data,
-                hasSession: !!data?.session,
-                hasError: !!signInError,
-            });
 
             if (signInError) {
-                console.error('[DEBUG] Sign-in error:', signInError);
                 // Sanitize error message to prevent account enumeration
                 const sanitized = sanitizeAuthError(signInError.message);
                 setError(sanitized);
@@ -131,12 +124,10 @@ export default function LoginPage() {
             }
 
             if (data?.session) {
-                console.log('[DEBUG] Session created, redirecting to /admin');
                 // Use window.location.href for full page reload to ensure server-side layout re-renders
                 // This is necessary because the admin layout reads session from cookies on the server
                 window.location.href = '/admin';
             } else {
-                console.error('[DEBUG] No session in response data');
                 setError('Authentication succeeded but no session was created');
             }
         },

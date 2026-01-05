@@ -74,43 +74,54 @@ export default async function GalleryPage() {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {artwork.map((item) => (
-                            <Link
-                                key={item.id}
-                                href={`/gallery/${item.slug}`}
-                                className="group block"
-                            >
-                                <div className="relative w-full aspect-square overflow-hidden rounded border-2 border-black mb-4 bg-gray-100">
-                                    {item.image_thumbnail_url ? (
-                                        <Image
-                                            src={item.image_thumbnail_url}
-                                            alt={item.alt_text || item.title}
-                                            fill
-                                            className="object-contain group-hover:scale-110 transition-transform"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                            <span className="text-gray-400">
-                                                No image
-                                            </span>
+                    <section aria-labelledby="gallery-items-heading">
+                        <h2 id="gallery-items-heading" className="sr-only">
+                            Gallery Items
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {artwork.map((item) => (
+                                <article key={item.id}>
+                                    <Link
+                                        href={`/gallery/${item.slug}`}
+                                        className="group block"
+                                    >
+                                        <div className="relative w-full aspect-square overflow-hidden rounded border-2 border-black mb-4 bg-gray-100">
+                                            {item.image_thumbnail_url ? (
+                                                <Image
+                                                    src={
+                                                        item.image_thumbnail_url
+                                                    }
+                                                    alt={
+                                                        item.alt_text ||
+                                                        item.title
+                                                    }
+                                                    fill
+                                                    className="object-contain group-hover:scale-110 transition-transform"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                    <span className="text-gray-400">
+                                                        No image
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
 
-                                <div>
-                                    <h2 className="text-xl font-bold mb-2 group-hover:underline">
-                                        {item.title}
-                                    </h2>
-                                    {item.description && (
-                                        <p className="text-gray-600 text-sm line-clamp-2">
-                                            {item.description}
-                                        </p>
-                                    )}
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold mb-2 group-hover:underline">
+                                                {item.title}
+                                            </h3>
+                                            {item.description && (
+                                                <p className="text-gray-600 text-sm line-clamp-2">
+                                                    {item.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </Link>
+                                </article>
+                            ))}
+                        </div>
+                    </section>
                 )}
             </div>
         </div>

@@ -99,9 +99,9 @@ export default async function GalleryPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-xl font-bold mb-2 group-hover:underline">
+                                    <h2 className="text-xl font-bold mb-2 group-hover:underline">
                                         {item.title}
-                                    </h3>
+                                    </h2>
                                     {item.description && (
                                         <p className="text-gray-600 text-sm line-clamp-2">
                                             {item.description}

@@ -79,7 +79,7 @@ export function ProductCard({
 
             {/* Product Info */}
             <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">{title}</h3>
+                <h2 className="text-xl font-bold mb-2">{title}</h2>
 
                 {description && (
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">

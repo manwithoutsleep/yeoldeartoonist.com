@@ -109,7 +109,7 @@ describe('Footer Component', () => {
 
     it('should have proper heading hierarchy', () => {
         render(<Footer />);
-        const headings = screen.getAllByRole('heading', { level: 3 });
+        const headings = screen.getAllByRole('heading', { level: 2 });
         expect(headings).toHaveLength(3); // Contact, Quick Links, Follow Us
     });
 

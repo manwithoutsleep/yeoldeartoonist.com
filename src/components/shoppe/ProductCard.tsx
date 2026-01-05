@@ -20,6 +20,7 @@ export interface ProductCardProps {
     imageThumbnailUrl: string | null;
     altText: string | null;
     slug: string;
+    headingLevel?: 'h2' | 'h3';
 }
 
 /**
@@ -58,7 +59,10 @@ export function ProductCard({
     imageThumbnailUrl,
     altText,
     slug,
+    headingLevel = 'h2',
 }: ProductCardProps) {
+    const HeadingTag = headingLevel;
+
     return (
         <div className="border-2 border-black rounded overflow-hidden hover:shadow-lg transition-shadow">
             {/* Product Image */}
@@ -79,7 +83,9 @@ export function ProductCard({
 
             {/* Product Info */}
             <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">{title}</h3>
+                <HeadingTag className="text-xl font-bold mb-2">
+                    {title}
+                </HeadingTag>
 
                 {description && (
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">

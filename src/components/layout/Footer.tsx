@@ -24,9 +24,9 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Contact Information */}
                     <div>
-                        <h3 className="text-lg font-bold text-black mb-4">
+                        <h2 className="text-lg font-bold text-black mb-4">
                             Contact
-                        </h3>
+                        </h2>
                         <div className="text-black text-sm space-y-2">
                             <p>
                                 <a
@@ -49,9 +49,9 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h3 className="text-lg font-bold text-black mb-4">
+                        <h2 className="text-lg font-bold text-black mb-4">
                             Quick Links
-                        </h3>
+                        </h2>
                         <nav
                             className="text-black text-sm space-y-2"
                             aria-label="Footer navigation"
@@ -76,9 +76,9 @@ export function Footer() {
 
                     {/* Social Links */}
                     <div>
-                        <h3 className="text-lg font-bold text-black mb-4">
+                        <h2 className="text-lg font-bold text-black mb-4">
                             Follow Us
-                        </h3>
+                        </h2>
                         <div className="space-y-2">
                             {siteConfig.socialMedia.sites.map((site) => (
                                 <SocialMediaIcon

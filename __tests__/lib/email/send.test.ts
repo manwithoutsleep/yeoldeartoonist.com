@@ -6,14 +6,18 @@
  * - Functions have correct signatures
  * - Error handling works correctly
  * - Email configuration validation
+ * - Email template rendering and content
  */
 
 import {
-    sendOrderConfirmationEmail,
-    sendAdminNotificationEmail,
-    sendOrderEmails,
     EmailSendError,
+    sendAdminNotificationEmail,
+    sendOrderConfirmationEmail,
+    sendOrderEmails,
 } from '@/lib/email/send';
+import { render } from '@react-email/render';
+import { OrderConfirmation } from '@/lib/email/templates/OrderConfirmation';
+import { AdminNotification } from '@/lib/email/templates/AdminNotification';
 import type { Order } from '@/types/order';
 
 // Mock order data for testing
@@ -171,6 +175,379 @@ describe('Email Service', () => {
             expect(result).toHaveProperty('admin');
             expect(result.customer).toHaveProperty('success');
             expect(result.admin).toHaveProperty('success');
+        });
+    });
+
+    describe('Email Template Rendering', () => {
+        const siteUrl = 'https://yeoldeartoonist.com';
+
+        describe('OrderConfirmation template', () => {
+            it('should render order confirmation with order number', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain(mockOrder.orderNumber);
+            });
+
+            it('should render order confirmation with customer name and email', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain(mockOrder.customerName);
+                // Email might not be directly in the template, but customer name should be
+                expect(html).toContain('John Doe');
+            });
+
+            it('should render order confirmation with all order items', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                // Check for item title
+                expect(html).toContain('Test Artwork');
+                // Check for quantity text with specific pattern to avoid false positives
+                // Allow for any characters/tags between "Quantity:" and "2"
+                expect(html).toMatch(
+                    /Quantity:\s*(?:<[^>]*>)*\s*2\s*(?:<[^>]*>)*\s*×/
+                );
+                // Check for price formatting
+                expect(html).toContain('50.00');
+                // Check for line subtotal
+                expect(html).toContain('100.00');
+            });
+
+            it('should render order confirmation with pricing breakdown', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                // Check for subtotal
+                expect(html).toContain('Subtotal');
+                expect(html).toContain('100.00');
+                // Check for shipping
+                expect(html).toContain('Shipping');
+                expect(html).toContain('10.00');
+                // Check for tax
+                expect(html).toContain('Tax');
+                expect(html).toContain('8.25');
+                // Check for total
+                expect(html).toContain('Total');
+                expect(html).toContain('118.25');
+            });
+
+            it('should render order confirmation with shipping address', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('123 Main St');
+                expect(html).toContain('Apt 4B');
+                expect(html).toContain('Springfield');
+                expect(html).toContain('IL');
+                expect(html).toContain('62701');
+            });
+
+            it('should render order confirmation with order notes when present', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Please handle with care');
+            });
+
+            it('should render order confirmation without order notes section when notes are empty', async () => {
+                const orderWithoutNotes = { ...mockOrder, orderNotes: '' };
+                const html = await render(
+                    OrderConfirmation({
+                        order: orderWithoutNotes,
+                        siteUrl,
+                    })
+                );
+
+                // Should not contain the notes section heading
+                expect(html).not.toContain('Order Notes');
+            });
+
+            it('should render order confirmation with formatted order date', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                // Check that some form of the date appears (January 1, 2025)
+                expect(html).toMatch(/January.*1.*2025/);
+            });
+
+            it('should render order confirmation with site logo URL', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain(`${siteUrl}/logo.png`);
+            });
+
+            it('should render order confirmation with footer and site link', async () => {
+                const html = await render(
+                    OrderConfirmation({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Ye Olde Artoonist');
+                expect(html).toContain(siteUrl);
+            });
+
+            it('should handle multiple order items correctly', async () => {
+                const orderWithMultipleItems = {
+                    ...mockOrder,
+                    items: [
+                        {
+                            id: 'item-1',
+                            artworkId: 'artwork-1',
+                            quantity: 2,
+                            priceAtPurchase: 50.0,
+                            lineSubtotal: 100.0,
+                            title: 'First Artwork',
+                            imageUrl: 'https://example.com/image1.jpg',
+                        },
+                        {
+                            id: 'item-2',
+                            artworkId: 'artwork-2',
+                            quantity: 1,
+                            priceAtPurchase: 75.0,
+                            lineSubtotal: 75.0,
+                            title: 'Second Artwork',
+                            imageUrl: 'https://example.com/image2.jpg',
+                        },
+                    ],
+                };
+
+                const html = await render(
+                    OrderConfirmation({
+                        order: orderWithMultipleItems,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('First Artwork');
+                expect(html).toContain('Second Artwork');
+                // Both items should show quantity
+                expect(html).toContain('Quantity');
+            });
+        });
+
+        describe('AdminNotification template', () => {
+            it('should render admin notification with order number', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain(mockOrder.orderNumber);
+            });
+
+            it('should render admin notification with customer name and email', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('John Doe');
+                expect(html).toContain('john@example.com');
+            });
+
+            it('should render admin notification with order total', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Order Total');
+                expect(html).toContain('118.25');
+            });
+
+            it('should render admin notification with payment status', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Payment Status');
+                expect(html).toContain('SUCCEEDED');
+            });
+
+            it('should render admin notification with link to admin dashboard', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                const expectedUrl = `${siteUrl}/admin/orders/${mockOrder.id}`;
+                expect(html).toContain(expectedUrl);
+                expect(html).toContain('View Order in Admin Dashboard');
+            });
+
+            it('should render admin notification with items summary', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Test Artwork');
+                expect(html).toContain('×');
+                expect(html).toContain('2');
+                expect(html).toContain('100.00');
+            });
+
+            it('should render admin notification with item count', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Items');
+                expect(html).toContain('1');
+            });
+
+            it('should render admin notification with shipping address', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('123 Main St');
+                expect(html).toContain('Apt 4B');
+                expect(html).toContain('Springfield');
+                expect(html).toContain('IL');
+                expect(html).toContain('62701');
+            });
+
+            it('should render admin notification with customer notes when present', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Customer Notes');
+                expect(html).toContain('Please handle with care');
+            });
+
+            it('should render admin notification without notes section when notes are empty', async () => {
+                const orderWithoutNotes = { ...mockOrder, orderNotes: '' };
+                const html = await render(
+                    AdminNotification({
+                        order: orderWithoutNotes,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).not.toContain('Customer Notes');
+            });
+
+            it('should render admin notification with formatted order time', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                // Check that some form of the date appears
+                expect(html).toMatch(/Jan.*1.*2025/);
+            });
+
+            it('should render admin notification header with emoji and title', async () => {
+                const html = await render(
+                    AdminNotification({
+                        order: mockOrder,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('🎨 New Order Received');
+            });
+
+            it('should handle multiple items in admin notification', async () => {
+                const orderWithMultipleItems = {
+                    ...mockOrder,
+                    items: [
+                        {
+                            id: 'item-1',
+                            artworkId: 'artwork-1',
+                            quantity: 2,
+                            priceAtPurchase: 50.0,
+                            lineSubtotal: 100.0,
+                            title: 'First Artwork',
+                            imageUrl: 'https://example.com/image1.jpg',
+                        },
+                        {
+                            id: 'item-2',
+                            artworkId: 'artwork-2',
+                            quantity: 1,
+                            priceAtPurchase: 75.0,
+                            lineSubtotal: 75.0,
+                            title: 'Second Artwork',
+                            imageUrl: 'https://example.com/image2.jpg',
+                        },
+                    ],
+                };
+
+                const html = await render(
+                    AdminNotification({
+                        order: orderWithMultipleItems,
+                        siteUrl,
+                    })
+                );
+
+                expect(html).toContain('Items');
+                expect(html).toContain('2');
+                expect(html).toContain('First Artwork');
+                expect(html).toContain('Second Artwork');
+            });
         });
     });
 });

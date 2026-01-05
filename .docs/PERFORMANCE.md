@@ -100,7 +100,6 @@ images: {
       pathname: '/storage/v1/object/public/**',
     },
   ],
-  dangerouslyAllowSVG: true,
   unoptimized: process.env.NODE_ENV === 'development',
 }
 ```

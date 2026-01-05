@@ -302,9 +302,8 @@ git grep -i "sk_test"   # Stripe test secret key
 
 ```
 default-src 'self'                                # Only load resources from same origin by default
-script-src 'self' 'unsafe-inline' 'unsafe-eval'   # Allow scripts from self, Stripe, and inline (Next.js requirement)
-         https://js.stripe.com
-style-src 'self' 'unsafe-inline'                  # Allow styles from self, Google Fonts, and inline (Tailwind)
+script-src 'self' https://js.stripe.com           # Allow scripts from self and Stripe only (no unsafe-inline/unsafe-eval for XSS protection)
+style-src 'self' 'unsafe-inline'                  # Allow styles from self, Google Fonts, and inline (Tailwind requirement)
          https://fonts.googleapis.com
 img-src 'self' blob: data:                        # Allow images from self, Supabase, and data URIs
        https://*.supabase.co https://127.0.0.1
@@ -319,6 +318,13 @@ form-action 'self'                                # Forms can only submit to sam
 frame-ancestors 'self'                            # Prevent clickjacking
 upgrade-insecure-requests                         # Upgrade HTTP to HTTPS
 ```
+
+**Security Rationale**:
+
+- **No `unsafe-inline` or `unsafe-eval` for scripts**: Next.js 14+ App Router with server components does not require inline scripts or eval. Removing these directives significantly strengthens XSS protection by preventing execution of inline JavaScript and dynamic code evaluation.
+- **Stripe integration**: Stripe loads from an external script URL (`https://js.stripe.com`), which does not require `unsafe-inline`.
+- **Style inline allowed**: Tailwind CSS compilation may generate inline styles in production builds, so `unsafe-inline` remains only for `style-src`.
+- **If inline scripts become necessary**: Use nonces or hashes instead of `unsafe-inline` to maintain security while allowing specific scripts.
 
 **Additional Security Headers**:
 

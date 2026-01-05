@@ -1,5 +1,9 @@
+import type { Metadata } from 'next';
 import { getAllArtwork } from '@/lib/db/artwork';
 import { ProductCard } from '@/components/shoppe/ProductCard';
+import { siteConfig } from '@/config/site';
+import { StructuredData } from '@/components/seo/StructuredData';
+import { getWebPageSchema } from '@/lib/seo/structured-data';
 
 /**
  * Shoppe page - Product listing for shop items
@@ -13,6 +17,31 @@ import { ProductCard } from '@/components/shoppe/ProductCard';
 
 export const revalidate = 3600; // Revalidate every hour (ISR)
 
+export const metadata: Metadata = {
+    title: 'Shop Art Prints',
+    description: `Purchase original art and prints by ${siteConfig.artist.name}. Browse our collection of prints, curios, and unique art pieces.`,
+    openGraph: {
+        title: `Shop Art Prints - ${siteConfig.site.title}`,
+        description: `Purchase original art and prints by ${siteConfig.artist.name}`,
+        url: `${siteConfig.site.url}/shoppe`,
+        type: 'website',
+        images: [
+            {
+                url: '/images/section-headers/shoppe.webp',
+                width: 1200,
+                height: 630,
+                alt: 'Ye Olde Artoonist Shoppe',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `Shop Art Prints - ${siteConfig.site.title}`,
+        description: `Purchase original art and prints by ${siteConfig.artist.name}`,
+        images: ['/images/section-headers/shoppe.webp'],
+    },
+};
+
 export default async function ShoppePage() {
     const { data: allArtwork, error } = await getAllArtwork();
     // Filter to only items with inventory > 0
@@ -21,6 +50,13 @@ export default async function ShoppePage() {
 
     return (
         <div className="bg-white text-black">
+            <StructuredData
+                data={getWebPageSchema({
+                    name: 'Shoppe',
+                    description: `Purchase original art and prints by ${siteConfig.artist.name}`,
+                    url: `${siteConfig.site.url}/shoppe`,
+                })}
+            />
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <h1 className="text-5xl font-bold text-center mb-4">Shoppe</h1>
                 <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">

@@ -1,6 +1,16 @@
 ---
 argument-hint: [spec-name] [issue-id] [notes]
 description: Implement a task towards the overall goal
+allowed-tools:
+    [
+        Read,
+        Edit,
+        Bash(git status:*),
+        Bash(git diff:*),
+        Bash(git add:*),
+        Bash(git log:*),
+        Skill(verify-code),
+    ]
 model: haiku
 ---
 
@@ -19,37 +29,7 @@ Implement a specific task from an implementation plan while maintaining code qua
 <instruction>Design for future extensibility - use interfaces, avoid hard-coded dependencies, and create extension points without over-engineering</instruction>
 <instruction>Design for failure - assume external calls can fail and implement graceful fallbacks</instruction>
 <instruction>Maintain OWASP top 10 compliance and follow the principle of least privilege</instruction>
-<instruction>
-    After implementation, follow this verification procedure:
-
-    <verification_commands>
-        <cmd_compile>tsc --noEmit</cmd_compile>
-        <cmd_lint>npx eslint --fix {files}</cmd_lint>
-        <cmd_format>npx prettier --write {files}</cmd_format>
-        <cmd_test>npx vitest related run {files}</cmd_test>
-    </verification_commands>
-
-    <verification_steps>
-        1. Identify the specific file paths modified in the current step
-        2. Run verification commands, replacing {files} with space-separated file paths:
-            - TypeScript compile check: tsc --noEmit (run as-is, no file paths)
-            - ESLint: npx eslint --fix {files}
-            - Prettier: npx prettier --write {files}
-            - Vitest: npx vitest related run {files}
-        3. If any command fails:
-            - Fix the specific error
-            - Retry the verification step
-            - Note that during a TDD Red phase, newly-added tests would be expected to fail.
-        4. If failures persist beyond 3 attempts:
-            - Stop implementation
-            - Document the issue
-            - Ask for human guidance
-        5. Only proceed to next step when ALL verifications pass
-    </verification_steps>
-
-    This ensures code quality and prevents accumulation of technical debt.
-
-</instruction>
+<instruction>After implementation, use the verify-code skill to ensure TypeScript, linting, formatting, and testing issues are identified and resolved. This ensures code quality and prevents accumulation of technical debt.</instruction>
 <instruction>Before committing changes, pause to allow human testing of the work locally</instruction>
 <instruction>When the task is complete, mark it as completed in the original {{spec-name}} file</instruction>
 <instruction>Consider these additional context notes: {{notes}}</instruction>

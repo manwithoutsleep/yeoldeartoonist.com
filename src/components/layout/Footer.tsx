@@ -16,7 +16,10 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full bg-white border-t border-black mt-3">
+        <footer
+            className="w-full bg-white border-t border-black mt-3"
+            role="contentinfo"
+        >
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Contact Information */}
@@ -28,7 +31,8 @@ export function Footer() {
                             <p>
                                 <a
                                     href={`mailto:${siteConfig.artist.email}`}
-                                    className="hover:underline"
+                                    className="hover:underline focus:outline-none focus:ring-2 focus:ring-black rounded"
+                                    aria-label={`Email ${siteConfig.artist.name}`}
                                 >
                                     {siteConfig.artist.email}
                                 </a>
@@ -48,15 +52,21 @@ export function Footer() {
                         <h3 className="text-lg font-bold text-black mb-4">
                             Quick Links
                         </h3>
-                        <nav className="text-black text-sm space-y-2">
-                            <Link href="/" className="block hover:underline">
+                        <nav
+                            className="text-black text-sm space-y-2"
+                            aria-label="Footer navigation"
+                        >
+                            <Link
+                                href="/"
+                                className="block hover:underline focus:outline-none focus:ring-2 focus:ring-black rounded"
+                            >
                                 Home
                             </Link>
                             {siteConfig.navigation.cards.map((card) => (
                                 <Link
                                     key={card.href}
                                     href={card.href}
-                                    className="block hover:underline"
+                                    className="block hover:underline focus:outline-none focus:ring-2 focus:ring-black rounded"
                                 >
                                     {card.title}
                                 </Link>

@@ -18,6 +18,12 @@ import ContactPage from '@/app/contact/page';
 // Mock the site config
 vi.mock('@/config/site', () => ({
     siteConfig: {
+        site: {
+            title: 'Ye Olde Artoonist',
+            description:
+                'Explore original artwork, prints, and more from Joe Schlottach',
+            url: 'https://yeoldeartoonist.com',
+        },
         artist: {
             name: 'Test Artist',
             bio: 'A talented artist creating amazing works',

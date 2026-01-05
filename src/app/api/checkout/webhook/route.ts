@@ -15,6 +15,8 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendOrderEmails } from '@/lib/email/send';
 import Stripe from 'stripe';
 import type { Address } from '@/types/order';
+import { createApiErrorResponse } from '@/lib/errors/user-friendly';
+import { logError, logInfo } from '@/lib/errors/logger';
 
 /**
  * Helper function to extract address from Stripe address object
@@ -53,20 +55,26 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('stripe-signature');
 
     if (!signature) {
-        console.error('Webhook error: Missing Stripe signature header');
-        return NextResponse.json(
-            { error: 'Missing signature' },
-            { status: 400 }
-        );
+        logError(new Error('Missing Stripe signature header'), {
+            location: 'api/checkout/webhook',
+            action: 'verifySignature',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 400,
+        });
     }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-        console.error('Webhook error: STRIPE_WEBHOOK_SECRET not configured');
-        return NextResponse.json(
-            { error: 'Webhook not configured' },
-            { status: 500 }
-        );
+        logError(new Error('STRIPE_WEBHOOK_SECRET not configured'), {
+            location: 'api/checkout/webhook',
+            action: 'getWebhookSecret',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 500,
+        });
     }
 
     let event: Stripe.Event;
@@ -75,13 +83,14 @@ export async function POST(request: NextRequest) {
         // Verify webhook signature
         event = constructWebhookEvent(payload, signature, webhookSecret);
     } catch (err) {
-        const errorMessage =
-            err instanceof Error ? err.message : 'Unknown error';
-        console.error('Webhook signature verification failed:', errorMessage);
-        return NextResponse.json(
-            { error: 'Invalid signature' },
-            { status: 400 }
-        );
+        logError(err, {
+            location: 'api/checkout/webhook',
+            action: 'constructWebhookEvent',
+        });
+
+        return NextResponse.json(createApiErrorResponse('WEBHOOK_ERROR'), {
+            status: 400,
+        });
     }
 
     // Handle the event based on type
@@ -90,10 +99,14 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.succeeded': {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-                console.log('Payment succeeded:', {
-                    paymentIntentId: paymentIntent.id,
-                    amount: paymentIntent.amount,
-                    customer: paymentIntent.metadata.customerEmail,
+                logInfo('Payment succeeded', {
+                    location: 'api/checkout/webhook',
+                    action: 'handlePaymentIntentSucceeded',
+                    metadata: {
+                        paymentIntentId: paymentIntent.id,
+                        amount: paymentIntent.amount / 100,
+                        customer: paymentIntent.metadata.customerEmail,
+                    },
                 });
 
                 // Create order from payment intent metadata
@@ -158,13 +171,21 @@ export async function POST(request: NextRequest) {
                         });
 
                     if (orderError) {
-                        console.error('Failed to create order:', orderError);
+                        logError(orderError, {
+                            location: 'api/checkout/webhook',
+                            action: 'createOrderFromPaymentIntent',
+                            metadata: { paymentIntentId: paymentIntent.id },
+                        });
                         // Log error but don't fail webhook response
                         // Manual intervention may be needed to reconcile payment with order
                     } else {
-                        console.log('Order created successfully:', {
-                            orderId: order?.id,
-                            orderNumber: order?.orderNumber,
+                        logInfo('Order created successfully', {
+                            location: 'api/checkout/webhook',
+                            action: 'createOrderFromPaymentIntent',
+                            metadata: {
+                                orderId: order?.id,
+                                orderNumber: order?.orderNumber,
+                            },
                         });
 
                         // Send order confirmation and admin notification emails
@@ -172,24 +193,38 @@ export async function POST(request: NextRequest) {
                         if (order) {
                             const emailResults = await sendOrderEmails(order);
                             if (!emailResults.customer.success) {
-                                console.error(
-                                    'Failed to send customer confirmation email:',
-                                    emailResults.customer.error
+                                logError(
+                                    emailResults.customer.error ||
+                                        new Error(
+                                            'Failed to send customer confirmation email'
+                                        ),
+                                    {
+                                        location: 'api/checkout/webhook',
+                                        action: 'sendCustomerEmail',
+                                        metadata: { orderId: order.id },
+                                    }
                                 );
                             }
                             if (!emailResults.admin.success) {
-                                console.error(
-                                    'Failed to send admin notification email:',
-                                    emailResults.admin.error
+                                logError(
+                                    emailResults.admin.error ||
+                                        new Error(
+                                            'Failed to send admin notification email'
+                                        ),
+                                    {
+                                        location: 'api/checkout/webhook',
+                                        action: 'sendAdminEmail',
+                                        metadata: { orderId: order.id },
+                                    }
                                 );
                             }
                         }
                     }
                 } catch (err) {
-                    console.error(
-                        'Error processing payment_intent.succeeded:',
-                        err
-                    );
+                    logError(err, {
+                        location: 'api/checkout/webhook',
+                        action: 'processPaymentIntentSucceeded',
+                    });
                     // Log error but don't fail webhook response
                 }
 
@@ -204,10 +239,14 @@ export async function POST(request: NextRequest) {
                     };
                 };
 
-                console.log('Checkout session completed:', {
-                    sessionId: session.id,
-                    amount: session.amount_total,
-                    customer: session.customer_email,
+                logInfo('Checkout session completed', {
+                    location: 'api/checkout/webhook',
+                    action: 'handleCheckoutSessionCompleted',
+                    metadata: {
+                        sessionId: session.id,
+                        amount: session.amount_total,
+                        customer: session.customer_email,
+                    },
                 });
 
                 // Check for duplicate order using payment_intent_id
@@ -219,10 +258,11 @@ export async function POST(request: NextRequest) {
                     .maybeSingle(); // Use maybeSingle to avoid errors when no order exists
 
                 if (existingOrder) {
-                    console.log(
-                        'Order already exists for session:',
-                        session.id
-                    );
+                    logInfo('Order already exists for session', {
+                        location: 'api/checkout/webhook',
+                        action: 'checkDuplicateOrder',
+                        metadata: { sessionId: session.id },
+                    });
                     break;
                 }
 
@@ -262,13 +302,19 @@ export async function POST(request: NextRequest) {
                     null;
 
                 if (!customerName) {
-                    console.error(
-                        'Missing customer name in checkout session:',
+                    logError(
+                        new Error('Missing customer name in checkout session'),
                         {
-                            sessionId: session.id,
-                            customerEmail: session.customer_email,
-                            shippingDetailsName: session.shipping_details?.name,
-                            customerDetailsName: session.customer_details?.name,
+                            location: 'api/checkout/webhook',
+                            action: 'extractCustomerName',
+                            metadata: {
+                                sessionId: session.id,
+                                customerEmail: session.customer_email,
+                                shippingDetailsName:
+                                    session.shipping_details?.name,
+                                customerDetailsName:
+                                    session.customer_details?.name,
+                            },
                         }
                     );
                 }
@@ -313,20 +359,26 @@ export async function POST(request: NextRequest) {
                         errorCode === '23505' &&
                         orderError.message.includes('payment_intent_id')
                     ) {
-                        console.log(
-                            'Order already created (concurrent webhook):',
-                            session.id
-                        );
+                        logInfo('Order already created (concurrent webhook)', {
+                            location: 'api/checkout/webhook',
+                            action: 'handleDuplicateOrder',
+                            metadata: { sessionId: session.id },
+                        });
                         break; // Exit gracefully
                     }
-                    console.error(
-                        'Failed to create order from session:',
-                        orderError
-                    );
+                    logError(orderError, {
+                        location: 'api/checkout/webhook',
+                        action: 'createOrderFromSession',
+                        metadata: { sessionId: session.id },
+                    });
                 } else {
-                    console.log('Order created from session:', {
-                        orderId: order?.id,
-                        orderNumber: order?.orderNumber,
+                    logInfo('Order created from session', {
+                        location: 'api/checkout/webhook',
+                        action: 'createOrderFromSession',
+                        metadata: {
+                            orderId: order?.id,
+                            orderNumber: order?.orderNumber,
+                        },
                     });
 
                     // Send order confirmation and admin notification emails
@@ -334,15 +386,29 @@ export async function POST(request: NextRequest) {
                     if (order) {
                         const emailResults = await sendOrderEmails(order);
                         if (!emailResults.customer.success) {
-                            console.error(
-                                'Failed to send customer confirmation email:',
-                                emailResults.customer.error
+                            logError(
+                                emailResults.customer.error ||
+                                    new Error(
+                                        'Failed to send customer confirmation email'
+                                    ),
+                                {
+                                    location: 'api/checkout/webhook',
+                                    action: 'sendCustomerEmail',
+                                    metadata: { orderId: order.id },
+                                }
                             );
                         }
                         if (!emailResults.admin.success) {
-                            console.error(
-                                'Failed to send admin notification email:',
-                                emailResults.admin.error
+                            logError(
+                                emailResults.admin.error ||
+                                    new Error(
+                                        'Failed to send admin notification email'
+                                    ),
+                                {
+                                    location: 'api/checkout/webhook',
+                                    action: 'sendAdminEmail',
+                                    metadata: { orderId: order.id },
+                                }
                             );
                         }
                     }
@@ -354,11 +420,16 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.payment_failed': {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-                console.error('Payment failed:', {
-                    paymentIntentId: paymentIntent.id,
-                    amount: paymentIntent.amount,
-                    customer: paymentIntent.metadata.customerEmail,
-                    lastPaymentError: paymentIntent.last_payment_error?.message,
+                logError(new Error('Payment failed'), {
+                    location: 'api/checkout/webhook',
+                    action: 'handlePaymentIntentFailed',
+                    metadata: {
+                        paymentIntentId: paymentIntent.id,
+                        amount: paymentIntent.amount,
+                        customer: paymentIntent.metadata.customerEmail,
+                        lastPaymentError:
+                            paymentIntent.last_payment_error?.message,
+                    },
                 });
 
                 // In production, you might want to:
@@ -370,15 +441,20 @@ export async function POST(request: NextRequest) {
             }
 
             default:
-                console.log('Unhandled webhook event type:', event.type);
+                logInfo('Unhandled webhook event type', {
+                    location: 'api/checkout/webhook',
+                    action: 'handleWebhookEvent',
+                    metadata: { eventType: event.type },
+                });
         }
 
         // Always return 200 to Stripe to acknowledge receipt
         return NextResponse.json({ received: true }, { status: 200 });
     } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : 'Unknown error';
-        console.error('Webhook processing error:', errorMessage);
+        logError(error, {
+            location: 'api/checkout/webhook',
+            action: 'processWebhook',
+        });
 
         // Still return 200 to Stripe to prevent retries
         // Log the error for manual investigation

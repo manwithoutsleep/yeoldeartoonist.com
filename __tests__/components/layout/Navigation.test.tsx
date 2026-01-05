@@ -48,7 +48,7 @@ describe('Navigation Component', () => {
 
     it('should display mobile toggle button', () => {
         render(<Navigation />);
-        const toggleButton = screen.getByLabelText('Toggle navigation');
+        const toggleButton = screen.getByLabelText('Open navigation menu');
         expect(toggleButton).toBeInTheDocument();
     });
 
@@ -56,7 +56,7 @@ describe('Navigation Component', () => {
         const user = userEvent.setup();
         render(<Navigation />);
 
-        const toggleButton = screen.getByLabelText('Toggle navigation');
+        const toggleButton = screen.getByLabelText('Open navigation menu');
 
         // Initially, toggle button should be present (for mobile)
         expect(toggleButton).toBeInTheDocument();
@@ -64,28 +64,33 @@ describe('Navigation Component', () => {
         // Click to open menu
         await user.click(toggleButton);
 
-        // After click, the button state changes
-        expect(toggleButton).toBeInTheDocument();
+        // After click, the button label changes
+        const closeButton = screen.getByLabelText('Close navigation menu');
+        expect(closeButton).toBeInTheDocument();
 
         // Click to close menu
-        await user.click(toggleButton);
+        await user.click(closeButton);
 
-        // Button should still be present
-        expect(toggleButton).toBeInTheDocument();
+        // Button should be back to "Open" state
+        expect(
+            screen.getByLabelText('Open navigation menu')
+        ).toBeInTheDocument();
     });
 
     it('should render mobile menu when toggle is activated', async () => {
         const user = userEvent.setup();
         render(<Navigation />);
 
-        const toggleButton = screen.getByLabelText('Toggle navigation');
+        const toggleButton = screen.getByLabelText('Open navigation menu');
 
         // Open menu
         await user.click(toggleButton);
 
         // Mobile menu text links should now appear after toggle
         // (This would be visible in the DOM as the mobile menu is conditionally rendered)
-        expect(toggleButton).toBeInTheDocument();
+        expect(
+            screen.getByLabelText('Close navigation menu')
+        ).toBeInTheDocument();
     });
 
     it('should render navigation images with correct alt text', () => {
@@ -111,7 +116,7 @@ describe('Navigation Component', () => {
         expect(desktopNav).toBeInTheDocument();
 
         // Mobile toggle should use md:hidden
-        const mobileToggle = screen.getByLabelText('Toggle navigation');
+        const mobileToggle = screen.getByLabelText('Open navigation menu');
         expect(mobileToggle.closest('div')).toHaveClass('md:hidden');
     });
 

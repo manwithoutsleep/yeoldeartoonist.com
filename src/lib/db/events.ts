@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 import { Database } from '@/types/database';
 
 /**
  * Events database query functions
  *
  * Handles all queries related to events (conventions, appearances, etc.)
+ *
+ * Caching Strategy:
+ * - getAllEvents: 30 minutes cache (revalidate: 1800)
+ * - getUpcomingEvents: 30 minutes cache (revalidate: 1800)
+ * - getEventBySlug: 30 minutes cache (revalidate: 1800)
  */
 
 const supabase = createClient<Database>(
@@ -18,13 +24,9 @@ export interface EventQueryError {
 }
 
 /**
- * Get all published events ordered by start_date (upcoming first)
- *
- * @param limit Maximum number of items to return
- * @param offset Pagination offset
- * @returns Array of published events or error
+ * Internal function to get all published events
  */
-export async function getAllEvents(
+async function getAllEventsInternal(
     limit: number = 50,
     offset: number = 0
 ): Promise<{
@@ -67,12 +69,25 @@ export async function getAllEvents(
 }
 
 /**
- * Get upcoming events (starting from today)
+ * Get all published events ordered by start_date (with caching)
  *
  * @param limit Maximum number of items to return
- * @returns Array of upcoming events or error
+ * @param offset Pagination offset
+ * @returns Array of published events or error
  */
-export async function getUpcomingEvents(limit: number = 10): Promise<{
+export const getAllEvents = unstable_cache(
+    getAllEventsInternal,
+    ['events-all'],
+    {
+        revalidate: 1800, // 30 minutes
+        tags: ['events'],
+    }
+);
+
+/**
+ * Internal function to get upcoming events
+ */
+async function getUpcomingEventsInternal(limit: number = 10): Promise<{
     data: Database['public']['Tables']['events']['Row'][] | null;
     error: EventQueryError | null;
 }> {
@@ -116,12 +131,24 @@ export async function getUpcomingEvents(limit: number = 10): Promise<{
 }
 
 /**
- * Get event by slug
+ * Get upcoming events (starting from today) (with caching)
  *
- * @param slug The event slug
- * @returns Single event or error
+ * @param limit Maximum number of items to return
+ * @returns Array of upcoming events or error
  */
-export async function getEventBySlug(slug: string): Promise<{
+export const getUpcomingEvents = unstable_cache(
+    getUpcomingEventsInternal,
+    ['events-upcoming'],
+    {
+        revalidate: 1800, // 30 minutes
+        tags: ['events'],
+    }
+);
+
+/**
+ * Internal function to get event by slug
+ */
+async function getEventBySlugInternal(slug: string): Promise<{
     data: Database['public']['Tables']['events']['Row'] | null;
     error: EventQueryError | null;
 }> {
@@ -159,3 +186,19 @@ export async function getEventBySlug(slug: string): Promise<{
         };
     }
 }
+
+/**
+ * Get event by slug (with caching)
+ *
+ * @param slug The event slug
+ * @returns Single event or error
+ */
+export const getEventBySlug = (slug: string) =>
+    unstable_cache(
+        () => getEventBySlugInternal(slug),
+        ['event-by-slug', slug],
+        {
+            revalidate: 1800, // 30 minutes
+            tags: ['events', `event-${slug}`],
+        }
+    )();

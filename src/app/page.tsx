@@ -1,7 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getFeaturedArtwork } from '@/lib/db/artwork';
 import { siteConfig } from '@/config/site';
+import { StructuredData } from '@/components/seo/StructuredData';
+import {
+    getOrganizationSchema,
+    getWebPageSchema,
+} from '@/lib/seo/structured-data';
 
 /**
  * Home page - Hero section with scroll background and navigation card previews
@@ -15,11 +21,46 @@ import { siteConfig } from '@/config/site';
 
 export const revalidate = 3600; // Revalidate every hour (ISR)
 
+export const metadata: Metadata = {
+    title: `${siteConfig.site.title} - Original Art & Prints by ${siteConfig.artist.name}`,
+    description: `Explore original artwork, prints, and more from ${siteConfig.artist.name}. Browse the gallery, shop for prints, and stay updated on upcoming projects and events.`,
+    openGraph: {
+        title: `${siteConfig.site.title} - Original Art & Prints`,
+        description: `Explore original artwork and prints by ${siteConfig.artist.name}`,
+        url: siteConfig.site.url,
+        type: 'website',
+        images: [
+            {
+                url: '/images/pages/scroll.webp',
+                width: 1200,
+                height: 630,
+                alt: 'Ye Olde Artoonist - Original Art & Prints',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `${siteConfig.site.title} - Original Art & Prints`,
+        description: `Explore original artwork and prints by ${siteConfig.artist.name}`,
+        images: ['/images/pages/scroll.webp'],
+    },
+};
+
 export default async function Home() {
     const { data: featured } = await getFeaturedArtwork(1);
 
     return (
         <div className="bg-black text-white">
+            <StructuredData
+                data={[
+                    getOrganizationSchema(),
+                    getWebPageSchema({
+                        name: siteConfig.site.title,
+                        description: siteConfig.site.description,
+                        url: siteConfig.site.url,
+                    }),
+                ]}
+            />
             {/* Hero Section with Scroll Background */}
             <div
                 className="relative w-full aspect-video flex items-center justify-center overflow-hidden bg-black mt-6"

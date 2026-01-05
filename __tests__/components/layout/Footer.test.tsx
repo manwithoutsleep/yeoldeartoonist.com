@@ -46,7 +46,7 @@ describe('Footer Component', () => {
     it('should have email as mailto link', () => {
         render(<Footer />);
         const emailLink = screen.getByRole('link', {
-            name: siteConfig.artist.email,
+            name: `Email ${siteConfig.artist.name}`,
         });
         expect(emailLink).toHaveAttribute(
             'href',

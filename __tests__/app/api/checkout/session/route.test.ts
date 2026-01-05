@@ -257,11 +257,8 @@ describe('POST /api/checkout/session', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data).toEqual({
-            error: 'Unable to process checkout',
-            message:
-                'Some items in your cart are no longer available or have changed. Please review your cart and try again.',
-        });
+        expect(data.error.code).toBe('VALIDATION_ERROR');
+        expect(data.error.message).toBeDefined();
         const { stripe } = await import('@/lib/payments/stripe');
         expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
     });
@@ -320,8 +317,8 @@ describe('POST /api/checkout/session', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data).toHaveProperty('error', 'Invalid request');
-        expect(data).toHaveProperty('details');
+        expect(data.error.code).toBe('VALIDATION_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('includes customer email when provided', async () => {
@@ -367,10 +364,8 @@ describe('POST /api/checkout/session', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data).toEqual({
-            error: 'Failed to create checkout session',
-            message: 'Stripe API error: Invalid API key',
-        });
+        expect(data.error.code).toBe('PAYMENT_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('includes shipping options in session', async () => {

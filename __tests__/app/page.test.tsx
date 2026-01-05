@@ -20,6 +20,16 @@ vi.mock('@/lib/db/artwork', () => ({
 // Mock site config
 vi.mock('@/config/site', () => ({
     siteConfig: {
+        site: {
+            title: 'Ye Olde Artoonist',
+            description:
+                'Explore original artwork, prints, and more from Joe Schlottach',
+            url: 'https://yeoldeartoonist.com',
+        },
+        artist: {
+            name: 'Joe Schlottach',
+            email: 'joe@yeoldeartoonist.com',
+        },
         navigation: {
             cards: [
                 {
@@ -35,6 +45,15 @@ vi.mock('@/config/site', () => ({
                     description: 'Shoppe',
                     image: 'shoppe.webp',
                     aspectRatio: '16:9',
+                },
+            ],
+        },
+        socialMedia: {
+            sites: [
+                {
+                    title: 'Instagram',
+                    handle: '@ye_olde_artoonist',
+                    href: 'https://www.instagram.com/ye_olde_artoonist',
                 },
             ],
         },

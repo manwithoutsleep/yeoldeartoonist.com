@@ -59,3 +59,16 @@ next-env.d.ts
 *.bak
 *.backup
 *.backup.*
+
+# lighthouse*
+# Lighthouse reports and data
+.lighthouseci/
+.lighthouse/
+lighthouse/
+lighthouse-results/
+*.report.html
+*.report.json
+*.report.csv
+lighthouse-report.json
+# Note: Keep lighthouserc.json if it contains your shared config, 
+# but ignore it if it's auto-generated per run.

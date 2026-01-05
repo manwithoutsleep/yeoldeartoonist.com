@@ -115,7 +115,8 @@ describe('POST /api/checkout/webhook', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Missing signature');
+        expect(data.error.code).toBe('WEBHOOK_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should return 400 for invalid signature', async () => {
@@ -129,7 +130,8 @@ describe('POST /api/checkout/webhook', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Invalid signature');
+        expect(data.error.code).toBe('WEBHOOK_ERROR');
+        expect(data.error.message).toBeDefined();
     });
 
     it('should verify webhook signature', async () => {
@@ -305,7 +307,8 @@ describe('POST /api/checkout/webhook', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.error).toBe('Webhook not configured');
+        expect(data.error.code).toBe('WEBHOOK_ERROR');
+        expect(data.error.message).toBeDefined();
 
         // Restore for other tests
         process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret';

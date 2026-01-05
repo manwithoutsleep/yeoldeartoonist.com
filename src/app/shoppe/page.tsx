@@ -76,22 +76,31 @@ export default async function ShoppePage() {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {products.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                id={product.id}
-                                title={product.title}
-                                description={product.description}
-                                price={product.price}
-                                originalPrice={product.original_price}
-                                inventoryCount={product.inventory_count}
-                                imageThumbnailUrl={product.image_thumbnail_url}
-                                altText={product.alt_text}
-                                slug={product.slug}
-                            />
-                        ))}
-                    </div>
+                    <section aria-labelledby="shop-items-heading">
+                        <h2 id="shop-items-heading" className="sr-only">
+                            Shop Items
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {products.map((product) => (
+                                <article key={product.id}>
+                                    <ProductCard
+                                        id={product.id}
+                                        title={product.title}
+                                        description={product.description}
+                                        price={product.price}
+                                        originalPrice={product.original_price}
+                                        inventoryCount={product.inventory_count}
+                                        imageThumbnailUrl={
+                                            product.image_thumbnail_url
+                                        }
+                                        altText={product.alt_text}
+                                        slug={product.slug}
+                                        headingLevel="h3"
+                                    />
+                                </article>
+                            ))}
+                        </div>
+                    </section>
                 )}
             </div>
         </div>

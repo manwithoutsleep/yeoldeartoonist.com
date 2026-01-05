@@ -198,11 +198,15 @@ export default function ContactClient() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="w-full">
-                                <label className="block text-sm font-semibold text-white mb-2">
+                                <label
+                                    htmlFor="name"
+                                    className="block text-sm font-semibold text-white mb-2"
+                                >
                                     Name
                                 </label>
                                 <input
                                     type="text"
+                                    id="name"
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
@@ -225,11 +229,15 @@ export default function ContactClient() {
                             </div>
 
                             <div className="w-full">
-                                <label className="block text-sm font-semibold text-white mb-2">
+                                <label
+                                    htmlFor="email"
+                                    className="block text-sm font-semibold text-white mb-2"
+                                >
                                     Email
                                 </label>
                                 <input
                                     type="email"
+                                    id="email"
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -252,10 +260,14 @@ export default function ContactClient() {
                             </div>
 
                             <div className="w-full">
-                                <label className="block text-sm font-semibold text-white mb-2">
+                                <label
+                                    htmlFor="message"
+                                    className="block text-sm font-semibold text-white mb-2"
+                                >
                                     Message
                                 </label>
                                 <textarea
+                                    id="message"
                                     name="message"
                                     value={formData.message}
                                     onChange={handleChange}

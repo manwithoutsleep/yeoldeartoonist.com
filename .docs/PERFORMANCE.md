@@ -253,18 +253,17 @@ revalidateTag('events');
 
 ### Security Headers
 
-All routes include security headers:
+All routes include security headers defined in `next.config.ts`:
 
-```json
-{
-    "source": "/(.*)",
-    "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
-    ]
-}
-```
+- **X-Content-Type-Options**: `nosniff` - Prevents MIME type sniffing
+- **X-Frame-Options**: `DENY` - Prevents clickjacking attacks
+- **X-XSS-Protection**: `1; mode=block` - Enables XSS filtering
+- **Strict-Transport-Security**: HSTS with preload
+- **Content-Security-Policy**: Comprehensive CSP with Stripe integration
+- **Referrer-Policy**: `origin-when-cross-origin`
+- **Permissions-Policy**: Restricts browser features
+
+See `next.config.ts` lines 96-149 for full security header configuration.
 
 ### Edge Network
 

@@ -45,7 +45,7 @@ const mockArtworkDetail: ArtworkRow = {
     slug: 'sunset-over-mountains',
     image_large_url: '/images/sunset-large.webp',
     image_thumbnail_url: '/images/sunset-thumb.webp',
-    image_url: '/images/sunset.webp',
+    image_url: '/images/sunset-preview.webp',
     alt_text: 'Sunset over mountain range',
     price: '199.99',
     original_price: null,
@@ -197,7 +197,7 @@ describe('Gallery Detail Page ([slug])', () => {
 
     // Image Tests
     describe('Image Display', () => {
-        it('should display large image when image_large_url exists', async () => {
+        it('should display 800px image (image_url) in main view', async () => {
             mockGetArtworkBySlug.mockResolvedValue({
                 data: mockArtworkDetail,
                 error: null,
@@ -212,10 +212,10 @@ describe('Gallery Detail Page ([slug])', () => {
                 'Sunset over mountain range'
             ) as HTMLImageElement;
             expect(img).toBeInTheDocument();
-            expect(img.getAttribute('src')).toContain('sunset-large.webp');
+            expect(img.getAttribute('src')).toContain('sunset-preview.webp');
         });
 
-        it('should fallback to image_url when image_large_url is missing', async () => {
+        it('should still display main image when image_large_url is missing', async () => {
             const artworkWithoutLarge = {
                 ...mockArtworkDetail,
                 image_large_url: null,
@@ -235,7 +235,8 @@ describe('Gallery Detail Page ([slug])', () => {
                 'Sunset over mountain range'
             ) as HTMLImageElement;
             expect(img).toBeInTheDocument();
-            expect(img.getAttribute('src')).toContain('sunset.webp');
+            // Main view still uses image_url (800px)
+            expect(img.getAttribute('src')).toContain('sunset-preview.webp');
         });
 
         it('should display "No image available" when both image URLs are missing', async () => {
@@ -785,6 +786,344 @@ describe('Gallery Detail Page ([slug])', () => {
         it('should have revalidate set to 3600 seconds', async () => {
             const { revalidate } = await import('@/app/gallery/[slug]/page');
             expect(revalidate).toBe(3600);
+        });
+    });
+
+    // LIGHTBOX INTEGRATION TESTS (TDD Red Phase - these tests will fail until Step 6)
+    describe('Lightbox Integration', () => {
+        describe('Image Resolution Display', () => {
+            it('should display 800px image (image_url) in main view, NOT 1600px', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                render(result);
+
+                const img = screen.getByAltText(
+                    'Sunset over mountain range'
+                ) as HTMLImageElement;
+                expect(img).toBeInTheDocument();
+
+                // Should use 800px image (image_url), not 1600px (image_large_url)
+                expect(img.getAttribute('src')).toContain(
+                    'sunset-preview.webp'
+                );
+                expect(img.getAttribute('src')).not.toContain(
+                    'sunset-large.webp'
+                );
+            });
+
+            it('should make image clickable with appropriate cursor styling', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Image container should have cursor-pointer class
+                const imageWrapper = container.querySelector('.cursor-pointer');
+                expect(imageWrapper).toBeInTheDocument();
+            });
+
+            it('should have fallback behavior if image_url is missing', async () => {
+                const artworkWithoutImageUrl = {
+                    ...mockArtworkDetail,
+                    image_url: null,
+                };
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: artworkWithoutImageUrl,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                render(result);
+
+                // Should display "No image available" when main image_url is missing
+                expect(
+                    screen.getByText('No image available')
+                ).toBeInTheDocument();
+            });
+        });
+
+        describe('Visual Affordances', () => {
+            it('should display "Click to enlarge" text hint (always visible, not just on hover)', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                render(result);
+
+                // Should display "Click to enlarge" text hint
+                expect(
+                    screen.getByText(/click image to enlarge/i)
+                ).toBeInTheDocument();
+            });
+
+            it('should have proper ARIA attributes for clickable image (role="button", tabindex="0")', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Image wrapper should have role="button" and tabindex="0"
+                const imageButton = container.querySelector(
+                    '[role="button"][tabindex="0"]'
+                );
+                expect(imageButton).toBeInTheDocument();
+            });
+
+            it('should have clear focus indicator for keyboard users', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Image wrapper should have focus styling classes (e.g., focus:ring)
+                const imageButton = container.querySelector('[role="button"]');
+                expect(imageButton).toBeInTheDocument();
+                expect(imageButton?.className).toMatch(/focus:/);
+            });
+        });
+
+        describe('Lightbox Interaction', () => {
+            it('should open lightbox when main image is clicked', async () => {
+                const user = (await import('@testing-library/user-event'))
+                    .default;
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Find the clickable image wrapper
+                const imageButton = container.querySelector('[role="button"]');
+                expect(imageButton).toBeInTheDocument();
+
+                // Click the image
+                await user.setup().click(imageButton!);
+
+                // Lightbox should open (check for dialog role)
+                const lightbox = await screen.findByRole('dialog');
+                expect(lightbox).toBeInTheDocument();
+            });
+
+            it('should open lightbox when Enter/Space key pressed on focused image', async () => {
+                const user = (await import('@testing-library/user-event'))
+                    .default;
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Find the clickable image wrapper
+                const imageButton = container.querySelector('[role="button"]');
+                expect(imageButton).toBeInTheDocument();
+
+                // Focus the image button
+                (imageButton as HTMLElement).focus();
+
+                // Press Enter key
+                await user.setup().keyboard('{Enter}');
+
+                // Lightbox should open (check for dialog role)
+                const lightbox = await screen.findByRole('dialog');
+                expect(lightbox).toBeInTheDocument();
+            });
+
+            it('should pass 1600px image URL to lightbox (image_large_url)', async () => {
+                const user = (await import('@testing-library/user-event'))
+                    .default;
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Click the image to open lightbox
+                const imageButton = container.querySelector('[role="button"]');
+                await user.setup().click(imageButton!);
+
+                // Wait for lightbox dialog to appear
+                await screen.findByRole('dialog');
+
+                // Find the image within the lightbox
+                const lightboxImages = container.querySelectorAll(
+                    '[role="dialog"] img'
+                );
+                expect(lightboxImages.length).toBeGreaterThan(0);
+                const lightboxImage = lightboxImages[0] as HTMLImageElement;
+
+                // In lightbox, image should be the full 1600px version (image_large_url)
+                expect(lightboxImage.getAttribute('src')).toContain(
+                    'sunset-large.webp'
+                );
+            });
+
+            it('should close lightbox when overlay is clicked (via lightbox component)', async () => {
+                const user = (await import('@testing-library/user-event'))
+                    .default;
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Open lightbox
+                const imageButton = container.querySelector('[role="button"]');
+                await user.setup().click(imageButton!);
+
+                // Lightbox should be open
+                const lightbox = await screen.findByRole('dialog');
+                expect(lightbox).toBeInTheDocument();
+
+                // Click close button (X)
+                const closeButton = screen.getByRole('button', {
+                    name: /close/i,
+                });
+                await user.setup().click(closeButton);
+
+                // Lightbox should close
+                await screen.findByAltText('Sunset over mountain range'); // Main image should still be visible
+                expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            });
+
+            it('should pass correct alt text and title to lightbox component', async () => {
+                const user = (await import('@testing-library/user-event'))
+                    .default;
+
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                const { container } = render(result);
+
+                // Open lightbox
+                const imageButton = container.querySelector('[role="button"]');
+                await user.setup().click(imageButton!);
+
+                // Lightbox should have correct aria-labelledby pointing to title
+                const lightbox = await screen.findByRole('dialog');
+                const ariaLabelledBy = lightbox.getAttribute('aria-labelledby');
+                expect(ariaLabelledBy).toBeTruthy();
+
+                // Title element should contain artwork title
+                const titleElement = document.getElementById(ariaLabelledBy!);
+                expect(titleElement).toBeInTheDocument();
+                expect(titleElement).toHaveTextContent('Sunset Over Mountains');
+            });
+        });
+
+        describe('Regression Tests', () => {
+            it('should preserve existing metadata generation (title, description, Open Graph)', async () => {
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                // Test metadata generation function
+                const { generateMetadata } = await import(
+                    '@/app/gallery/[slug]/page'
+                );
+                const metadata = await generateMetadata({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+
+                // Verify metadata is still generated correctly
+                expect(metadata.title).toBe('Sunset Over Mountains');
+                expect(metadata.description).toContain(
+                    'A breathtaking landscape'
+                );
+                expect(metadata.openGraph?.title).toContain(
+                    'Sunset Over Mountains'
+                );
+                expect(metadata.openGraph?.images).toBeDefined();
+
+                // Twitter card requires type assertion
+                const twitterCard = metadata.twitter as
+                    | { card: string }
+                    | undefined;
+                expect(twitterCard?.card).toBe('summary_large_image');
+            });
+
+            it('should not affect Gallery page thumbnails (verify Gallery page still uses 300px)', async () => {
+                // This is a cross-page regression test
+                // The Gallery detail page changes should not affect the Gallery page
+                // Gallery page uses thumbnail images (300px) for the grid view
+
+                // This test verifies the implementation doesn't accidentally
+                // change image resolution logic in the Gallery page
+
+                // Since Gallery page is already tested in its own test file,
+                // we just verify that the detail page uses the correct resolution
+                mockGetArtworkBySlug.mockResolvedValue({
+                    data: mockArtworkDetail,
+                    error: null,
+                });
+
+                const result = await GalleryDetailPage({
+                    params: Promise.resolve({ slug: 'sunset-over-mountains' }),
+                });
+                render(result);
+
+                // Detail page should use 800px (image_url), not 300px thumbnail
+                const img = screen.getByAltText(
+                    'Sunset over mountain range'
+                ) as HTMLImageElement;
+                expect(img.getAttribute('src')).toContain(
+                    'sunset-preview.webp'
+                );
+                expect(img.getAttribute('src')).not.toContain('thumb');
+            });
         });
     });
 });

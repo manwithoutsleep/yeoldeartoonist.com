@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -9,6 +8,8 @@ import {
     getImageObjectSchema,
     getWebPageSchema,
 } from '@/lib/seo/structured-data';
+import { GalleryDetailClient } from './GalleryDetailClient';
+import type { Database } from '@/types/database';
 
 /**
  * Gallery detail page - Individual artwork view
@@ -21,12 +22,37 @@ import {
  * - Server-side rendering with static generation
  */
 
+type ArtworkRow = Database['public']['Tables']['artwork']['Row'];
+
 interface GalleryDetailPageProps {
     params: Promise<{ slug: string }>;
 }
 
+/**
+ * Gets the appropriate image URL for an artwork with fallback chain.
+ * Used for Open Graph images, Twitter cards, and structured data.
+ *
+ * Fallback priority:
+ * 1. image_large_url (800px) - optimal for social media previews
+ * 2. image_url (1600px) - full resolution fallback
+ * 3. /og-image.jpg - site default
+ *
+ * @param artwork - The artwork record
+ * @returns Image URL string for metadata
+ */
+function getArtworkImageUrl(artwork: ArtworkRow): string {
+    return artwork.image_large_url || artwork.image_url || '/og-image.jpg';
+}
+
 export const revalidate = 3600; // Revalidate every hour (ISR)
 
+/**
+ * Generates metadata for the gallery detail page including Open Graph and Twitter cards.
+ * Creates SEO-optimized metadata with appropriate image URLs and descriptions.
+ *
+ * @param params - Page parameters containing the artwork slug
+ * @returns Metadata object for Next.js head
+ */
 export async function generateMetadata({
     params,
 }: GalleryDetailPageProps): Promise<Metadata> {
@@ -46,8 +72,7 @@ export async function generateMetadata({
             : artwork.description
         : `View ${artwork.title} by ${siteConfig.artist.name}`;
 
-    const imageUrl =
-        artwork.image_large_url || artwork.image_url || '/og-image.jpg';
+    const imageUrl = getArtworkImageUrl(artwork);
 
     return {
         title: artwork.title,
@@ -75,11 +100,31 @@ export async function generateMetadata({
     };
 }
 
+/**
+ * Generates static paths for all artwork pages at build time.
+ * Enables Static Site Generation (SSG) for better performance.
+ *
+ * @returns Array of slug parameters for static generation
+ */
 export async function generateStaticParams() {
     const { data: slugs } = await getAllArtworkSlugs();
     return (slugs || []).map((item) => ({ slug: item.slug }));
 }
 
+/**
+ * Gallery detail page component - displays individual artwork.
+ *
+ * Server component that fetches artwork data and renders:
+ * - Large artwork image with lightbox functionality (via GalleryDetailClient)
+ * - Artwork metadata (title, description, medium, dimensions, year, tags)
+ * - Back navigation to gallery
+ * - SEO structured data (WebPage and ImageObject schemas)
+ *
+ * Uses ISR (Incremental Static Regeneration) with 1-hour revalidation.
+ *
+ * @param params - Page parameters containing the artwork slug
+ * @returns Gallery detail page component or 404 if artwork not found
+ */
 export default async function GalleryDetailPage({
     params,
 }: GalleryDetailPageProps) {
@@ -90,8 +135,7 @@ export default async function GalleryDetailPage({
         notFound();
     }
 
-    const imageUrl =
-        artwork.image_large_url || artwork.image_url || '/og-image.jpg';
+    const imageUrl = getArtworkImageUrl(artwork);
 
     return (
         <div className="bg-white text-black">
@@ -121,32 +165,8 @@ export default async function GalleryDetailPage({
                 </Link>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Image */}
-                    <div className="flex items-center justify-center bg-gray-100 rounded border-2 border-black p-4 aspect-square">
-                        {artwork.image_large_url ? (
-                            <div className="relative w-full h-full">
-                                <Image
-                                    src={artwork.image_large_url}
-                                    alt={artwork.alt_text || artwork.title}
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
-                        ) : artwork.image_url ? (
-                            <div className="relative w-full h-full">
-                                <Image
-                                    src={artwork.image_url}
-                                    alt={artwork.alt_text || artwork.title}
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
-                        ) : (
-                            <div className="text-gray-400 text-center">
-                                No image available
-                            </div>
-                        )}
-                    </div>
+                    {/* Image with Lightbox (Client Component) */}
+                    <GalleryDetailClient artwork={artwork} />
 
                     {/* Details */}
                     <div>

@@ -27,7 +27,7 @@ Write comprehensive test cases covering:
     - Should have fallback behavior if `image_large_url` is missing
 
 2. **Visual Affordance Tests** (3 tests):
-    - Should display "Click to enlarge" text hint (always visible, not just on hover)
+    - Should display "Click image to enlarge" text hint (always visible, not just on hover)
     - Should have proper ARIA attributes for clickable image (role="button", tabindex="0")
     - Should have clear focus indicator for keyboard users
 

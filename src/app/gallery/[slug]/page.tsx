@@ -164,7 +164,7 @@ export default async function GalleryDetailPage({
                     ← Back to Gallery
                 </Link>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(auto,800px)_1fr] gap-12">
                     {/* Image with Lightbox (Client Component) */}
                     <GalleryDetailClient artwork={artwork} />
 

@@ -34,7 +34,7 @@ Modify/create these files:
     - Fallback: If `image_large_url` is missing, fall back to `image_url`
 
 2. **Visual Affordances (Approved Design):**
-    - **"Click to enlarge" text hint:** Persistent text below or near image, always visible, high contrast
+    - **"Click image to enlarge" text hint:** Persistent text below or near image, always visible, high contrast
     - **Zoom icon overlay on hover:** Centered magnifying glass icon with semi-transparent background (desktop only)
     - **Keyboard accessibility:** Image wrapper with role="button", tabindex="0", clear focus indicator
     - **ARIA attributes:** Proper labels for screen reader users

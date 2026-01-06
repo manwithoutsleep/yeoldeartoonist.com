@@ -36,8 +36,8 @@ export interface ImageLightboxProps {
 /**
  * Constants for ID generation and focus management
  */
-const ID_RANDOM_START_INDEX = 2;
-const ID_RANDOM_END_INDEX = 9;
+const RANDOM_PREFIX_LENGTH = 2; // Length of '0.' prefix to skip
+const RANDOM_ID_LENGTH = 7; // Number of random characters to generate
 const FOCUSABLE_ELEMENTS_SELECTOR =
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -55,10 +55,13 @@ export function ImageLightbox({
      * Generate unique ID for aria-labelledby attribute.
      * Using useState initializer ensures ID remains stable across renders.
      */
-    const [titleId] = useState(
-        () =>
-            `lightbox-title-${Math.random().toString(36).substring(ID_RANDOM_START_INDEX, ID_RANDOM_END_INDEX)}`
-    );
+    const [titleId] = useState(() => {
+        const randomStr = Math.random()
+            .toString(36)
+            .substring(RANDOM_PREFIX_LENGTH);
+        const randomId = randomStr.substring(0, RANDOM_ID_LENGTH);
+        return `lightbox-title-${randomId}`;
+    });
 
     /**
      * Effect: Handle Escape key to close lightbox

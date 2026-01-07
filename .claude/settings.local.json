@@ -57,7 +57,8 @@
             "WebFetch(domain:supabase.com)",
             "WebSearch",
             "Skill(close-pr-and-cleanup)",
-            "Bash(npm run build:full:*)"
+            "Bash(npm run build:full:*)",
+            "WebFetch(domain:github.com)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

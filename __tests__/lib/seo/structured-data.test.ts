@@ -168,6 +168,34 @@ describe('getProductSchema', () => {
 
         expect(result.offers.url).toBe(productUrl);
     });
+
+    it('should include SKU when provided', () => {
+        const result = getProductSchema({
+            name: 'Product with SKU',
+            description: 'Product with SKU code',
+            image: 'https://example.com/image.jpg',
+            price: 59.99,
+            availability: 'InStock',
+            url: 'https://example.com/product',
+            sku: 'ART-12345',
+        });
+
+        expect(result).toHaveProperty('sku');
+        expect(result.sku).toBe('ART-12345');
+    });
+
+    it('should omit SKU when not provided', () => {
+        const result = getProductSchema({
+            name: 'Product without SKU',
+            description: 'Product without SKU code',
+            image: 'https://example.com/image.jpg',
+            price: 59.99,
+            availability: 'InStock',
+            url: 'https://example.com/product',
+        });
+
+        expect(result).not.toHaveProperty('sku');
+    });
 });
 
 describe('getWebPageSchema', () => {

@@ -163,6 +163,7 @@ export default async function ShoppeDetailPage({
                         price: parseFloat(artwork.price),
                         availability,
                         url: `${siteConfig.site.url}/shoppe/${slug}`,
+                        sku: artwork.sku || undefined,
                     }),
                 ]}
             />

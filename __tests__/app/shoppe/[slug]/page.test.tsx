@@ -770,6 +770,63 @@ describe('Shoppe Detail Page ([slug])', () => {
             }
         });
 
+        it('should include SKU in structured data when available', async () => {
+            mockGetArtworkBySlug.mockResolvedValue({
+                data: mockProductDetail,
+                error: null,
+            });
+
+            const result = await ShoppeDetailPage({
+                params: Promise.resolve({ slug: 'mountain-sunset-print' }),
+            });
+            const { container } = render(result);
+
+            // Check for structured data script tag
+            const structuredData = container.querySelector(
+                'script[type="application/ld+json"]'
+            );
+            expect(structuredData).toBeInTheDocument();
+
+            if (structuredData) {
+                const jsonData = JSON.parse(structuredData.textContent || '[]');
+                // Should include Product schema with SKU
+                const productSchema = jsonData.find(
+                    (item: { '@type': string }) => item['@type'] === 'Product'
+                );
+                expect(productSchema).toBeDefined();
+                expect(productSchema.sku).toBe('PRINT-001');
+            }
+        });
+
+        it('should omit SKU from structured data when not available', async () => {
+            const productWithoutSku = { ...mockProductDetail, sku: null };
+            mockGetArtworkBySlug.mockResolvedValue({
+                data: productWithoutSku,
+                error: null,
+            });
+
+            const result = await ShoppeDetailPage({
+                params: Promise.resolve({ slug: 'mountain-sunset-print' }),
+            });
+            const { container } = render(result);
+
+            // Check for structured data script tag
+            const structuredData = container.querySelector(
+                'script[type="application/ld+json"]'
+            );
+            expect(structuredData).toBeInTheDocument();
+
+            if (structuredData) {
+                const jsonData = JSON.parse(structuredData.textContent || '[]');
+                // Should include Product schema without SKU
+                const productSchema = jsonData.find(
+                    (item: { '@type': string }) => item['@type'] === 'Product'
+                );
+                expect(productSchema).toBeDefined();
+                expect(productSchema.sku).toBeUndefined();
+            }
+        });
+
         it('should use appropriate image for social preview', async () => {
             mockGetArtworkBySlug.mockResolvedValue({
                 data: mockProductDetail,

@@ -63,6 +63,7 @@ export function getProductSchema(params: {
     price: number;
     availability: 'InStock' | 'OutOfStock' | 'PreOrder';
     url: string;
+    sku?: string;
 }) {
     return {
         '@context': JSON_LD_CONTEXT,
@@ -71,6 +72,7 @@ export function getProductSchema(params: {
         description: params.description,
         image: params.image,
         url: params.url,
+        ...(params.sku && { sku: params.sku }),
         offers: {
             '@type': 'Offer',
             price: params.price.toFixed(2),

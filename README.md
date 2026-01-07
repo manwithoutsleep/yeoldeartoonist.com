@@ -52,6 +52,12 @@ The application is production-ready with comprehensive error handling, SEO optim
 ```
 src/
 ├── app/              # Next.js app router pages
+│   ├── gallery/      # Gallery pages (view-only artwork)
+│   │   └── [slug]/   # Gallery detail pages with lightbox
+│   ├── shoppe/       # Shop pages (purchasable products)
+│   │   ├── page.tsx  # Product list page
+│   │   └── [slug]/   # Product detail pages with e-commerce features
+│   └── ...
 ├── components/       # React components
 ├── lib/              # Utilities and helpers
 │   ├── db/           # Database queries

@@ -66,7 +66,11 @@ export function ProductCard({
     return (
         <div className="border-2 border-black rounded overflow-hidden hover:shadow-lg transition-shadow">
             {/* Product Image */}
-            <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
+            <Link
+                href={`/shoppe/${slug}`}
+                aria-label={`View ${title} details`}
+                className="block relative w-full aspect-square overflow-hidden bg-gray-100"
+            >
                 {imageThumbnailUrl ? (
                     <Image
                         src={imageThumbnailUrl}
@@ -79,13 +83,15 @@ export function ProductCard({
                         <span className="text-gray-400">No image</span>
                     </div>
                 )}
-            </div>
+            </Link>
 
             {/* Product Info */}
             <div className="p-6">
-                <HeadingTag className="text-xl font-bold mb-2">
-                    {title}
-                </HeadingTag>
+                <Link href={`/shoppe/${slug}`} className="hover:underline">
+                    <HeadingTag className="text-xl font-bold mb-2">
+                        {title}
+                    </HeadingTag>
+                </Link>
 
                 {description && (
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
@@ -122,7 +128,7 @@ export function ProductCard({
 
                 {/* View Details Link */}
                 <Link
-                    href={`/gallery/${slug}`}
+                    href={`/shoppe/${slug}`}
                     className="block w-full text-center bg-white text-black border-2 border-black px-4 py-2 rounded font-semibold hover:bg-gray-100 transition-colors mt-3"
                 >
                     View Details

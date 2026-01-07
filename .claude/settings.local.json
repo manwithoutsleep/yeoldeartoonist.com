@@ -56,7 +56,8 @@
             "WebFetch(domain:supabase-sql.vercel.app)",
             "WebFetch(domain:supabase.com)",
             "WebSearch",
-            "Skill(close-pr-and-cleanup)"
+            "Skill(close-pr-and-cleanup)",
+            "Bash(npm run build:full:*)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

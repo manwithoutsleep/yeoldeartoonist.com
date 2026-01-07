@@ -235,7 +235,7 @@ describe('Shoppe Page', () => {
             name: /View Details/i,
         }) as HTMLAnchorElement;
         expect(detailsLink).toBeInTheDocument();
-        expect(detailsLink.getAttribute('href')).toBe('/gallery/test-print');
+        expect(detailsLink.getAttribute('href')).toBe('/shoppe/test-print');
     });
 
     it('should display product thumbnail images', async () => {

@@ -30,11 +30,11 @@ vi.mock('@/config/site', () => ({
             email: 'artist@example.com',
             responseTime: 'Usually responds within 48 hours',
             mailingAddress: {
-                poBox: 'PO Box 123',
-                city: 'New York',
-                state: 'NY',
-                zip: '10001',
-                country: 'USA',
+                poBox: 'PO Box 30799',
+                city: 'Columbia',
+                state: 'MO',
+                zip: '65205',
+                country: 'United States',
             },
         },
         socialMedia: {
@@ -145,10 +145,10 @@ describe('Contact Page', () => {
                 // Match the specific paragraph with mailing address content
                 const text = element?.textContent ?? '';
                 return (
-                    text.includes('PO Box 123') &&
-                    text.includes('New York') &&
-                    text.includes('10001') &&
-                    text.includes('USA') &&
+                    text.includes('PO Box 30799') &&
+                    text.includes('Columbia') &&
+                    text.includes('65205') &&
+                    text.includes('United States') &&
                     // Make sure we're matching a p tag, not the whole page
                     element?.tagName === 'P'
                 );

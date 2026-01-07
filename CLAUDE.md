@@ -82,6 +82,13 @@ npm run test:ui       # Run tests with UI interface
 ```
 src/
 ├── app/              # Next.js 16 App Router pages + layouts
+│   ├── gallery/[slug]/      # Gallery detail pages (view-only)
+│   ├── shoppe/
+│   │   ├── page.tsx         # Shoppe list page
+│   │   └── [slug]/          # Shoppe detail pages (with e-commerce features)
+│   │       ├── page.tsx     # Server component (data + metadata)
+│   │       └── ShoppeDetailClient.tsx  # Client component (lightbox interaction)
+│   └── ...
 ├── components/       # React components (to be populated in Phase 2)
 ├── lib/
 │   ├── db/
@@ -145,6 +152,29 @@ src/
 - Centralized in `src/config/site.ts` with site info, navigation, social media links
 - Environment variables in `.env.local` (add to `.gitignore`)
 - Required vars: Supabase URLs/keys, Stripe keys, Resend API key
+
+#### 6. Image Resolution Strategy
+
+**Gallery and Shoppe Detail Pages:**
+
+- **Main View**: 800px images (`image_url` field)
+    - Optimized for detail page display
+    - Balances quality with bandwidth efficiency
+    - Square aspect ratio container with object-contain
+- **Lightbox View**: 1600px images (`image_large_url` field)
+    - High-quality full-screen viewing experience
+    - Lazy-loaded only when lightbox is opened
+    - Falls back to `image_url` if `image_large_url` is not available
+- **Fallback Handling**:
+    - If `image_url` is missing: displays "No image available" message
+    - Alt text uses `alt_text` field with fallback to `title`
+    - Maintains accessibility with proper ARIA labels
+
+**Implementation Notes:**
+
+- Both Gallery (`/gallery/[slug]`) and Shoppe (`/shoppe/[slug]`) detail pages use identical image resolution strategies for consistency
+- GalleryDetailClient and ShoppeDetailClient components follow the same pattern
+- ImageLightbox component is shared between both detail page types
 
 ## Database Schema Overview
 

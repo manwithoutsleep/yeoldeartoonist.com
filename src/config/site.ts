@@ -10,10 +10,10 @@ export const siteConfig = {
         email: 'joe@yeoldeartoonist.com',
         bio: `I am a Missouri born and raised lover of the arts! Honed my craft before the advent of the internet and now work in both practical and digital. Over the last couple decades I have worked on varied commissions and murals as a freelance artist outside of my 8 to 5's. Being a child of the 80's I was surrounded by nature and heavily influenced by the modern age of comics, the renaissance period of Disney, Hollywood Blockbusters, Saturday morning cartoons and Anime, the rise of the home gaming consoles and the Golden age of arcades as well as the multitudes of fantasy/sci-fi literature. Basically an all you can eat smorgasbord for my imagination!`,
         mailingAddress: {
-            poBox: 'PO Box 123',
+            poBox: 'PO Box 30799',
             city: 'Columbia',
             state: 'MO',
-            zip: '65201',
+            zip: '65205',
             country: 'United States',
         },
         responseTime:

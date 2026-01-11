@@ -55,12 +55,12 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
 
             {/* Price column */}
             <td className="px-4 py-4 text-right text-gray-900">
-                ${parseFloat(item.price_at_purchase).toFixed(2)}
+                ${(parseFloat(item.price_at_purchase) || 0).toFixed(2)}
             </td>
 
             {/* Subtotal column */}
             <td className="px-4 py-4 text-right text-gray-900">
-                ${parseFloat(item.line_subtotal).toFixed(2)}
+                ${(parseFloat(item.line_subtotal) || 0).toFixed(2)}
             </td>
         </tr>
     );

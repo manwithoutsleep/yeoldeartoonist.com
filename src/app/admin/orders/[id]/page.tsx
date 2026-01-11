@@ -187,26 +187,34 @@ export default async function OrderDetailPage({
                             <div className="flex justify-between text-gray-900">
                                 <span>Subtotal:</span>
                                 <span>
-                                    ${parseFloat(order.subtotal).toFixed(2)}
+                                    $
+                                    {(parseFloat(order.subtotal) || 0).toFixed(
+                                        2
+                                    )}
                                 </span>
                             </div>
                             <div className="flex justify-between text-gray-900">
                                 <span>Shipping:</span>
                                 <span>
                                     $
-                                    {parseFloat(order.shipping_cost).toFixed(2)}
+                                    {(
+                                        parseFloat(order.shipping_cost) || 0
+                                    ).toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-gray-900">
                                 <span>Tax:</span>
                                 <span>
-                                    ${parseFloat(order.tax_amount).toFixed(2)}
+                                    $
+                                    {(
+                                        parseFloat(order.tax_amount) || 0
+                                    ).toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-lg font-semibold text-gray-900 pt-2 border-t border-gray-200">
                                 <span>Total:</span>
                                 <span>
-                                    ${parseFloat(order.total).toFixed(2)}
+                                    ${(parseFloat(order.total) || 0).toFixed(2)}
                                 </span>
                             </div>
                         </div>

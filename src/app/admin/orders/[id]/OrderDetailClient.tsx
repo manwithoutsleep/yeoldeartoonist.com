@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { type OrderWithItems, type OrderStatus } from '@/lib/db/admin/orders';
+import {
+    type OrderWithItemsAndArtwork,
+    type OrderStatus,
+} from '@/lib/db/admin/orders';
 import {
     updateStatusAction,
     addNoteAction,
@@ -10,7 +13,7 @@ import {
 } from '../actions';
 
 interface OrderDetailClientProps {
-    order: OrderWithItems;
+    order: OrderWithItemsAndArtwork;
 }
 
 export default function OrderDetailClient({ order }: OrderDetailClientProps) {

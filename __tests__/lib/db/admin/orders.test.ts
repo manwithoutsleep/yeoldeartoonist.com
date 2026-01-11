@@ -7,6 +7,8 @@ import {
     addOrderNote,
     addTrackingNumber,
     type OrderStatus,
+    type OrderItemWithArtwork,
+    type OrderWithItemsAndArtwork,
 } from '@/lib/db/admin/orders';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
@@ -224,20 +226,48 @@ describe('Admin Order Queries', () => {
         });
     });
 
-    describe('getOrderById', () => {
-        it('returns order with order_items joined', async () => {
+    describe('getOrderById - Enhanced with Artwork Details (Issue #65)', () => {
+        it('should return order with order_items including artwork details', async () => {
             const mockData = {
                 id: '1',
                 order_number: 'ORD-001',
+                customer_name: 'John Doe',
                 order_items: [
                     {
                         id: 'item-1',
+                        order_id: '1',
                         artwork_id: 'art-1',
                         quantity: 2,
                         price_at_purchase: '50.00',
+                        line_subtotal: '100.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: {
+                            title: 'Beautiful Painting',
+                            sku: 'ART-001',
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'beautiful-painting',
+                        },
+                    },
+                    {
+                        id: 'item-2',
+                        order_id: '1',
+                        artwork_id: 'art-2',
+                        quantity: 1,
+                        price_at_purchase: '75.00',
+                        line_subtotal: '75.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: {
+                            title: 'Stunning Sculpture',
+                            sku: 'ART-002',
+                            image_thumbnail_url:
+                                'https://example.com/thumb2.jpg',
+                            slug: 'stunning-sculpture',
+                        },
                     },
                 ],
             };
+
             const mockSelect = vi.fn().mockReturnThis();
             const mockEq = vi.fn().mockReturnThis();
             const mockSingle = vi.fn().mockResolvedValue({
@@ -261,9 +291,235 @@ describe('Admin Order Queries', () => {
             expect(mockSelect).toHaveBeenCalledWith(
                 expect.stringContaining('order_items')
             );
+            expect(mockSelect).toHaveBeenCalledWith(
+                expect.stringContaining('artwork')
+            );
             expect(mockEq).toHaveBeenCalledWith('id', '1');
             expect(result.data).toEqual(mockData);
             expect(result.error).toBeNull();
+
+            // Verify artwork details are included in order items
+            // Type assertion: we expect the result to have artwork details once Step 3 is implemented
+            const orderWithArtwork =
+                result.data as unknown as OrderWithItemsAndArtwork;
+            expect(orderWithArtwork?.order_items[0].artwork).toBeDefined();
+            expect(orderWithArtwork?.order_items[0].artwork?.title).toBe(
+                'Beautiful Painting'
+            );
+            expect(orderWithArtwork?.order_items[0].artwork?.sku).toBe(
+                'ART-001'
+            );
+            expect(orderWithArtwork?.order_items[0].artwork?.slug).toBe(
+                'beautiful-painting'
+            );
+        });
+
+        it('should handle orders with missing/deleted artwork gracefully', async () => {
+            const mockData = {
+                id: '1',
+                order_number: 'ORD-001',
+                customer_name: 'John Doe',
+                order_items: [
+                    {
+                        id: 'item-1',
+                        order_id: '1',
+                        artwork_id: 'art-1',
+                        quantity: 2,
+                        price_at_purchase: '50.00',
+                        line_subtotal: '100.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: {
+                            title: 'Available Artwork',
+                            sku: 'ART-001',
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'available-artwork',
+                        },
+                    },
+                    {
+                        id: 'item-2',
+                        order_id: '1',
+                        artwork_id: 'art-deleted',
+                        quantity: 1,
+                        price_at_purchase: '75.00',
+                        line_subtotal: '75.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: null, // Deleted/missing artwork
+                    },
+                ],
+            };
+
+            const mockSelect = vi.fn().mockReturnThis();
+            const mockEq = vi.fn().mockReturnThis();
+            const mockSingle = vi.fn().mockResolvedValue({
+                data: mockData,
+                error: null,
+            });
+
+            (mockSupabase.from as ReturnType<typeof vi.fn>).mockReturnValue({
+                select: mockSelect,
+            });
+            mockSelect.mockReturnValue({
+                eq: mockEq,
+            });
+            mockEq.mockReturnValue({
+                single: mockSingle,
+            });
+
+            const result = await getOrderById('1');
+
+            expect(result.data).toEqual(mockData);
+            expect(result.error).toBeNull();
+
+            // Type assertion: we expect the result to have artwork details once Step 3 is implemented
+            const orderWithArtwork =
+                result.data as unknown as OrderWithItemsAndArtwork;
+
+            // Verify first item has artwork
+            expect(orderWithArtwork?.order_items[0].artwork).not.toBeNull();
+
+            // Verify second item has null artwork (graceful handling)
+            expect(orderWithArtwork?.order_items[1].artwork).toBeNull();
+            expect(orderWithArtwork?.order_items[1].artwork_id).toBe(
+                'art-deleted'
+            );
+        });
+
+        it('should only select necessary artwork fields (title, sku, image_thumbnail_url, slug)', async () => {
+            const mockSelect = vi.fn().mockReturnThis();
+            const mockEq = vi.fn().mockReturnThis();
+            const mockSingle = vi.fn().mockResolvedValue({
+                data: null,
+                error: null,
+            });
+
+            (mockSupabase.from as ReturnType<typeof vi.fn>).mockReturnValue({
+                select: mockSelect,
+            });
+            mockSelect.mockReturnValue({
+                eq: mockEq,
+            });
+            mockEq.mockReturnValue({
+                single: mockSingle,
+            });
+
+            await getOrderById('1');
+
+            // Verify select query includes only necessary artwork fields
+            const selectQuery = mockSelect.mock.calls[0][0];
+            expect(selectQuery).toContain('title');
+            expect(selectQuery).toContain('sku');
+            expect(selectQuery).toContain('image_thumbnail_url');
+            expect(selectQuery).toContain('slug');
+
+            // Verify it doesn't select all artwork fields (should not use "artwork (*)")
+            // Instead it should use "artwork (title, sku, image_thumbnail_url, slug)"
+            expect(selectQuery).toContain('artwork (');
+        });
+
+        it('should return proper type structure matching OrderWithItemsAndArtwork', async () => {
+            const mockData: OrderWithItemsAndArtwork = {
+                id: '1',
+                order_number: 'ORD-001',
+                customer_name: 'John Doe',
+                customer_email: 'john@example.com',
+                shipping_address_line1: '123 Main St',
+                shipping_address_line2: null,
+                shipping_city: 'Springfield',
+                shipping_state: 'IL',
+                shipping_zip: '62701',
+                shipping_country: 'US',
+                billing_address_line1: '123 Main St',
+                billing_address_line2: null,
+                billing_city: 'Springfield',
+                billing_state: 'IL',
+                billing_zip: '62701',
+                billing_country: 'US',
+                order_notes: null,
+                subtotal: '100.00',
+                shipping_cost: '10.00',
+                tax_amount: '5.00',
+                total: '115.00',
+                status: 'pending',
+                payment_status: 'pending',
+                payment_intent_id: 'pi_123',
+                shipping_tracking_number: null,
+                admin_notes: null,
+                created_at: '2024-01-01T00:00:00Z',
+                updated_at: '2024-01-01T00:00:00Z',
+                order_items: [
+                    {
+                        id: 'item-1',
+                        order_id: '1',
+                        artwork_id: 'art-1',
+                        quantity: 2,
+                        price_at_purchase: '50.00',
+                        line_subtotal: '100.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: {
+                            title: 'Beautiful Painting',
+                            sku: 'ART-001',
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'beautiful-painting',
+                        },
+                    },
+                ],
+            };
+
+            const mockSelect = vi.fn().mockReturnThis();
+            const mockEq = vi.fn().mockReturnThis();
+            const mockSingle = vi.fn().mockResolvedValue({
+                data: mockData,
+                error: null,
+            });
+
+            (mockSupabase.from as ReturnType<typeof vi.fn>).mockReturnValue({
+                select: mockSelect,
+            });
+            mockSelect.mockReturnValue({
+                eq: mockEq,
+            });
+            mockEq.mockReturnValue({
+                single: mockSingle,
+            });
+
+            const result = await getOrderById('1');
+
+            // Type assertion to ensure proper type structure
+            expect(result.data).toBeDefined();
+            if (result.data) {
+                // Type assertion: we expect the result to have artwork details once Step 3 is implemented
+                const orderWithArtwork =
+                    result.data as unknown as OrderWithItemsAndArtwork;
+
+                // Verify order properties
+                expect(orderWithArtwork.id).toBe('1');
+                expect(orderWithArtwork.order_number).toBe('ORD-001');
+                expect(orderWithArtwork.order_items).toBeInstanceOf(Array);
+
+                // Verify order items have artwork property
+                const item = orderWithArtwork.order_items[0];
+                expect(item).toBeDefined();
+                expect(item.artwork).toBeDefined();
+                expect(item.artwork).toHaveProperty('title');
+                expect(item.artwork).toHaveProperty('sku');
+                expect(item.artwork).toHaveProperty('image_thumbnail_url');
+                expect(item.artwork).toHaveProperty('slug');
+
+                // Verify artwork can be null (type safety)
+                const itemWithNullArtwork: OrderItemWithArtwork = {
+                    id: 'item-2',
+                    order_id: '1',
+                    artwork_id: 'art-deleted',
+                    quantity: 1,
+                    price_at_purchase: '75.00',
+                    line_subtotal: '75.00',
+                    created_at: '2024-01-01T00:00:00Z',
+                    artwork: null,
+                };
+                expect(itemWithNullArtwork.artwork).toBeNull();
+            }
         });
 
         it('returns error if order not found', async () => {
@@ -311,6 +567,131 @@ describe('Admin Order Queries', () => {
                 value: undefined,
                 writable: true,
             });
+        });
+    });
+
+    describe('Type Tests - OrderItemWithArtwork', () => {
+        it('should verify OrderItemWithArtwork type has correct shape', () => {
+            // This test verifies the type structure at compile time
+            const validOrderItem: OrderItemWithArtwork = {
+                id: 'item-1',
+                order_id: '1',
+                artwork_id: 'art-1',
+                quantity: 2,
+                price_at_purchase: '50.00',
+                line_subtotal: '100.00',
+                created_at: '2024-01-01T00:00:00Z',
+                artwork: {
+                    title: 'Beautiful Painting',
+                    sku: 'ART-001',
+                    image_thumbnail_url: 'https://example.com/thumb.jpg',
+                    slug: 'beautiful-painting',
+                },
+            };
+
+            expect(validOrderItem).toBeDefined();
+            expect(validOrderItem.artwork).toBeDefined();
+            expect(validOrderItem.artwork?.title).toBe('Beautiful Painting');
+            expect(validOrderItem.artwork?.sku).toBe('ART-001');
+            expect(validOrderItem.artwork?.image_thumbnail_url).toBe(
+                'https://example.com/thumb.jpg'
+            );
+            expect(validOrderItem.artwork?.slug).toBe('beautiful-painting');
+        });
+
+        it('should verify nullable artwork field is properly typed', () => {
+            // Test that artwork can be null
+            const orderItemWithNullArtwork: OrderItemWithArtwork = {
+                id: 'item-1',
+                order_id: '1',
+                artwork_id: 'art-deleted',
+                quantity: 1,
+                price_at_purchase: '50.00',
+                line_subtotal: '50.00',
+                created_at: '2024-01-01T00:00:00Z',
+                artwork: null,
+            };
+
+            expect(orderItemWithNullArtwork.artwork).toBeNull();
+
+            // Test that artwork fields can be null
+            const orderItemWithNullableFields: OrderItemWithArtwork = {
+                id: 'item-2',
+                order_id: '1',
+                artwork_id: 'art-2',
+                quantity: 1,
+                price_at_purchase: '50.00',
+                line_subtotal: '50.00',
+                created_at: '2024-01-01T00:00:00Z',
+                artwork: {
+                    title: 'Artwork Without SKU or Thumbnail',
+                    sku: null,
+                    image_thumbnail_url: null,
+                    slug: 'artwork-without-sku',
+                },
+            };
+
+            expect(orderItemWithNullableFields.artwork?.sku).toBeNull();
+            expect(
+                orderItemWithNullableFields.artwork?.image_thumbnail_url
+            ).toBeNull();
+        });
+    });
+
+    describe('Type Tests - OrderWithItemsAndArtwork', () => {
+        it('should verify OrderWithItemsAndArtwork type has correct shape', () => {
+            const validOrder: OrderWithItemsAndArtwork = {
+                id: '1',
+                order_number: 'ORD-001',
+                customer_name: 'John Doe',
+                customer_email: 'john@example.com',
+                shipping_address_line1: '123 Main St',
+                shipping_address_line2: null,
+                shipping_city: 'Springfield',
+                shipping_state: 'IL',
+                shipping_zip: '62701',
+                shipping_country: 'US',
+                billing_address_line1: '123 Main St',
+                billing_address_line2: null,
+                billing_city: 'Springfield',
+                billing_state: 'IL',
+                billing_zip: '62701',
+                billing_country: 'US',
+                order_notes: null,
+                subtotal: '100.00',
+                shipping_cost: '10.00',
+                tax_amount: '5.00',
+                total: '115.00',
+                status: 'pending',
+                payment_status: 'pending',
+                payment_intent_id: 'pi_123',
+                shipping_tracking_number: null,
+                admin_notes: null,
+                created_at: '2024-01-01T00:00:00Z',
+                updated_at: '2024-01-01T00:00:00Z',
+                order_items: [
+                    {
+                        id: 'item-1',
+                        order_id: '1',
+                        artwork_id: 'art-1',
+                        quantity: 2,
+                        price_at_purchase: '50.00',
+                        line_subtotal: '100.00',
+                        created_at: '2024-01-01T00:00:00Z',
+                        artwork: {
+                            title: 'Beautiful Painting',
+                            sku: 'ART-001',
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'beautiful-painting',
+                        },
+                    },
+                ],
+            };
+
+            expect(validOrder).toBeDefined();
+            expect(validOrder.order_items).toBeInstanceOf(Array);
+            expect(validOrder.order_items[0].artwork).toBeDefined();
         });
     });
 

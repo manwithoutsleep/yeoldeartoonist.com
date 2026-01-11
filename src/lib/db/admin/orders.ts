@@ -15,6 +15,38 @@ export interface OrderWithItems extends OrderRow {
     order_items: OrderItemRow[];
 }
 
+export interface OrderItemWithArtwork extends OrderItemRow {
+    artwork: {
+        title: string;
+        sku: string | null;
+        image_thumbnail_url: string | null;
+        slug: string;
+    } | null;
+}
+
+export interface OrderWithItemsAndArtwork
+    extends Omit<OrderRow, 'order_items'> {
+    order_items: OrderItemWithArtwork[];
+}
+
+/**
+ * Artwork fields to select when joining with order items.
+ * These fields provide essential information for displaying artwork in admin order views:
+ * - title: Display name of the artwork
+ * - sku: Product identifier for inventory management
+ * - image_thumbnail_url: Small image for order item previews
+ * - slug: URL-friendly identifier for linking to artwork detail pages
+ *
+ * Note: artwork may be null if the artwork has been deleted after order creation.
+ * Database indexes on order_items.artwork_id and artwork.id ensure efficient joins.
+ */
+const ARTWORK_FIELDS = `
+    title,
+    sku,
+    image_thumbnail_url,
+    slug
+` as const;
+
 export interface OrderAdminError {
     code: string;
     message: string;
@@ -82,8 +114,30 @@ export async function getAllOrders(
     }
 }
 
+/**
+ * Retrieves a single order by ID with order items and artwork details.
+ *
+ * This query performs a nested join:
+ * 1. Orders table (main query)
+ * 2. Left join with order_items (one order has many items)
+ * 3. Left join with artwork (each item references one artwork)
+ *
+ * The artwork join uses LEFT JOIN semantics, meaning:
+ * - If artwork has been deleted after order creation, artwork will be null
+ * - All order items will still be returned regardless of artwork existence
+ * - Callers should handle null artwork gracefully in the UI
+ *
+ * Performance considerations:
+ * - Indexed on orders.id (primary key)
+ * - Indexed on order_items.order_id (foreign key)
+ * - Indexed on order_items.artwork_id (foreign key)
+ * - Query typically returns 1 order with 1-5 items
+ *
+ * @param id - UUID of the order to retrieve
+ * @returns Promise resolving to order with items and artwork, or error
+ */
 export async function getOrderById(id: string): Promise<{
-    data: OrderWithItems | null;
+    data: OrderWithItemsAndArtwork | null;
     error: OrderAdminError | null;
 }> {
     if (typeof window !== 'undefined') {
@@ -104,7 +158,8 @@ export async function getOrderById(id: string): Promise<{
                     quantity,
                     price_at_purchase,
                     line_subtotal,
-                    created_at
+                    created_at,
+                    artwork (${ARTWORK_FIELDS})
                 )
             `
             )

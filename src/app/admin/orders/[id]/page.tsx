@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getOrderById } from '@/lib/db/admin/orders';
 import OrderDetailClient from './OrderDetailClient';
+import { OrderItemRow } from './OrderItemRow';
 
 export default async function OrderDetailPage({
     params,
@@ -151,7 +152,13 @@ export default async function OrderDetailPage({
                                 <thead>
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Product
+                                            Image
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Item
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            SKU
                                         </th>
                                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                                             Quantity
@@ -166,26 +173,10 @@ export default async function OrderDetailPage({
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {order.order_items.map((item) => (
-                                        <tr key={item.id}>
-                                            <td className="px-4 py-4 text-gray-900">
-                                                Item {item.artwork_id}
-                                            </td>
-                                            <td className="px-4 py-4 text-right text-gray-900">
-                                                {item.quantity}
-                                            </td>
-                                            <td className="px-4 py-4 text-right text-gray-900">
-                                                $
-                                                {parseFloat(
-                                                    item.price_at_purchase
-                                                ).toFixed(2)}
-                                            </td>
-                                            <td className="px-4 py-4 text-right text-gray-900">
-                                                $
-                                                {parseFloat(
-                                                    item.line_subtotal
-                                                ).toFixed(2)}
-                                            </td>
-                                        </tr>
+                                        <OrderItemRow
+                                            key={item.id}
+                                            item={item}
+                                        />
                                     ))}
                                 </tbody>
                             </table>
@@ -196,26 +187,34 @@ export default async function OrderDetailPage({
                             <div className="flex justify-between text-gray-900">
                                 <span>Subtotal:</span>
                                 <span>
-                                    ${parseFloat(order.subtotal).toFixed(2)}
+                                    $
+                                    {(parseFloat(order.subtotal) || 0).toFixed(
+                                        2
+                                    )}
                                 </span>
                             </div>
                             <div className="flex justify-between text-gray-900">
                                 <span>Shipping:</span>
                                 <span>
                                     $
-                                    {parseFloat(order.shipping_cost).toFixed(2)}
+                                    {(
+                                        parseFloat(order.shipping_cost) || 0
+                                    ).toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-gray-900">
                                 <span>Tax:</span>
                                 <span>
-                                    ${parseFloat(order.tax_amount).toFixed(2)}
+                                    $
+                                    {(
+                                        parseFloat(order.tax_amount) || 0
+                                    ).toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex justify-between text-lg font-semibold text-gray-900 pt-2 border-t border-gray-200">
                                 <span>Total:</span>
                                 <span>
-                                    ${parseFloat(order.total).toFixed(2)}
+                                    ${(parseFloat(order.total) || 0).toFixed(2)}
                                 </span>
                             </div>
                         </div>

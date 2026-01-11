@@ -11,7 +11,8 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
         <tr>
             {/* Image column */}
             <td className="px-4 py-4">
-                {item.artwork?.image_thumbnail_url ? (
+                {item.artwork?.image_thumbnail_url &&
+                item.artwork.image_thumbnail_url.trim() ? (
                     <Image
                         src={item.artwork.image_thumbnail_url}
                         alt={item.artwork.title}

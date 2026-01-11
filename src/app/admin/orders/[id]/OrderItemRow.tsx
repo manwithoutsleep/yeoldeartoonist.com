@@ -21,7 +21,11 @@ export function OrderItemRow({ item }: OrderItemRowProps) {
                         className="w-16 h-16 object-cover rounded"
                     />
                 ) : (
-                    <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                    <div
+                        className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500"
+                        role="img"
+                        aria-label="No image available for this item"
+                    >
                         No Image
                     </div>
                 )}

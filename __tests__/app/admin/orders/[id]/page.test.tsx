@@ -13,7 +13,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import OrderDetailPage from '@/app/admin/orders/[id]/page';
-import { getOrderById, type OrderWithItems } from '@/lib/db/admin/orders';
+import {
+    getOrderById,
+    type OrderWithItemsAndArtwork,
+} from '@/lib/db/admin/orders';
 
 // Mock the database function
 vi.mock('@/lib/db/admin/orders', () => ({
@@ -44,7 +47,7 @@ vi.mock('next/link', () => ({
     }) => <a href={href}>{children}</a>,
 }));
 
-const mockOrderWithItems: OrderWithItems = {
+const mockOrderWithItems: OrderWithItemsAndArtwork = {
     id: '123',
     order_number: 'ORD-20241121001',
     customer_name: 'John Doe',
@@ -82,6 +85,12 @@ const mockOrderWithItems: OrderWithItems = {
             price_at_purchase: '50.00',
             line_subtotal: '100.00',
             created_at: '2024-11-21T10:00:00Z',
+            artwork: {
+                title: 'Beautiful Painting',
+                sku: 'ART-001',
+                image_thumbnail_url: 'https://example.com/thumb1.jpg',
+                slug: 'beautiful-painting',
+            },
         },
         {
             id: 'item2',
@@ -91,6 +100,12 @@ const mockOrderWithItems: OrderWithItems = {
             price_at_purchase: '50.00',
             line_subtotal: '50.00',
             created_at: '2024-11-21T10:00:00Z',
+            artwork: {
+                title: 'Stunning Sculpture',
+                sku: 'ART-002',
+                image_thumbnail_url: 'https://example.com/thumb2.jpg',
+                slug: 'stunning-sculpture',
+            },
         },
     ],
 };
@@ -116,6 +131,186 @@ describe('OrderDetailPage', () => {
             expect(screen.getByText('ORD-20241121001')).toBeInTheDocument();
             expect(screen.getByText('John Doe')).toBeInTheDocument();
             expect(screen.getByText('john@example.com')).toBeInTheDocument();
+        });
+
+        it('should display artwork title for each order item', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText('Beautiful Painting')).toBeInTheDocument();
+            expect(screen.getByText('Stunning Sculpture')).toBeInTheDocument();
+        });
+
+        it('should display artwork SKU for each order item', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText(/ART-001/)).toBeInTheDocument();
+            expect(screen.getByText(/ART-002/)).toBeInTheDocument();
+        });
+
+        it('should display N/A when SKU is missing', async () => {
+            const orderWithMissingSku: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        ...mockOrderWithItems.order_items[0],
+                        artwork: {
+                            title: 'No SKU Item',
+                            sku: null,
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'no-sku-item',
+                        },
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithMissingSku,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText(/N\/A/)).toBeInTheDocument();
+        });
+
+        it('should display artwork thumbnail for each order item', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            const images = screen.getAllByRole('img');
+            const thumbnail1 = images.find(
+                (img) =>
+                    img.getAttribute('src') === 'https://example.com/thumb1.jpg'
+            );
+            const thumbnail2 = images.find(
+                (img) =>
+                    img.getAttribute('src') === 'https://example.com/thumb2.jpg'
+            );
+
+            expect(thumbnail1).toBeInTheDocument();
+            expect(thumbnail2).toBeInTheDocument();
+        });
+
+        it('should display placeholder when thumbnail is missing', async () => {
+            const orderWithMissingThumbnail: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        ...mockOrderWithItems.order_items[0],
+                        artwork: {
+                            title: 'No Thumbnail Item',
+                            sku: 'ART-003',
+                            image_thumbnail_url: null,
+                            slug: 'no-thumbnail-item',
+                        },
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithMissingThumbnail,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText('No Image')).toBeInTheDocument();
+        });
+
+        it('should link artwork title to shoppe detail page', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            const link1 = screen.getByText('Beautiful Painting').closest('a');
+            const link2 = screen.getByText('Stunning Sculpture').closest('a');
+
+            expect(link1).toHaveAttribute('href', '/shoppe/beautiful-painting');
+            expect(link2).toHaveAttribute('href', '/shoppe/stunning-sculpture');
+        });
+
+        it('should display Item Unavailable when artwork is null', async () => {
+            const orderWithDeletedArtwork: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        id: 'item1',
+                        order_id: '123',
+                        artwork_id: 'deleted-art-id',
+                        quantity: 1,
+                        price_at_purchase: '50.00',
+                        line_subtotal: '50.00',
+                        created_at: '2024-11-21T10:00:00Z',
+                        artwork: null,
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithDeletedArtwork,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText(/Item Unavailable/)).toBeInTheDocument();
+            expect(screen.getByText(/ID: deleted-art-id/)).toBeInTheDocument();
+        });
+
+        it('should not display database ID for available items', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            // Ensure artwork IDs are not shown in the UI
+            expect(screen.queryByText('art1')).not.toBeInTheDocument();
+            expect(screen.queryByText('art2')).not.toBeInTheDocument();
+            expect(screen.queryByText(/ID: art/)).not.toBeInTheDocument();
         });
 
         it('should display customer information', async () => {
@@ -466,6 +661,163 @@ describe('OrderDetailPage', () => {
 
             // Check that date is displayed (format may vary)
             expect(screen.getByText(/Nov 21, 2024/i)).toBeInTheDocument();
+        });
+    });
+
+    describe('Edge Cases', () => {
+        it('should handle order with all items having complete artwork data', async () => {
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: mockOrderWithItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            // All artwork data should be displayed
+            expect(screen.getByText('Beautiful Painting')).toBeInTheDocument();
+            expect(screen.getByText('Stunning Sculpture')).toBeInTheDocument();
+            expect(screen.getByText(/ART-001/)).toBeInTheDocument();
+            expect(screen.getByText(/ART-002/)).toBeInTheDocument();
+
+            const images = screen.getAllByRole('img');
+            expect(images.length).toBeGreaterThan(0);
+        });
+
+        it('should handle order with some items missing artwork (deleted)', async () => {
+            const orderWithMixedItems: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        ...mockOrderWithItems.order_items[0],
+                        artwork: {
+                            title: 'Available Item',
+                            sku: 'ART-001',
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'available-item',
+                        },
+                    },
+                    {
+                        id: 'item2',
+                        order_id: '123',
+                        artwork_id: 'deleted-art-id',
+                        quantity: 1,
+                        price_at_purchase: '50.00',
+                        line_subtotal: '50.00',
+                        created_at: '2024-11-21T10:00:00Z',
+                        artwork: null,
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithMixedItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            // Available item should show normally
+            expect(screen.getByText('Available Item')).toBeInTheDocument();
+            expect(screen.getByText(/ART-001/)).toBeInTheDocument();
+
+            // Deleted item should show unavailable message
+            expect(screen.getByText(/Item Unavailable/)).toBeInTheDocument();
+            expect(screen.getByText(/ID: deleted-art-id/)).toBeInTheDocument();
+        });
+
+        it('should handle order with items missing SKU', async () => {
+            const orderWithMissingSku: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        ...mockOrderWithItems.order_items[0],
+                        artwork: {
+                            title: 'Item Without SKU',
+                            sku: null,
+                            image_thumbnail_url:
+                                'https://example.com/thumb.jpg',
+                            slug: 'item-without-sku',
+                        },
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithMissingSku,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(screen.getByText('Item Without SKU')).toBeInTheDocument();
+            expect(screen.getByText(/N\/A/)).toBeInTheDocument();
+        });
+
+        it('should handle order with items missing thumbnail', async () => {
+            const orderWithMissingThumbnail: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [
+                    {
+                        ...mockOrderWithItems.order_items[0],
+                        artwork: {
+                            title: 'Item Without Thumbnail',
+                            sku: 'ART-003',
+                            image_thumbnail_url: null,
+                            slug: 'item-without-thumbnail',
+                        },
+                    },
+                ],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithMissingThumbnail,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            expect(
+                screen.getByText('Item Without Thumbnail')
+            ).toBeInTheDocument();
+            expect(screen.getByText(/ART-003/)).toBeInTheDocument();
+            expect(screen.getByText('No Image')).toBeInTheDocument();
+        });
+
+        it('should handle order with no items', async () => {
+            const orderWithNoItems: OrderWithItemsAndArtwork = {
+                ...mockOrderWithItems,
+                order_items: [],
+            };
+
+            vi.mocked(getOrderById).mockResolvedValue({
+                data: orderWithNoItems,
+                error: null,
+            });
+
+            const result = await OrderDetailPage({
+                params: Promise.resolve({ id: '123' }),
+            });
+            render(result);
+
+            // Should still display order header and totals
+            expect(screen.getByText('ORD-20241121001')).toBeInTheDocument();
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+
+            // Order items table should be present but empty
+            expect(screen.getByText('Order Items')).toBeInTheDocument();
         });
     });
 });

@@ -320,8 +320,18 @@ _Italic text_
 2. Review:
     - Customer information
     - Shipping address
-    - Items ordered
+    - Items ordered (with artwork thumbnails, titles, and SKUs)
     - Payment details
+
+Each order item displays:
+
+- **Artwork thumbnail** - Visual reference for the product (or placeholder if image unavailable)
+- **Artwork title** - Linked to the shoppe detail page for quick reference
+- **SKU** - Product identifier (displays "N/A" if not set)
+- **Quantity** - Number of items ordered
+- **Price** - Unit price and total for the line item
+
+**Note**: If an artwork has been deleted from the system, it will show as "Item Unavailable" with limited details.
 
 3. Update status to "Processing"
 4. Package the items

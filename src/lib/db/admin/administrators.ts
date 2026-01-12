@@ -24,6 +24,7 @@ export interface UpdateAdminInput {
     name?: string;
     role?: 'admin' | 'super_admin';
     is_active?: boolean;
+    password?: string;
 }
 
 /**
@@ -264,9 +265,7 @@ export async function updateAdmin(
         const supabase = await createServiceRoleClient();
 
         // If password is being updated, we need to get the auth_id first
-        const password = ('password' in data ? data.password : undefined) as
-            | string
-            | undefined;
+        const password = data.password;
         if (password) {
             if (process.env.NODE_ENV === 'development') {
                 console.log('[updateAdmin] Password change requested');

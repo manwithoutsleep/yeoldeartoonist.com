@@ -58,7 +58,9 @@
             "WebSearch",
             "Skill(close-pr-and-cleanup)",
             "Bash(npm run build:full:*)",
-            "WebFetch(domain:github.com)"
+            "WebFetch(domain:github.com)",
+            "Bash(Get-Content \"C:\\\\Users\\\\manwi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--src-github-mws-yeoldeartoonist-com\\\\tasks\\\\b77c39c.output\")",
+            "WebFetch(domain:testing-library.com)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

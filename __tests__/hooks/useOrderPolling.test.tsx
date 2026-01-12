@@ -434,6 +434,70 @@ describe('useOrderPolling', () => {
         // Assert: No new fetches after unmount
         expect(mockFetch).toHaveBeenCalledTimes(fetchCountBeforeUnmount);
     });
+
+    it('should cleanup and restart polling when sessionId changes', async () => {
+        // Arrange
+        const firstSessionId = 'cs_test_123';
+        const secondSessionId = 'cs_test_456';
+        const mockOrder = {
+            id: 'order_456',
+            user_email: 'test@example.com',
+            status: 'pending',
+            total: 200,
+            created_at: '2026-01-11T00:00:00Z',
+            updated_at: '2026-01-11T00:00:00Z',
+        };
+
+        // First session returns 404 (keeps polling)
+        mockFetch.mockResolvedValue({
+            ok: false,
+            status: 404,
+            json: async () => ({ error: 'Order not found' }),
+        });
+
+        // Act - Start with first sessionId
+        const { result, rerender } = renderHook(
+            ({ sessionId }) => useOrderPolling(sessionId),
+            { initialProps: { sessionId: firstSessionId } }
+        );
+
+        // Wait for first attempt
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(
+                `/api/checkout/session/${firstSessionId}`
+            );
+        });
+
+        // Clear mock and provide successful response for second session
+        mockFetch.mockClear();
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            json: async () => ({ order: mockOrder }),
+        });
+
+        // Change sessionId
+        rerender({ sessionId: secondSessionId });
+
+        // Assert
+        // 1. Old polling should stop (no more calls to first sessionId)
+        vi.advanceTimersByTime(5000);
+        expect(mockFetch).not.toHaveBeenCalledWith(
+            `/api/checkout/session/${firstSessionId}`
+        );
+
+        // 2. New polling should start
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(
+                `/api/checkout/session/${secondSessionId}`
+            );
+        });
+
+        // 3. Result should show new order
+        await waitFor(() => {
+            expect(result.current.order).toEqual(mockOrder);
+        });
+    });
 });
 
 describe('calculateRetryDelay', () => {

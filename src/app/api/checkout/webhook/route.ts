@@ -281,11 +281,14 @@ export async function POST(request: NextRequest) {
                 const shippingCost = shippingCostCents / 100;
 
                 // Extract addresses using helper
-                const shippingAddress = extractAddress(
-                    session.shipping_details?.address
-                );
+                // If shipping address is not provided (customer selected "same as billing"),
+                // fallback to billing address for both shipping and billing
                 const billingAddress = extractAddress(
                     session.customer_details?.address
+                );
+                const shippingAddress = extractAddress(
+                    session.shipping_details?.address ??
+                        session.customer_details?.address
                 );
 
                 // Calculate totals

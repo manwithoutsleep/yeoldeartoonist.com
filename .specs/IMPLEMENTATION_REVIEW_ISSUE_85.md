@@ -411,8 +411,8 @@ The implementation successfully addresses the race condition using a simple, tes
 - [ ] Polling parameters reviewed and approved ⏳ Pending
 - [ ] Performance impact acceptable for production ⏳ Pending
 
-**Reviewer Name**: ************\_\_\_************
-**Date**: ************\_\_\_************
+**Reviewer Name**:
+**Date**:
 **Approval**: [ ] Approved [ ] Changes Requested
 
 ---

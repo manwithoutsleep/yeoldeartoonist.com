@@ -1,5 +1,16 @@
 ---
 argument-hint: [issue-id] [notes]
+allowed-tools:  [
+    Bash(git add:*),
+    Bash(git commit:*),
+    Bash(git push:*),
+    Bash(git status:*),
+    Bash(git diff:*),
+    Bash(git log:*),
+    Bash(git branch:*),
+    Bash(gh issue:*),
+    Bash(gh pr create:*)
+]
 description: Create a PR covering the current work
 ---
 

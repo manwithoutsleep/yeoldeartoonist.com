@@ -101,6 +101,62 @@ describe('POST /api/checkout/webhook', () => {
         });
     }
 
+    function createCheckoutSessionEvent(
+        sessionData: Partial<Stripe.Checkout.Session>
+    ): string {
+        return JSON.stringify({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    id: 'cs_test_123',
+                    object: 'checkout.session',
+                    payment_intent: 'pi_test_session_123',
+                    amount_total: 11350, // $113.50 in cents
+                    currency: 'usd',
+                    customer_email: 'test@example.com',
+                    metadata: {
+                        cartItems: JSON.stringify([
+                            {
+                                artworkId:
+                                    '123e4567-e89b-12d3-a456-426614174000',
+                                quantity: 1,
+                                price: 100,
+                            },
+                        ]),
+                    },
+                    total_details: {
+                        amount_tax: 850, // $8.50 tax
+                        amount_shipping: 500, // $5.00 shipping
+                    },
+                    shipping_details: {
+                        name: 'John Doe',
+                        address: {
+                            line1: '123 Main St',
+                            line2: 'Apt 4B',
+                            city: 'Los Angeles',
+                            state: 'CA',
+                            postal_code: '90001',
+                            country: 'US',
+                        },
+                    },
+                    customer_details: {
+                        name: 'John Doe',
+                        email: 'test@example.com',
+                        address: {
+                            line1: '456 Oak Ave',
+                            line2: null,
+                            city: 'Los Angeles',
+                            state: 'CA',
+                            postal_code: '90001',
+                            country: 'US',
+                        },
+                    },
+                    ...sessionData,
+                },
+            },
+        });
+    }
+
     it('should return 400 for missing signature', async () => {
         const payload = createPaymentIntentEvent(
             'payment_intent.succeeded',
@@ -151,35 +207,11 @@ describe('POST /api/checkout/webhook', () => {
         );
     });
 
-    it('should handle payment_intent.succeeded event and create order', async () => {
-        const shippingAddress = {
-            line1: '123 Main St',
-            line2: 'Apt 4B',
-            city: 'Portland',
-            state: 'OR',
-            zip: '97201',
-            country: 'US',
-        };
-        const items = [
-            {
-                artworkId: '123e4567-e89b-12d3-a456-426614174000',
-                quantity: 1,
-                price: 100,
-            },
-        ];
-
+    it('should handle payment_intent.succeeded event without creating order', async () => {
         const payload = createPaymentIntentEvent('payment_intent.succeeded', {
             metadata: {
                 customerName: 'John Doe',
                 customerEmail: 'john@example.com',
-                shippingAddress: JSON.stringify(shippingAddress),
-                billingAddress: JSON.stringify(shippingAddress),
-                items: JSON.stringify(items),
-                subtotal: '100.00',
-                shippingCost: '5.00',
-                taxAmount: '0.00',
-                total: '105.00',
-                orderNotes: 'Test order',
             },
         });
         const signature = 't=123,v1=valid_signature';
@@ -191,31 +223,9 @@ describe('POST /api/checkout/webhook', () => {
         expect(response.status).toBe(200);
         expect(data.received).toBe(true);
 
-        // Verify createOrder was called with correct data
-        expect(createOrder).toHaveBeenCalledWith(
-            expect.objectContaining({
-                orderNumber: 'YOA-20250112-0001',
-                customerName: 'John Doe',
-                customerEmail: 'john@example.com',
-                shippingAddress,
-                billingAddress: shippingAddress,
-                orderNotes: 'Test order',
-                subtotal: 100,
-                shippingCost: 5,
-                taxAmount: 0,
-                total: 105,
-                paymentIntentId: 'pi_test_123',
-                paymentStatus: 'succeeded',
-                items: [
-                    {
-                        artworkId: '123e4567-e89b-12d3-a456-426614174000',
-                        quantity: 1,
-                        priceAtPurchase: 100,
-                        lineSubtotal: 100,
-                    },
-                ],
-            })
-        );
+        // Verify createOrder was NOT called
+        // Order creation is handled exclusively by checkout.session.completed
+        expect(createOrder).not.toHaveBeenCalled();
     });
 
     it('should handle payment_intent.payment_failed event', async () => {
@@ -258,29 +268,7 @@ describe('POST /api/checkout/webhook', () => {
             new Error('Database error')
         );
 
-        const shippingAddress = {
-            line1: '123 Main St',
-            city: 'Portland',
-            state: 'OR',
-            zip: '97201',
-            country: 'US',
-        };
-
-        const payload = createPaymentIntentEvent('payment_intent.succeeded', {
-            metadata: {
-                customerName: 'John Doe',
-                customerEmail: 'john@example.com',
-                shippingAddress: JSON.stringify(shippingAddress),
-                billingAddress: JSON.stringify(shippingAddress),
-                items: JSON.stringify([
-                    { artworkId: 'test-id', quantity: 1, price: 100 },
-                ]),
-                subtotal: '100.00',
-                shippingCost: '5.00',
-                taxAmount: '0.00',
-                total: '105.00',
-            },
-        });
+        const payload = createCheckoutSessionEvent({});
         const signature = 't=123,v1=valid_signature';
         const request = createMockRequest(payload, signature);
 
@@ -314,329 +302,7 @@ describe('POST /api/checkout/webhook', () => {
         process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret';
     });
 
-    describe('Tax extraction from PaymentIntent', () => {
-        it('should extract tax from PaymentIntent.automatic_tax.amount', async () => {
-            const shippingAddress = {
-                line1: '123 Main St',
-                city: 'Los Angeles',
-                state: 'CA',
-                zip: '90001',
-                country: 'US',
-            };
-            const items = [
-                {
-                    artworkId: '123e4567-e89b-12d3-a456-426614174000',
-                    quantity: 1,
-                    price: 100,
-                },
-            ];
-
-            const payload = createPaymentIntentEvent(
-                'payment_intent.succeeded',
-                {
-                    automatic_tax: {
-                        enabled: true,
-                        status: 'complete',
-                        amount: 850, // $8.50 tax in cents
-                    },
-                    metadata: {
-                        customerName: 'John Doe',
-                        customerEmail: 'john@example.com',
-                        shippingAddress: JSON.stringify(shippingAddress),
-                        billingAddress: JSON.stringify(shippingAddress),
-                        items: JSON.stringify(items),
-                        subtotal: '100.00',
-                        shippingCost: '5.00',
-                    },
-                } as Partial<Stripe.PaymentIntent> & {
-                    automatic_tax?: {
-                        enabled: boolean;
-                        status: string;
-                        amount: number;
-                    };
-                }
-            );
-            const signature = 't=123,v1=valid_signature';
-            const request = createMockRequest(payload, signature);
-
-            await POST(request);
-
-            expect(createOrder).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    taxAmount: 8.5, // Converted from cents to dollars
-                    total: 113.5, // subtotal + shipping + tax
-                })
-            );
-        });
-
-        it('should create order with correct tax amount', async () => {
-            const shippingAddress = {
-                line1: '456 Broadway',
-                city: 'New York',
-                state: 'NY',
-                zip: '10001',
-                country: 'US',
-            };
-
-            const payload = createPaymentIntentEvent(
-                'payment_intent.succeeded',
-                {
-                    automatic_tax: {
-                        enabled: true,
-                        status: 'complete',
-                        amount: 975, // $9.75 tax
-                    },
-                    metadata: {
-                        customerName: 'Jane Doe',
-                        customerEmail: 'jane@example.com',
-                        shippingAddress: JSON.stringify(shippingAddress),
-                        billingAddress: JSON.stringify(shippingAddress),
-                        items: JSON.stringify([
-                            {
-                                artworkId:
-                                    '123e4567-e89b-12d3-a456-426614174000',
-                                quantity: 1,
-                                price: 100,
-                            },
-                        ]),
-                        subtotal: '100.00',
-                        shippingCost: '5.00',
-                    },
-                } as Partial<Stripe.PaymentIntent> & {
-                    automatic_tax?: {
-                        enabled: boolean;
-                        status: string;
-                        amount: number;
-                    };
-                }
-            );
-            const signature = 't=123,v1=valid_signature';
-            const request = createMockRequest(payload, signature);
-
-            await POST(request);
-
-            expect(createOrder).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subtotal: 100,
-                    shippingCost: 5,
-                    taxAmount: 9.75,
-                    total: 114.75,
-                })
-            );
-        });
-
-        it('should handle PaymentIntents without tax (backwards compatibility)', async () => {
-            const shippingAddress = {
-                line1: '321 Pine St',
-                city: 'Portland',
-                state: 'OR',
-                zip: '97201',
-                country: 'US',
-            };
-
-            // Old PaymentIntent without automatic_tax field
-            const payload = createPaymentIntentEvent(
-                'payment_intent.succeeded',
-                {
-                    // No automatic_tax field
-                    metadata: {
-                        customerName: 'John Doe',
-                        customerEmail: 'john@example.com',
-                        shippingAddress: JSON.stringify(shippingAddress),
-                        billingAddress: JSON.stringify(shippingAddress),
-                        items: JSON.stringify([
-                            {
-                                artworkId:
-                                    '123e4567-e89b-12d3-a456-426614174000',
-                                quantity: 1,
-                                price: 100,
-                            },
-                        ]),
-                        subtotal: '100.00',
-                        shippingCost: '5.00',
-                    },
-                }
-            );
-            const signature = 't=123,v1=valid_signature';
-            const request = createMockRequest(payload, signature);
-
-            await POST(request);
-
-            expect(createOrder).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    taxAmount: 0, // Should default to 0
-                    total: 105, // subtotal + shipping only
-                })
-            );
-        });
-
-        it('should convert tax from cents to dollars correctly', async () => {
-            const shippingAddress = {
-                line1: '123 Main St',
-                city: 'Austin',
-                state: 'TX',
-                zip: '78701',
-                country: 'US',
-            };
-
-            const payload = createPaymentIntentEvent(
-                'payment_intent.succeeded',
-                {
-                    automatic_tax: {
-                        enabled: true,
-                        status: 'complete',
-                        amount: 863, // $8.63 in cents
-                    },
-                    metadata: {
-                        customerName: 'Bob Smith',
-                        customerEmail: 'bob@example.com',
-                        shippingAddress: JSON.stringify(shippingAddress),
-                        billingAddress: JSON.stringify(shippingAddress),
-                        items: JSON.stringify([
-                            {
-                                artworkId:
-                                    '123e4567-e89b-12d3-a456-426614174000',
-                                quantity: 1,
-                                price: 100,
-                            },
-                        ]),
-                        subtotal: '100.00',
-                        shippingCost: '5.00',
-                    },
-                } as Partial<Stripe.PaymentIntent> & {
-                    automatic_tax?: {
-                        enabled: boolean;
-                        status: string;
-                        amount: number;
-                    };
-                }
-            );
-            const signature = 't=123,v1=valid_signature';
-            const request = createMockRequest(payload, signature);
-
-            await POST(request);
-
-            expect(createOrder).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    taxAmount: 8.63, // Precisely converted
-                })
-            );
-        });
-
-        it('should calculate order total including tax', async () => {
-            const shippingAddress = {
-                line1: '123 Main St',
-                city: 'Los Angeles',
-                state: 'CA',
-                zip: '90001',
-                country: 'US',
-            };
-
-            const payload = createPaymentIntentEvent(
-                'payment_intent.succeeded',
-                {
-                    automatic_tax: {
-                        enabled: true,
-                        status: 'complete',
-                        amount: 1950, // $19.50 tax for larger order
-                    },
-                    metadata: {
-                        customerName: 'Alice Johnson',
-                        customerEmail: 'alice@example.com',
-                        shippingAddress: JSON.stringify(shippingAddress),
-                        billingAddress: JSON.stringify(shippingAddress),
-                        items: JSON.stringify([
-                            {
-                                artworkId:
-                                    '123e4567-e89b-12d3-a456-426614174000',
-                                quantity: 2,
-                                price: 100,
-                            },
-                        ]),
-                        subtotal: '200.00',
-                        shippingCost: '5.00',
-                    },
-                } as Partial<Stripe.PaymentIntent> & {
-                    automatic_tax?: {
-                        enabled: boolean;
-                        status: string;
-                        amount: number;
-                    };
-                }
-            );
-            const signature = 't=123,v1=valid_signature';
-            const request = createMockRequest(payload, signature);
-
-            await POST(request);
-
-            expect(createOrder).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    subtotal: 200,
-                    shippingCost: 5,
-                    taxAmount: 19.5,
-                    total: 224.5, // 200 + 5 + 19.5
-                })
-            );
-        });
-    });
-
     describe('Checkout Session Completed Event', () => {
-        function createCheckoutSessionEvent(
-            sessionData: Partial<Stripe.Checkout.Session>
-        ): string {
-            return JSON.stringify({
-                type: 'checkout.session.completed',
-                data: {
-                    object: {
-                        id: 'cs_test_123',
-                        object: 'checkout.session',
-                        payment_intent: 'pi_test_session_123',
-                        amount_total: 11350, // $113.50 in cents
-                        currency: 'usd',
-                        customer_email: 'test@example.com',
-                        metadata: {
-                            cartItems: JSON.stringify([
-                                {
-                                    artworkId:
-                                        '123e4567-e89b-12d3-a456-426614174000',
-                                    quantity: 1,
-                                    price: 100,
-                                },
-                            ]),
-                        },
-                        total_details: {
-                            amount_tax: 850, // $8.50 tax
-                            amount_shipping: 500, // $5.00 shipping
-                        },
-                        shipping_details: {
-                            name: 'John Doe',
-                            address: {
-                                line1: '123 Main St',
-                                line2: 'Apt 4B',
-                                city: 'Los Angeles',
-                                state: 'CA',
-                                postal_code: '90001',
-                                country: 'US',
-                            },
-                        },
-                        customer_details: {
-                            name: 'John Doe',
-                            email: 'test@example.com',
-                            address: {
-                                line1: '456 Oak Ave',
-                                line2: null,
-                                city: 'Los Angeles',
-                                state: 'CA',
-                                postal_code: '90001',
-                                country: 'US',
-                            },
-                        },
-                        ...sessionData,
-                    },
-                },
-            });
-        }
-
         it('should handle checkout.session.completed event', async () => {
             const payload = createCheckoutSessionEvent({});
             const signature = 't=123,v1=valid_signature';

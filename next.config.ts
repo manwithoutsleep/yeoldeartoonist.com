@@ -89,63 +89,10 @@ const nextConfig: NextConfig = {
     /**
      * Security Headers (Phase 5.7.9)
      *
-     * Content Security Policy (CSP) and security headers to protect against
-     * common web vulnerabilities including XSS, clickjacking, and MIME sniffing.
+     * Security headers are now set in middleware.ts with CSP nonce support.
+     * This provides better security by generating dynamic nonces for inline scripts.
+     * See src/middleware.ts for implementation.
      */
-    async headers() {
-        return [
-            {
-                source: '/:path*',
-                headers: [
-                    {
-                        key: 'X-DNS-Prefetch-Control',
-                        value: 'on',
-                    },
-                    {
-                        key: 'Strict-Transport-Security',
-                        value: 'max-age=63072000; includeSubDomains; preload',
-                    },
-                    {
-                        key: 'X-Frame-Options',
-                        value: 'DENY',
-                    },
-                    {
-                        key: 'X-Content-Type-Options',
-                        value: 'nosniff',
-                    },
-                    {
-                        key: 'X-XSS-Protection',
-                        value: '1; mode=block',
-                    },
-                    {
-                        key: 'Referrer-Policy',
-                        value: 'origin-when-cross-origin',
-                    },
-                    {
-                        key: 'Permissions-Policy',
-                        value: 'camera=(), microphone=(), geolocation=()',
-                    },
-                    {
-                        key: 'Content-Security-Policy',
-                        value: [
-                            "default-src 'self'",
-                            "script-src 'self' https://js.stripe.com",
-                            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                            "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
-                            "font-src 'self' https://fonts.gstatic.com data:",
-                            "connect-src 'self' https://*.supabase.co https://127.0.0.1 http://127.0.0.1 https://api.stripe.com",
-                            "frame-src 'self' https://js.stripe.com",
-                            "object-src 'none'",
-                            "base-uri 'self'",
-                            "form-action 'self'",
-                            "frame-ancestors 'self'",
-                            'upgrade-insecure-requests',
-                        ].join('; '),
-                    },
-                ],
-            },
-        ];
-    },
 };
 
 export default nextConfig;

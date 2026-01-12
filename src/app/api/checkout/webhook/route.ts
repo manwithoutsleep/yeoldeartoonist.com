@@ -2,7 +2,7 @@
  * Stripe Webhook Handler
  *
  * Handles Stripe webhook events for payment processing.
- * Processes payment_intent.succeeded events to create orders.
+ * Processes checkout.session.completed events to create orders.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -41,8 +41,8 @@ function extractAddress(address: Stripe.Address | null | undefined): Address {
  * and bodyParser middleware as it requires raw request body for signature verification.
  *
  * Events handled:
- * - checkout.session.completed: Creates order from Stripe Checkout session
- * - payment_intent.succeeded: Creates order record when payment succeeds
+ * - checkout.session.completed: Creates order from Stripe Checkout session (authoritative)
+ * - payment_intent.succeeded: Logs payment success (order creation handled by session.completed)
  * - payment_intent.payment_failed: Logs failed payment
  *
  * @returns 200 with { received: true } on success
@@ -99,134 +99,21 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.succeeded': {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-                logInfo('Payment succeeded', {
-                    location: 'api/checkout/webhook',
-                    action: 'handlePaymentIntentSucceeded',
-                    metadata: {
-                        paymentIntentId: paymentIntent.id,
-                        amount: paymentIntent.amount / 100,
-                        customer: paymentIntent.metadata.customerEmail,
-                    },
-                });
-
-                // Create order from payment intent metadata
-                try {
-                    // Parse metadata
-                    const shippingAddress: Address = JSON.parse(
-                        paymentIntent.metadata.shippingAddress
-                    );
-                    const billingAddress: Address = JSON.parse(
-                        paymentIntent.metadata.billingAddress
-                    );
-                    const items: Array<{
-                        artworkId: string;
-                        quantity: number;
-                        price: number;
-                    }> = JSON.parse(paymentIntent.metadata.items);
-
-                    // Extract tax amount from automatic_tax (not metadata)
-                    // Tax is calculated by Stripe and returned in cents
-                    const taxAmountCents =
-                        (
-                            paymentIntent as Stripe.PaymentIntent & {
-                                automatic_tax?: { amount?: number };
-                            }
-                        ).automatic_tax?.amount ?? 0;
-                    const taxAmount = taxAmountCents / 100;
-
-                    // Calculate totals
-                    const subtotal = parseFloat(
-                        paymentIntent.metadata.subtotal
-                    );
-                    const shippingCost = parseFloat(
-                        paymentIntent.metadata.shippingCost
-                    );
-                    const total = subtotal + shippingCost + taxAmount;
-
-                    // Generate unique order number
-                    const orderNumber = generateOrderNumber();
-
-                    // Create order in database with succeeded payment status
-                    // This triggers the database trigger to decrement inventory
-                    const { data: order, error: orderError } =
-                        await createOrder({
-                            orderNumber,
-                            customerName: paymentIntent.metadata.customerName,
-                            customerEmail: paymentIntent.metadata.customerEmail,
-                            shippingAddress,
-                            billingAddress,
-                            orderNotes: paymentIntent.metadata.orderNotes,
-                            subtotal,
-                            shippingCost,
-                            taxAmount,
-                            total,
-                            paymentIntentId: paymentIntent.id,
-                            paymentStatus: 'succeeded',
-                            items: items.map((item) => ({
-                                artworkId: item.artworkId,
-                                quantity: item.quantity,
-                                priceAtPurchase: item.price,
-                                lineSubtotal: item.price * item.quantity,
-                            })),
-                        });
-
-                    if (orderError) {
-                        logError(orderError, {
-                            location: 'api/checkout/webhook',
-                            action: 'createOrderFromPaymentIntent',
-                            metadata: { paymentIntentId: paymentIntent.id },
-                        });
-                        // Log error but don't fail webhook response
-                        // Manual intervention may be needed to reconcile payment with order
-                    } else {
-                        logInfo('Order created successfully', {
-                            location: 'api/checkout/webhook',
-                            action: 'createOrderFromPaymentIntent',
-                            metadata: {
-                                orderId: order?.id,
-                                orderNumber: order?.orderNumber,
-                            },
-                        });
-
-                        // Send order confirmation and admin notification emails
-                        // Non-blocking: email failures won't prevent order creation
-                        if (order) {
-                            const emailResults = await sendOrderEmails(order);
-                            if (!emailResults.customer.success) {
-                                logError(
-                                    emailResults.customer.error ||
-                                        new Error(
-                                            'Failed to send customer confirmation email'
-                                        ),
-                                    {
-                                        location: 'api/checkout/webhook',
-                                        action: 'sendCustomerEmail',
-                                        metadata: { orderId: order.id },
-                                    }
-                                );
-                            }
-                            if (!emailResults.admin.success) {
-                                logError(
-                                    emailResults.admin.error ||
-                                        new Error(
-                                            'Failed to send admin notification email'
-                                        ),
-                                    {
-                                        location: 'api/checkout/webhook',
-                                        action: 'sendAdminEmail',
-                                        metadata: { orderId: order.id },
-                                    }
-                                );
-                            }
-                        }
-                    }
-                } catch (err) {
-                    logError(err, {
+                // Log payment success for monitoring and debugging
+                // NOTE: Order creation is handled exclusively by checkout.session.completed event
+                // to prevent duplicate orders from concurrent webhook processing
+                logInfo(
+                    'Payment succeeded (order created via checkout.session.completed)',
+                    {
                         location: 'api/checkout/webhook',
-                        action: 'processPaymentIntentSucceeded',
-                    });
-                    // Log error but don't fail webhook response
-                }
+                        action: 'handlePaymentIntentSucceeded',
+                        metadata: {
+                            paymentIntentId: paymentIntent.id,
+                            amount: paymentIntent.amount / 100,
+                            customer: paymentIntent.metadata.customerEmail,
+                        },
+                    }
+                );
 
                 break;
             }
@@ -281,11 +168,14 @@ export async function POST(request: NextRequest) {
                 const shippingCost = shippingCostCents / 100;
 
                 // Extract addresses using helper
-                const shippingAddress = extractAddress(
-                    session.shipping_details?.address
-                );
+                // If shipping address is not provided (customer selected "same as billing"),
+                // fallback to billing address for both shipping and billing
                 const billingAddress = extractAddress(
                     session.customer_details?.address
+                );
+                const shippingAddress = extractAddress(
+                    session.shipping_details?.address ??
+                        session.customer_details?.address
                 );
 
                 // Calculate totals

@@ -3,6 +3,11 @@ import React from 'react';
 // Extend vitest's expect with DOM matchers like toBeInTheDocument()
 import '@testing-library/jest-dom';
 
+// Make vitest's vi available as global jest for testing-library compatibility
+// This allows waitFor() to detect and work with fake timers properly
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).jest = vi;
+
 // Global cleanup after each test to prevent memory accumulation
 afterEach(() => {
     // Clear all mocks to prevent call history accumulation across 1200+ tests

@@ -1,9 +1,9 @@
 /**
  * Next.js Middleware
  *
- * This middleware handles authentication checks for protected routes,
- * particularly the /admin routes. It ensures that only authenticated
- * admin users can access the admin panel.
+ * This middleware handles:
+ * 1. Authentication checks for protected routes (/admin)
+ * 2. Content Security Policy with nonce support
  *
  * IMPORTANT: In Next.js 16, this should be named proxy.ts, but there's a known
  * bug on Windows where proxy.ts doesn't work. We use middleware.ts as a workaround.
@@ -15,10 +15,74 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
 
+/**
+ * Generate a random nonce for CSP
+ */
+function generateNonce(): string {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Buffer.from(array).toString('base64');
+}
+
+/**
+ * Build Content Security Policy with nonce support
+ */
+function buildCSP(nonce: string, isDevelopment: boolean): string {
+    const cspDirectives = [
+        "default-src 'self'",
+        // In production, use nonce for inline scripts. In dev, allow unsafe-eval for Turbopack
+        isDevelopment
+            ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com`
+            : `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`,
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "connect-src 'self' https://*.supabase.co https://127.0.0.1 http://127.0.0.1 https://api.stripe.com",
+        "frame-src 'self' https://js.stripe.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'",
+    ];
+
+    // Only upgrade insecure requests in production
+    if (!isDevelopment) {
+        cspDirectives.push('upgrade-insecure-requests');
+    }
+
+    return cspDirectives.join('; ');
+}
+
 export async function middleware(request: NextRequest) {
     const requestUrl = new URL(request.url);
     const pathname = requestUrl.pathname;
     const isDevelopment = process.env.NODE_ENV === 'development';
+
+    // Generate nonce for CSP
+    const nonce = generateNonce();
+
+    // Helper function to add security headers to response
+    const addSecurityHeaders = (response: NextResponse) => {
+        response.headers.set('x-pathname', pathname);
+        response.headers.set('x-nonce', nonce);
+        response.headers.set(
+            'Content-Security-Policy',
+            buildCSP(nonce, isDevelopment)
+        );
+        response.headers.set('X-DNS-Prefetch-Control', 'on');
+        response.headers.set(
+            'Strict-Transport-Security',
+            'max-age=63072000; includeSubDomains; preload'
+        );
+        response.headers.set('X-Frame-Options', 'DENY');
+        response.headers.set('X-Content-Type-Options', 'nosniff');
+        response.headers.set('X-XSS-Protection', '1; mode=block');
+        response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+        response.headers.set(
+            'Permissions-Policy',
+            'camera=(), microphone=(), geolocation=()'
+        );
+    };
 
     // Only protect admin routes (but allow login without auth)
     if (!pathname.startsWith('/admin')) {
@@ -27,8 +91,7 @@ export async function middleware(request: NextRequest) {
                 headers: request.headers,
             },
         });
-        // Add pathname header for layout
-        response.headers.set('x-pathname', pathname);
+        addSecurityHeaders(response);
         return response;
     }
 
@@ -39,8 +102,7 @@ export async function middleware(request: NextRequest) {
                 headers: request.headers,
             },
         });
-        // Add pathname header for layout to detect login page
-        response.headers.set('x-pathname', pathname);
+        addSecurityHeaders(response);
         return response;
     }
 
@@ -88,6 +150,7 @@ export async function middleware(request: NextRequest) {
                 sessionData.userId &&
                 sessionData.expiresAt > Date.now()
             ) {
+                addSecurityHeaders(supabaseResponse);
                 return supabaseResponse;
             }
         } catch {
@@ -196,8 +259,8 @@ export async function middleware(request: NextRequest) {
         maxAge: 15 * 60, // 15 minutes
     });
 
-    // Add pathname header for layout
-    supabaseResponse.headers.set('x-pathname', pathname);
+    // Add security headers
+    addSecurityHeaders(supabaseResponse);
 
     return supabaseResponse;
 }

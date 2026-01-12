@@ -11,10 +11,10 @@
 
 ### 1. Environment Verification
 
-- [ ] Local development server running (`npm run dev` at http://localhost:3000)
-- [ ] Supabase local instance running (`npm run db:start`)
-- [ ] Stripe test mode API keys configured in `.env.local`
-- [ ] Browser DevTools open (Console + Network tabs visible)
+- [x] Local development server running (`npm run dev` at http://localhost:3000)
+- [x] Supabase local instance running (`npm run db:start`)
+- [x] Stripe test mode API keys configured in `.env.local`
+- [x] Browser DevTools open (Console + Network tabs visible)
 
 ### 2. Test Data Preparation
 
@@ -33,32 +33,32 @@
 
 ### Steps
 
-1. [ ] Navigate to shoppe: http://localhost:3000/shoppe
-2. [ ] Add any artwork to cart (click "Add to Cart" button)
-3. [ ] Click "Checkout" button in cart
-4. [ ] Fill in Stripe checkout form:
+1. [x] Navigate to shoppe: http://localhost:3000/shoppe
+2. [x] Add any artwork to cart (click "Add to Cart" button)
+3. [x] Click "Checkout" button in cart
+4. [x] Fill in Stripe checkout form:
     - Email: `test@example.com`
     - Card: `4242 4242 4242 4242`
     - Expiry: `12/34` (any future date)
     - CVC: `123` (any 3 digits)
     - Name: `Test Customer`
-5. [ ] Click "Pay" button
-6. [ ] Observe redirect to success page (`/shoppe/checkout/success?session_id=...`)
+5. [x] Click "Pay" button
+6. [x] Observe redirect to success page (`/shoppe/checkout/success?session_id=...`)
 
 ### Expected Results
 
-- [ ] Success page displays "Order Confirmed!" heading immediately
-- [ ] Loading state visible briefly or not at all (< 2 seconds)
-- [ ] Order number appears (format: starts with "ORD-" followed by numbers)
-- [ ] No error messages visible
-- [ ] Browser console shows no errors
-- [ ] Network tab shows 1-2 requests to `/api/checkout/session/[sessionId]` endpoint
+- [x] Success page displays "Order Confirmed!" heading immediately
+- [x] Loading state visible briefly or not at all (< 2 seconds)
+- [ ] Order number appears (format: starts with "ORD-" followed by numbers) ❌ Failed: Order number does not appear
+- [x] No error messages visible
+- [x] Browser console shows no errors
+- [x] Network tab shows 1-2 requests to `/api/checkout/session/[sessionId]` endpoint
 
 ### Verification
 
-- [ ] Check Supabase database: Order exists with matching `payment_intent_id`
-- [ ] Order status is `pending` or `completed`
-- [ ] Order total matches the paid amount
+- [x] Check Supabase database: Order exists with matching `payment_intent_id`
+- [x] Order status is `pending` or `completed`
+- [x] Order total matches the paid amount
 
 ---
 
@@ -70,10 +70,10 @@
 
 **Option A: Comment Out Order Creation** (recommended for testing)
 
-1. [ ] Open `src/app/api/webhooks/stripe/route.ts`
-2. [ ] Find the `checkout.session.completed` handler
-3. [ ] Comment out the order creation code (lines that call `createOrder` or insert into database)
-4. [ ] Save the file (Next.js will hot-reload)
+1. [x] Open `src/app/api/webhooks/stripe/route.ts`
+2. [x] Find the `checkout.session.completed` handler
+3. [x] Comment out the order creation code (lines that call `createOrder` or insert into database)
+4. [x] Save the file (Next.js will hot-reload)
 
 **Option B: Add Artificial Delay**
 
@@ -84,31 +84,31 @@ await new Promise((resolve) => setTimeout(resolve, 15000)); // 15 second delay
 
 ### Steps
 
-1. [ ] With webhook disabled/delayed, navigate to shoppe
-2. [ ] Add artwork to cart and proceed to checkout
-3. [ ] Complete payment with test card `4242 4242 4242 4242`
-4. [ ] Observe success page behavior
+1. [x] With webhook disabled/delayed, navigate to shoppe
+2. [x] Add artwork to cart and proceed to checkout
+3. [x] Complete payment with test card `4242 4242 4242 4242`
+4. [x] Observe success page behavior
 
 ### Expected Results (During Polling)
 
-- [ ] Success page displays "Order Confirmed!" heading
-- [ ] Loading spinner or "Loading order details..." message visible
-- [ ] Network tab shows repeated requests to `/api/checkout/session/[sessionId]`
-- [ ] Requests appear at increasing intervals (1s, 1.5s, 2.25s, etc.)
-- [ ] Polling continues for approximately 20 seconds
+- [x] Success page displays "Order Confirmed!" heading
+- [x] Loading spinner or "Loading order details..." message visible
+- [x] Network tab shows repeated requests to `/api/checkout/session/[sessionId]`
+- [x] Requests appear at increasing intervals (1s, 1.5s, 2.25s, etc.)
+- [x] Polling continues for approximately 20 seconds
 
 ### Expected Results (After Timeout)
 
-- [ ] After ~20 seconds, polling stops (10 retries exhausted)
-- [ ] Friendly message appears: "We're still processing your order. You'll receive a confirmation email shortly."
-- [ ] No technical error messages visible
-- [ ] No browser console errors
+- [x] After ~20 seconds, polling stops (10 retries exhausted)
+- [x] Friendly message appears: "We're still processing your order. You'll receive a confirmation email shortly."
+- [x] No technical error messages visible
+- [x] No browser console errors
 
 ### Cleanup
 
-1. [ ] Re-enable webhook processing (uncomment order creation code or remove delay)
-2. [ ] (Optional) Manually create the order in database to verify webhook would work
-3. [ ] Restart dev server if needed
+1. [x] Re-enable webhook processing (uncomment order creation code or remove delay)
+2. [x] (Optional) Manually create the order in database to verify webhook would work
+3. [x] Restart dev server if needed
 
 ---
 
@@ -118,17 +118,17 @@ await new Promise((resolve) => setTimeout(resolve, 15000)); // 15 second delay
 
 ### Steps
 
-1. [ ] Manually navigate to: http://localhost:3000/shoppe/checkout/success
-2. [ ] Observe page behavior
+1. [x] Manually navigate to: http://localhost:3000/shoppe/checkout/success
+2. [x] Observe page behavior
 
 ### Expected Results
 
-- [ ] Page displays "Order Confirmed!" heading
-- [ ] No loading state visible (no polling initiated)
-- [ ] No error messages visible
-- [ ] Generic success message shown (no order number displayed)
-- [ ] Browser console shows no errors
-- [ ] Network tab shows no API requests to `/api/checkout/session/`
+- [x] Page displays "Order Confirmed!" heading
+- [x] No loading state visible (no polling initiated)
+- [x] No error messages visible
+- [x] Generic success message shown (no order number displayed)
+- [x] Browser console shows no errors
+- [x] Network tab shows no API requests to `/api/checkout/session/`
 
 ### Rationale
 
@@ -142,29 +142,29 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 ### Steps
 
-1. [ ] Navigate to: http://localhost:3000/shoppe/checkout/success?session_id=cs_invalid_12345
-2. [ ] Observe page behavior
+1. [x] Navigate to: http://localhost:3000/shoppe/checkout/success?session_id=cs_invalid_12345
+2. [x] Observe page behavior
 
 ### Expected Results (During Polling)
 
-- [ ] Page displays "Order Confirmed!" heading
-- [ ] Loading state visible initially
-- [ ] Network tab shows repeated API calls to `/api/checkout/session/cs_invalid_12345`
-- [ ] Each API call returns 404 or 500 error
-- [ ] Polling continues for ~20 seconds (10 retries)
+- [x] Page displays "Order Confirmed!" heading
+- [x] Loading state visible initially
+- [x] Network tab shows repeated API calls to `/api/checkout/session/cs_invalid_12345`
+- [x] Each API call returns 404 or 500 error
+- [x] Polling continues for ~20 seconds (10 retries)
 
 ### Expected Results (After Timeout)
 
-- [ ] After retries exhausted, error message appears
-- [ ] Message should be user-friendly (NOT "404 Not Found")
-- [ ] Example: "Unable to retrieve order details right now. Don't worry - your payment was successful."
-- [ ] Browser console may show network errors (acceptable for invalid session)
+- [x] After retries exhausted, error message appears
+- [x] Message should be user-friendly (NOT "404 Not Found")
+- [x] Example: "Unable to retrieve order details right now. Don't worry - your payment was successful."
+- [x] Browser console may show network errors (acceptable for invalid session)
 
 ### Verification
 
-- [ ] Check database: No order exists with session_id `cs_invalid_12345`
-- [ ] No crash or blank page
-- [ ] User is still informed payment succeeded
+- [x] Check database: No order exists with session_id `cs_invalid_12345`
+- [x] No crash or blank page
+- [x] User is still informed payment succeeded
 
 ---
 
@@ -174,21 +174,21 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 ### Setup (Simulate Network Failure)
 
-1. [ ] Complete a real checkout flow (Test Case 1)
-2. [ ] On the success page, open Browser DevTools
-3. [ ] Go to Network tab → Throttling dropdown
-4. [ ] Select "Offline" mode BEFORE the polling completes
+1. [x] Complete a real checkout flow (Test Case 1)
+2. [x] On the success page, open Browser DevTools
+3. [x] Go to Network tab → Throttling dropdown
+4. [x] Select "Offline" mode BEFORE the polling completes
 
 ### Expected Results
 
-- [ ] Polling attempts continue (fetch errors are caught)
-- [ ] No unhandled promise rejections in console
-- [ ] After retries exhausted, shows user-friendly error message
-- [ ] Page doesn't crash or become unresponsive
+- [x] Polling attempts continue (fetch errors are caught)
+- [x] No unhandled promise rejections in console
+- [x] After retries exhausted, shows user-friendly error message
+- [x] Page doesn't crash or become unresponsive
 
 ### Cleanup
 
-- [ ] Return network to "No throttling" mode
+- [x] Return network to "No throttling" mode
 
 ---
 
@@ -198,24 +198,24 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 ### Steps
 
-1. [ ] Simulate delayed webhook (Test Case 2 setup)
-2. [ ] Start checkout and reach success page (polling starts)
-3. [ ] While loading state is visible, click browser Back button
-4. [ ] Navigate forward again to success page
-5. [ ] Navigate to another page entirely (e.g., home page)
+1. [x] Simulate delayed webhook (Test Case 2 setup)
+2. [x] Start checkout and reach success page (polling starts)
+3. [x] While loading state is visible, click browser Back button
+4. [x] Navigate forward again to success page
+5. [x] Navigate to another page entirely (e.g., home page)
 
 ### Expected Results
 
-- [ ] No memory leaks (polling timers are cleaned up)
-- [ ] Browser console shows no errors
-- [ ] If you return to success page, polling starts fresh
-- [ ] No duplicate polling instances running
+- [x] No memory leaks (polling timers are cleaned up)
+- [x] Browser console shows no errors
+- [x] If you return to success page, polling starts fresh
+- [x] No duplicate polling instances running
 
 ### Verification (Advanced)
 
-- [ ] Open browser DevTools → Performance tab
-- [ ] Record a session while navigating back/forth
-- [ ] Check that timers are properly cleared (no accumulating setTimeouts)
+- [x] Open browser DevTools → Performance tab
+- [x] Record a session while navigating back/forth
+- [x] Check that timers are properly cleared (no accumulating setTimeouts)
 
 ---
 
@@ -225,16 +225,16 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 ### Steps
 
-1. [ ] Add 2-3 different artworks to cart
-2. [ ] Verify cart total is correct sum
-3. [ ] Complete checkout with test card
-4. [ ] Observe success page
+1. [x] Add 2-3 different artworks to cart
+2. [x] Verify cart total is correct sum
+3. [x] Complete checkout with test card
+4. [x] Observe success page
 
 ### Expected Results
 
-- [ ] Order number appears as normal
-- [ ] Database order contains all cart items as separate `order_items` rows
-- [ ] Order total matches cart total
+- [ ] Order number appears as normal ❌ Failed: Order number does not appear
+- [x] Database order contains all cart items as separate `order_items` rows
+- [x] Order total matches cart total
 
 ---
 
@@ -244,21 +244,21 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 ### Steps
 
-1. [ ] Start checkout flow and reach success page
-2. [ ] Immediately reload the page (F5 or Ctrl+R) multiple times rapidly
-3. [ ] Observe polling behavior
+1. [x] Start checkout flow and reach success page
+2. [x] Immediately reload the page (F5 or Ctrl+R) multiple times rapidly
+3. [x] Observe polling behavior
 
 ### Expected Results
 
-- [ ] Each page load initiates independent polling
-- [ ] Old polling instances are cleaned up
-- [ ] Eventually order number appears (same order, not duplicates)
-- [ ] No duplicate orders created in database
+- [x] Each page load initiates independent polling
+- [x] Old polling instances are cleaned up
+- [x] Eventually order number appears (same order, not duplicates)
+- [x] No duplicate orders created in database
 
 ### Verification
 
-- [ ] Check database: Only ONE order exists for this `session_id`
-- [ ] Webhook idempotency prevents duplicate order creation
+- [x] Check database: Only ONE order exists for this `session_id`
+- [x] Webhook idempotency prevents duplicate order creation
 
 ---
 
@@ -266,15 +266,15 @@ User may bookmark the success page or navigate there directly. Should degrade gr
 
 Test the polling mechanism across different browsers:
 
-- [ ] Chrome/Edge (Chromium-based)
-- [ ] Firefox
-- [ ] Safari (if available on macOS)
+- [x] Chrome/Edge (Chromium-based)
+- [x] Firefox
+- [x] Safari (if available on macOS)
 
 ### Expected Results
 
-- [ ] Polling behavior consistent across browsers
-- [ ] Loading states render correctly
-- [ ] No browser-specific console errors
+- [x] Polling behavior consistent across browsers
+- [x] Loading states render correctly
+- [x] No browser-specific console errors
 
 ---
 
@@ -282,10 +282,10 @@ Test the polling mechanism across different browsers:
 
 ### Metrics to Check
 
-1. [ ] **Initial Page Load**: Success page loads within 1-2 seconds
-2. [ ] **API Response Time**: Each `/api/checkout/session/[sessionId]` request completes in < 200ms
-3. [ ] **Polling Frequency**: Observe requests spacing out (exponential backoff working)
-4. [ ] **Memory Usage**: No memory leaks during prolonged polling (check DevTools Memory tab)
+1. [x] **Initial Page Load**: Success page loads within 1-2 seconds
+2. [x] **API Response Time**: Each `/api/checkout/session/[sessionId]` request completes in < 200ms
+3. [x] **Polling Frequency**: Observe requests spacing out (exponential backoff working)
+4. [x] **Memory Usage**: No memory leaks during prolonged polling (check DevTools Memory tab)
 
 ### Tools
 
@@ -297,22 +297,22 @@ Test the polling mechanism across different browsers:
 
 ## Edge Cases Checklist
 
-- [ ] **Test Case 3**: No session_id parameter (direct navigation)
-- [ ] **Test Case 4**: Invalid session_id (malformed string)
-- [ ] **Test Case 5**: Network offline during polling
-- [ ] **Test Case 6**: User navigates away during polling
-- [ ] **Test Case 8**: Rapid page reloads
-- [ ] **Long session_id**: Extremely long session_id string (> 500 chars)
-- [ ] **Special characters**: session_id with URL-unsafe characters (already URL-encoded by Stripe)
+- [x] **Test Case 3**: No session_id parameter (direct navigation)
+- [x] **Test Case 4**: Invalid session_id (malformed string)
+- [x] **Test Case 5**: Network offline during polling
+- [x] **Test Case 6**: User navigates away during polling
+- [x] **Test Case 8**: Rapid page reloads
+- [x] **Long session_id**: Extremely long session_id string (> 500 chars)
+- [x] **Special characters**: session_id with URL-unsafe characters (already URL-encoded by Stripe)
 
 ---
 
 ## Accessibility Testing (Optional)
 
-- [ ] **Screen Reader**: Announce loading state changes properly
-- [ ] **Keyboard Navigation**: Success page is keyboard-navigable
-- [ ] **Focus Management**: Focus not lost during polling state updates
-- [ ] **Error Announcements**: Error messages announced to screen readers
+- [x] **Screen Reader**: Announce loading state changes properly
+- [x] **Keyboard Navigation**: Success page is keyboard-navigable
+- [x] **Focus Management**: Focus not lost during polling state updates
+- [x] **Error Announcements**: Error messages announced to screen readers
 
 ### Tools
 
@@ -324,28 +324,28 @@ Test the polling mechanism across different browsers:
 
 ## Post-Testing Cleanup
 
-1. [ ] Re-enable webhook processing if disabled (remove comments/delays)
-2. [ ] Clear test orders from database (optional):
+1. [x] Re-enable webhook processing if disabled (remove comments/delays)
+2. [x] Clear test orders from database (optional):
     ```sql
     DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE customer_email = 'test@example.com');
     DELETE FROM orders WHERE customer_email = 'test@example.com';
     ```
-3. [ ] Restart dev server: `npm run dev`
-4. [ ] Verify normal checkout flow still works after cleanup
+3. [x] Restart dev server: `npm run dev`
+4. [x] Verify normal checkout flow still works after cleanup
 
 ---
 
 ## Sign-Off
 
-**Tester Name**: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
+**Tester Name**: Brad Harris
 
-**Testing Date**: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
+**Testing Date**: 1/12/2026
 
 **Environment**:
 
-- Node version: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
-- Browser: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
-- OS: \***\*\*\*\*\*\*\***\_\_\_\***\*\*\*\*\*\*\***
+- Node version: 22.21.1
+- Browser: Chrome 143.0.7499.192 (Official Build) (64-bit)
+- OS: Windows 11
 
 **Overall Result**: [ ] PASS / [ ] FAIL
 

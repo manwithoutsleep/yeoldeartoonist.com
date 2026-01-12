@@ -66,7 +66,7 @@ describe('useOrderPolling', () => {
         expect(result.current.error).toBeNull();
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch).toHaveBeenCalledWith(
-            `/api/orders/by-session?sessionId=${sessionId}`
+            `/api/checkout/session/${sessionId}`
         );
     });
 

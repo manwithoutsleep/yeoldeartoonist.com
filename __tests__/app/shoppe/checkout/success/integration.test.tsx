@@ -178,7 +178,7 @@ describe('Checkout Success Page - Full Integration Flow', () => {
 
             // Step 7: Verify fetch was called with correct sessionId
             expect(mockFetch).toHaveBeenCalledWith(
-                '/api/orders/by-session?sessionId=cs_test_123'
+                '/api/checkout/session/cs_test_123'
             );
         });
 

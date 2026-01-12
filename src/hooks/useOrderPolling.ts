@@ -33,9 +33,7 @@ export async function fetchOrderBySession(sessionId: string): Promise<{
     error: OrderError | null;
 }> {
     try {
-        const response = await fetch(
-            `/api/orders/by-session?sessionId=${sessionId}`
-        );
+        const response = await fetch(`/api/checkout/session/${sessionId}`);
 
         if (response.ok) {
             const data = await response.json();

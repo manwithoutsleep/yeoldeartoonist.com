@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import camelcaseKeys from 'camelcase-keys';
 import { stripe } from '@/lib/payments/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { Database } from '@/types/database';
@@ -21,52 +22,97 @@ type DbOrder = Database['public']['Tables']['orders']['Row'] & {
 
 /**
  * Transform database order row to Order type
- * Converts snake_case database fields to camelCase API fields
+ * Uses camelcase-keys library to convert snake_case to camelCase
+ * Then applies type-specific transformations (numeric strings, nested objects)
  */
 function transformOrderData(dbOrder: DbOrder): Order {
+    // First, convert all keys to camelCase using the library
+    const camelCased = camelcaseKeys(dbOrder, { deep: true }) as {
+        id: string;
+        orderNumber: string;
+        customerName: string;
+        customerEmail: string;
+        shippingAddressLine1: string;
+        shippingAddressLine2: string | null;
+        shippingCity: string;
+        shippingState: string;
+        shippingZip: string;
+        shippingCountry: string;
+        billingAddressLine1: string;
+        billingAddressLine2: string | null;
+        billingCity: string;
+        billingState: string;
+        billingZip: string;
+        billingCountry: string;
+        orderNotes: string | null;
+        subtotal: string;
+        shippingCost: string;
+        taxAmount: string;
+        total: string;
+        status: Order['status'];
+        paymentStatus: Order['paymentStatus'];
+        paymentIntentId: string | null;
+        shippingTrackingNumber: string | null;
+        adminNotes: string | null;
+        orderItems: {
+            id: string;
+            artworkId: string;
+            quantity: number;
+            priceAtPurchase: string;
+            lineSubtotal: string;
+            artwork: {
+                title: string;
+                imageUrl: string | null;
+            } | null;
+        }[];
+        createdAt: string;
+        updatedAt: string;
+    };
+
+    // Then apply business logic transformations
     return {
-        id: dbOrder.id,
-        orderNumber: dbOrder.order_number,
-        customerName: dbOrder.customer_name,
-        customerEmail: dbOrder.customer_email,
+        id: camelCased.id,
+        orderNumber: camelCased.orderNumber,
+        customerName: camelCased.customerName,
+        customerEmail: camelCased.customerEmail,
         shippingAddress: {
-            line1: dbOrder.shipping_address_line1,
-            line2: dbOrder.shipping_address_line2 ?? undefined,
-            city: dbOrder.shipping_city,
-            state: dbOrder.shipping_state,
-            zip: dbOrder.shipping_zip,
-            country: dbOrder.shipping_country,
+            line1: camelCased.shippingAddressLine1,
+            line2: camelCased.shippingAddressLine2 ?? undefined,
+            city: camelCased.shippingCity,
+            state: camelCased.shippingState,
+            zip: camelCased.shippingZip,
+            country: camelCased.shippingCountry,
         },
         billingAddress: {
-            line1: dbOrder.billing_address_line1,
-            line2: dbOrder.billing_address_line2 ?? undefined,
-            city: dbOrder.billing_city,
-            state: dbOrder.billing_state,
-            zip: dbOrder.billing_zip,
-            country: dbOrder.billing_country,
+            line1: camelCased.billingAddressLine1,
+            line2: camelCased.billingAddressLine2 ?? undefined,
+            city: camelCased.billingCity,
+            state: camelCased.billingState,
+            zip: camelCased.billingZip,
+            country: camelCased.billingCountry,
         },
-        orderNotes: dbOrder.order_notes ?? undefined,
-        subtotal: parseFloat(dbOrder.subtotal),
-        shippingCost: parseFloat(dbOrder.shipping_cost),
-        taxAmount: parseFloat(dbOrder.tax_amount),
-        total: parseFloat(dbOrder.total),
-        status: dbOrder.status,
-        paymentStatus: dbOrder.payment_status,
-        paymentIntentId: dbOrder.payment_intent_id ?? undefined,
-        shippingTrackingNumber: dbOrder.shipping_tracking_number ?? undefined,
-        adminNotes: dbOrder.admin_notes ?? undefined,
+        orderNotes: camelCased.orderNotes ?? undefined,
+        subtotal: parseFloat(camelCased.subtotal),
+        shippingCost: parseFloat(camelCased.shippingCost),
+        taxAmount: parseFloat(camelCased.taxAmount),
+        total: parseFloat(camelCased.total),
+        status: camelCased.status,
+        paymentStatus: camelCased.paymentStatus,
+        paymentIntentId: camelCased.paymentIntentId ?? undefined,
+        shippingTrackingNumber: camelCased.shippingTrackingNumber ?? undefined,
+        adminNotes: camelCased.adminNotes ?? undefined,
         items:
-            dbOrder.order_items?.map((item) => ({
+            camelCased.orderItems?.map((item) => ({
                 id: item.id,
-                artworkId: item.artwork_id,
+                artworkId: item.artworkId,
                 quantity: item.quantity,
-                priceAtPurchase: parseFloat(item.price_at_purchase),
-                lineSubtotal: parseFloat(item.line_subtotal),
+                priceAtPurchase: parseFloat(item.priceAtPurchase),
+                lineSubtotal: parseFloat(item.lineSubtotal),
                 title: item.artwork?.title,
-                imageUrl: item.artwork?.image_url ?? undefined,
+                imageUrl: item.artwork?.imageUrl ?? undefined,
             })) || [],
-        createdAt: dbOrder.created_at,
-        updatedAt: dbOrder.updated_at,
+        createdAt: camelCased.createdAt,
+        updatedAt: camelCased.updatedAt,
     };
 }
 

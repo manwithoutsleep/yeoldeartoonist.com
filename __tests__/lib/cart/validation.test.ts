@@ -5,9 +5,10 @@
  * pricing validation, inventory checks, and total calculations.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateCart } from '@/lib/cart/validation';
 import type { CartItem } from '@/types/cart';
+import { siteConfig } from '@/config/site';
 
 // Mock Supabase
 vi.mock('@/lib/supabase/server', () => ({
@@ -367,7 +368,7 @@ describe('validateCart', () => {
             expect(result.subtotal).toBe(100.0); // 50 + 50
         });
 
-        it('should apply flat rate shipping of $5.00', async () => {
+        it('should apply flat rate shipping as set in siteConfig', async () => {
             const { createServiceRoleClient } = await import(
                 '@/lib/supabase/server'
             );
@@ -408,13 +409,21 @@ describe('validateCart', () => {
 
             const result = await validateCart(items);
 
-            expect(result.shippingCost).toBe(5.0);
+            expect(result.shippingCost).toBe(
+                siteConfig.shipping.flat_rate / 100
+            );
         });
 
         it('should calculate total correctly (subtotal + shipping + tax)', async () => {
             const { createServiceRoleClient } = await import(
                 '@/lib/supabase/server'
             );
+
+            const expectedSubtotal = 100.0;
+            const expectedShipping = siteConfig.shipping.flat_rate / 100;
+            const expectedTax = 0; // Assuming tax is handled by Stripe
+            const expectedTotal =
+                expectedSubtotal + expectedShipping + expectedTax;
 
             const mockSupabase = {
                 from: vi.fn().mockReturnValue({
@@ -452,10 +461,10 @@ describe('validateCart', () => {
 
             const result = await validateCart(items);
 
-            expect(result.subtotal).toBe(100.0);
-            expect(result.shippingCost).toBe(5.0);
-            expect(result.taxAmount).toBe(0); // Tax handled by Stripe
-            expect(result.total).toBe(105.0); // 100 + 5 + 0
+            expect(result.subtotal).toBe(expectedSubtotal);
+            expect(result.shippingCost).toBe(expectedShipping);
+            expect(result.taxAmount).toBe(expectedTax);
+            expect(result.total).toBe(expectedTotal);
         });
     });
 

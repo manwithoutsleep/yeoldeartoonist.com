@@ -20,6 +20,12 @@ export const siteConfig = {
             'I typically respond to emails within 1-2 business days. Thank you for reaching out!',
     },
 
+    // Shipping Information
+    shipping: {
+        flat_rate: 800,
+        free_shipping_minimum: 10000,
+    },
+
     // Site Information
     site: {
         title: 'Ye Olde Artoonist',

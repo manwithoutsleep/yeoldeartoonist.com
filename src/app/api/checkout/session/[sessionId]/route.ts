@@ -125,7 +125,7 @@ function transformOrderData(dbOrder: DbOrder): Order {
  * @returns Order details or error
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ sessionId: string }> }
 ) {
     try {

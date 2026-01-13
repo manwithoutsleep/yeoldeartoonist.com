@@ -74,10 +74,14 @@ export async function middleware(request: NextRequest) {
     // Generate nonce for CSP
     const nonce = generateNonce();
 
+    // Create modified request headers with nonce
+    // This allows Server Components to access the nonce via headers()
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('x-pathname', pathname);
+
     // Helper function to add security headers to response
     const addSecurityHeaders = (response: NextResponse) => {
-        response.headers.set('x-pathname', pathname);
-        response.headers.set('x-nonce', nonce);
         response.headers.set(
             'Content-Security-Policy',
             buildCSP(nonce, isDevelopment)
@@ -101,7 +105,7 @@ export async function middleware(request: NextRequest) {
     if (!pathname.startsWith('/admin')) {
         const response = NextResponse.next({
             request: {
-                headers: request.headers,
+                headers: requestHeaders,
             },
         });
         addSecurityHeaders(response);
@@ -112,7 +116,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/admin/login') {
         const response = NextResponse.next({
             request: {
-                headers: request.headers,
+                headers: requestHeaders,
             },
         });
         addSecurityHeaders(response);
@@ -143,10 +147,10 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Create response object for cookie handling
+    // Create response object for cookie handling with modified request headers
     const supabaseResponse = NextResponse.next({
         request: {
-            headers: request.headers,
+            headers: requestHeaders,
         },
     });
 

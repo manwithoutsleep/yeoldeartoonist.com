@@ -85,14 +85,12 @@ function buildCSP(nonce: string, isDevelopment: boolean): string {
         "frame-ancestors 'self'",
     ];
 
-    // Only upgrade insecure requests in production
-    if (!isDevelopment) {
-        cspDirectives.push('upgrade-insecure-requests');
-    }
-
-    // Add CSP violation reporting in development
     if (isDevelopment) {
+        // In development, add CSP violation reporting
         cspDirectives.push('report-uri /api/csp-report');
+    } else {
+        // In production, upgrade insecure requests
+        cspDirectives.push('upgrade-insecure-requests');
     }
 
     return cspDirectives.join('; ');

@@ -90,6 +90,11 @@ function buildCSP(nonce: string, isDevelopment: boolean): string {
         cspDirectives.push('upgrade-insecure-requests');
     }
 
+    // Add CSP violation reporting in development
+    if (isDevelopment) {
+        cspDirectives.push('report-uri /api/csp-report');
+    }
+
     return cspDirectives.join('; ');
 }
 
@@ -100,6 +105,13 @@ export async function middleware(request: NextRequest) {
 
     // Generate nonce for CSP
     const nonce = generateNonce();
+
+    // In development, log nonce for debugging (exclude Next.js internal routes)
+    if (isDevelopment && !pathname.startsWith('/_next')) {
+        console.log(
+            `[CSP] Generated nonce for ${pathname}: ${nonce.substring(0, 8)}...`
+        );
+    }
 
     // Create modified request headers with nonce
     // This allows Server Components to access the nonce via headers()
@@ -126,6 +138,17 @@ export async function middleware(request: NextRequest) {
             'Permissions-Policy',
             'camera=(), microphone=(), geolocation=()'
         );
+
+        // In development, validate that request headers were set correctly
+        if (isDevelopment && !pathname.startsWith('/_next')) {
+            const requestNonce = requestHeaders.get('x-nonce');
+
+            if (requestNonce !== nonce) {
+                console.warn(
+                    `[CSP] WARNING: x-nonce header mismatch for ${pathname}`
+                );
+            }
+        }
     };
 
     // Only protect admin routes (but allow login without auth)

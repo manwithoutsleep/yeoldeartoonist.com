@@ -12,11 +12,12 @@
  * - Metadata storage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '@/app/api/checkout/session/route';
 import { NextRequest } from 'next/server';
 import type { CartItem } from '@/types/cart';
 import type Stripe from 'stripe';
+import { siteConfig } from '@/config/site';
 
 // Mock Stripe
 vi.mock('@/lib/payments/stripe', () => ({
@@ -74,7 +75,7 @@ describe('POST /api/checkout/session', () => {
             isValid: true,
             items: validCartItems,
             subtotal: 175.0,
-            shippingCost: 5.0,
+            shippingCost: siteConfig.shipping.flat_rate / 100,
             taxAmount: 0,
             total: 180.0,
         });
@@ -234,7 +235,7 @@ describe('POST /api/checkout/session', () => {
             isValid: false,
             items: [],
             subtotal: 0,
-            shippingCost: 0,
+            shippingCost: siteConfig.shipping.flat_rate / 100,
             taxAmount: 0,
             total: 0,
             errors: [
@@ -389,7 +390,7 @@ describe('POST /api/checkout/session', () => {
                         shipping_rate_data: {
                             type: 'fixed_amount',
                             fixed_amount: {
-                                amount: 500, // $5.00 in cents
+                                amount: siteConfig.shipping.flat_rate, // in cents
                                 currency: 'usd',
                             },
                             display_name: 'Standard Shipping',

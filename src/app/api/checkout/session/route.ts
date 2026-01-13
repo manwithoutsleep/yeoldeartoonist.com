@@ -17,11 +17,12 @@ import { stripe } from '@/lib/payments/stripe';
 import { validateCart } from '@/lib/cart/validation';
 import { createApiErrorResponse } from '@/lib/errors/user-friendly';
 import { logError } from '@/lib/errors/logger';
+import { siteConfig } from '@/config/site';
 
 /**
  * Constants for checkout session configuration
  */
-const SHIPPING_COST_CENTS = 500; // $5.00 flat rate shipping
+const SHIPPING_COST_CENTS = siteConfig.shipping.flat_rate;
 const ALLOWED_SHIPPING_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] =
     ['US'];
 const SHIPPING_DISPLAY_NAME = 'Standard Shipping';

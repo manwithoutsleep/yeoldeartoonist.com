@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { CartProvider } from '@/context/CartContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { siteConfig } from '@/config/site';
 
 /**
  * Test helper: Render CartSummary with required providers
@@ -32,7 +33,9 @@ describe('CartSummary', () => {
         const shippingRow = screen
             .getByText('Shipping')
             .closest('div') as HTMLElement;
-        expect(shippingRow).toHaveTextContent('$5.00');
+        expect(shippingRow).toHaveTextContent(
+            '$' + (siteConfig.shipping.flat_rate / 100).toFixed(2)
+        );
     });
 
     it('shows tax estimate placeholder', () => {
@@ -50,7 +53,9 @@ describe('CartSummary', () => {
         const totalRow = screen
             .getByText('Total')
             .closest('div') as HTMLElement;
-        expect(totalRow).toHaveTextContent('$5.00');
+        expect(totalRow).toHaveTextContent(
+            '$' + (siteConfig.shipping.flat_rate / 100).toFixed(2)
+        );
     });
 
     it('formats currency properly', () => {
@@ -112,7 +117,9 @@ describe('CartSummary', () => {
             const totalRow = screen
                 .getByText('Total')
                 .closest('div') as HTMLElement;
-            expect(totalRow).toHaveTextContent('$5.00');
+            expect(totalRow).toHaveTextContent(
+                '$' + (siteConfig.shipping.flat_rate / 100).toFixed(2)
+            );
         });
     });
 });

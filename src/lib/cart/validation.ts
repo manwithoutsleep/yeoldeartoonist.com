@@ -7,6 +7,7 @@
 
 import type { CartItem, ValidatedCart } from '@/types/cart';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { siteConfig } from '@/config/site';
 
 /**
  * Validates a shopping cart by checking:
@@ -121,7 +122,7 @@ export async function validateCart(items: CartItem[]): Promise<ValidatedCart> {
     }
 
     // Calculate shipping and total
-    const shippingCost = 5.0; // Flat rate shipping for MVP
+    const shippingCost = siteConfig.shipping.flat_rate / 100; // Flat rate shipping for MVP
     const taxAmount = 0; // Tax calculated by Stripe Tax at checkout
     const total = subtotal + shippingCost + taxAmount;
 

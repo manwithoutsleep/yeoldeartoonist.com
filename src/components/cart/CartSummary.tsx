@@ -1,5 +1,6 @@
 'use client';
 
+import { siteConfig } from '@/config/site';
 /**
  * CartSummary Component
  *
@@ -7,7 +8,7 @@
  *
  * Features:
  * - Subtotal calculation
- * - Shipping cost ($5.00 flat rate)
+ * - Shipping cost (flat rate)
  * - Tax display (actual or estimate placeholder)
  * - Total calculation (with or without tax)
  * - Formatted currency display
@@ -16,7 +17,7 @@
 import { useCart } from '@/hooks/useCart';
 import { formatCurrency } from '@/lib/utils/currency';
 
-const SHIPPING_COST = 5.0;
+const SHIPPING_COST = siteConfig.shipping.flat_rate / 100;
 
 export interface CartSummaryProps {
     /**

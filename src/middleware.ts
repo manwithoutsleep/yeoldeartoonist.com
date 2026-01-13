@@ -32,8 +32,10 @@ function generateNonce(): string {
  * without needing their own nonces. This is the recommended approach for
  * modern web applications using frameworks like Next.js.
  *
- * Fallbacks (https:, 'unsafe-inline') are provided for older browsers that
- * don't support 'strict-dynamic', and are ignored by modern browsers.
+ * The 'unsafe-inline' fallback is provided for older browsers that don't support
+ * 'strict-dynamic', and is ignored by modern browsers. We accept that very old
+ * browsers (Chrome <52, Firefox <52, Safari <15.4) may not function correctly
+ * rather than weakening security with a permissive 'https:' fallback.
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#strict-dynamic
  */
@@ -44,7 +46,7 @@ function buildCSP(nonce: string, isDevelopment: boolean): string {
         // In dev, allow unsafe-eval for Turbopack hot reloading
         isDevelopment
             ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com`
-            : `script-src 'nonce-${nonce}' 'strict-dynamic' https: 'unsafe-inline'`,
+            : `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'`,
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
         "font-src 'self' https://fonts.gstatic.com data:",

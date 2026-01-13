@@ -17,11 +17,34 @@ import type { Database } from '@/types/database';
 
 /**
  * Generate a random nonce for CSP
+ *
+ * @returns A base64-encoded random string suitable for CSP nonce values
+ * @throws Error if random value generation fails (caught internally with fallback)
+ *
+ * ## Security Note
+ * - Uses Web Crypto API's getRandomValues() for cryptographic randomness
+ * - Prefers btoa() for better edge runtime compatibility when available
+ * - Falls back to Buffer.from() for Node.js environments
+ * - If crypto fails, uses timestamp-based fallback (less secure but functional)
  */
 function generateNonce(): string {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return Buffer.from(array).toString('base64');
+    try {
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+
+        // Use Web API compatible base64 encoding
+        // Fallback to Buffer for environments where btoa is not available
+        if (typeof btoa !== 'undefined') {
+            return btoa(String.fromCharCode(...array));
+        }
+        return Buffer.from(array).toString('base64');
+    } catch (error) {
+        // Log error but don't expose details to client
+        console.error('[MIDDLEWARE] Failed to generate CSP nonce:', error);
+        // Fallback: generate timestamp-based nonce (less secure but functional)
+        // This ensures CSP header is still set, preventing broken page rendering
+        return Buffer.from(Date.now().toString()).toString('base64');
+    }
 }
 
 /**

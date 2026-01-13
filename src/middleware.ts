@@ -47,6 +47,10 @@ function buildCSP(nonce: string, isDevelopment: boolean): string {
         isDevelopment
             ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com`
             : `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'`,
+        // Style CSP allows 'unsafe-inline' because:
+        // 1. Email templates (OrderConfirmation, AdminNotification) require inline styles
+        // 2. Few inline styles exist in React components (<10 excluding emails)
+        // 3. TODO: Phase 5 - Migrate React component inline styles to CSS classes
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
         "font-src 'self' https://fonts.gstatic.com data:",

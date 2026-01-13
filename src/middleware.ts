@@ -26,14 +26,25 @@ function generateNonce(): string {
 
 /**
  * Build Content Security Policy with nonce support
+ *
+ * Uses 'strict-dynamic' in production to allow Next.js's inline scripts to execute.
+ * With 'strict-dynamic', scripts loaded by nonce-approved scripts can execute
+ * without needing their own nonces. This is the recommended approach for
+ * modern web applications using frameworks like Next.js.
+ *
+ * Fallbacks (https:, 'unsafe-inline') are provided for older browsers that
+ * don't support 'strict-dynamic', and are ignored by modern browsers.
+ *
+ * See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#strict-dynamic
  */
 function buildCSP(nonce: string, isDevelopment: boolean): string {
     const cspDirectives = [
         "default-src 'self'",
-        // In production, use nonce for inline scripts. In dev, allow unsafe-eval for Turbopack
+        // In production, use nonce with strict-dynamic for Next.js compatibility
+        // In dev, allow unsafe-eval for Turbopack hot reloading
         isDevelopment
             ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com`
-            : `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`,
+            : `script-src 'nonce-${nonce}' 'strict-dynamic' https: 'unsafe-inline'`,
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
         "font-src 'self' https://fonts.gstatic.com data:",

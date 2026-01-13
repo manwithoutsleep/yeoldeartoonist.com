@@ -19,13 +19,18 @@ import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/context/CartContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { NonceProvider } from '@/context/NonceContext';
 import { Toast } from '@/components/Toast';
 
 interface PublicLayoutWrapperProps {
+    nonce?: string;
     children: React.ReactNode;
 }
 
-export function PublicLayoutWrapper({ children }: PublicLayoutWrapperProps) {
+export function PublicLayoutWrapper({
+    nonce,
+    children,
+}: PublicLayoutWrapperProps) {
     const pathname = usePathname();
 
     // Check if we're on an admin page
@@ -33,21 +38,23 @@ export function PublicLayoutWrapper({ children }: PublicLayoutWrapperProps) {
 
     // Admin pages: render children without public header/nav/footer
     if (isAdminPage) {
-        return <>{children}</>;
+        return <NonceProvider nonce={nonce}>{children}</NonceProvider>;
     }
 
     // Public pages: render with header, navigation, footer, and cart context
     return (
-        <ToastProvider>
-            <CartProvider>
-                <div className="public-layout">
-                    <Header />
-                    <Navigation />
-                    <main id="main-content">{children}</main>
-                    <Footer />
-                </div>
-                <Toast />
-            </CartProvider>
-        </ToastProvider>
+        <NonceProvider nonce={nonce}>
+            <ToastProvider>
+                <CartProvider>
+                    <div className="public-layout">
+                        <Header />
+                        <Navigation />
+                        <main id="main-content">{children}</main>
+                        <Footer />
+                    </div>
+                    <Toast />
+                </CartProvider>
+            </ToastProvider>
+        </NonceProvider>
     );
 }

@@ -17,23 +17,63 @@ import type { Database } from '@/types/database';
 
 /**
  * Generate a random nonce for CSP
+ *
+ * @returns A base64-encoded random string suitable for CSP nonce values
+ * @throws Error if random value generation fails (caught internally with fallback)
+ *
+ * ## Security Note
+ * - Uses Web Crypto API's getRandomValues() for cryptographic randomness
+ * - Prefers btoa() for better edge runtime compatibility when available
+ * - Falls back to Buffer.from() for Node.js environments
+ * - If crypto fails, uses timestamp-based fallback (less secure but functional)
  */
 function generateNonce(): string {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return Buffer.from(array).toString('base64');
+    try {
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+
+        // Use Web API compatible base64 encoding
+        // Fallback to Buffer for environments where btoa is not available
+        if (typeof btoa !== 'undefined') {
+            return btoa(String.fromCharCode(...array));
+        }
+        return Buffer.from(array).toString('base64');
+    } catch (error) {
+        // Log error but don't expose details to client
+        console.error('[MIDDLEWARE] Failed to generate CSP nonce:', error);
+        // Fallback: generate timestamp-based nonce (less secure but functional)
+        // This ensures CSP header is still set, preventing broken page rendering
+        return Buffer.from(Date.now().toString()).toString('base64');
+    }
 }
 
 /**
  * Build Content Security Policy with nonce support
+ *
+ * Uses 'strict-dynamic' in production to allow Next.js's inline scripts to execute.
+ * With 'strict-dynamic', scripts loaded by nonce-approved scripts can execute
+ * without needing their own nonces. This is the recommended approach for
+ * modern web applications using frameworks like Next.js.
+ *
+ * The 'unsafe-inline' fallback is provided for older browsers that don't support
+ * 'strict-dynamic', and is ignored by modern browsers. We accept that very old
+ * browsers (Chrome <52, Firefox <52, Safari <15.4) may not function correctly
+ * rather than weakening security with a permissive 'https:' fallback.
+ *
+ * See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#strict-dynamic
  */
 function buildCSP(nonce: string, isDevelopment: boolean): string {
     const cspDirectives = [
         "default-src 'self'",
-        // In production, use nonce for inline scripts. In dev, allow unsafe-eval for Turbopack
+        // In production, use nonce with strict-dynamic for Next.js compatibility
+        // In dev, allow unsafe-eval for Turbopack hot reloading
         isDevelopment
             ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com`
-            : `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`,
+            : `script-src 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline'`,
+        // Style CSP allows 'unsafe-inline' because:
+        // 1. Email templates (OrderConfirmation, AdminNotification) require inline styles
+        // 2. Few inline styles exist in React components (<10 excluding emails)
+        // 3. TODO: Phase 5 - Migrate React component inline styles to CSS classes
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' blob: data: https://*.supabase.co https://127.0.0.1",
         "font-src 'self' https://fonts.gstatic.com data:",
@@ -45,8 +85,11 @@ function buildCSP(nonce: string, isDevelopment: boolean): string {
         "frame-ancestors 'self'",
     ];
 
-    // Only upgrade insecure requests in production
-    if (!isDevelopment) {
+    if (isDevelopment) {
+        // In development, add CSP violation reporting
+        cspDirectives.push('report-uri /api/csp-report');
+    } else {
+        // In production, upgrade insecure requests
         cspDirectives.push('upgrade-insecure-requests');
     }
 
@@ -61,10 +104,21 @@ export async function middleware(request: NextRequest) {
     // Generate nonce for CSP
     const nonce = generateNonce();
 
+    // In development, log nonce for debugging (exclude Next.js internal routes)
+    if (isDevelopment && !pathname.startsWith('/_next')) {
+        console.log(
+            `[CSP] Generated nonce for ${pathname}: ${nonce.substring(0, 8)}...`
+        );
+    }
+
+    // Create modified request headers with nonce
+    // This allows Server Components to access the nonce via headers()
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('x-pathname', pathname);
+
     // Helper function to add security headers to response
     const addSecurityHeaders = (response: NextResponse) => {
-        response.headers.set('x-pathname', pathname);
-        response.headers.set('x-nonce', nonce);
         response.headers.set(
             'Content-Security-Policy',
             buildCSP(nonce, isDevelopment)
@@ -82,13 +136,24 @@ export async function middleware(request: NextRequest) {
             'Permissions-Policy',
             'camera=(), microphone=(), geolocation=()'
         );
+
+        // In development, validate that request headers were set correctly
+        if (isDevelopment && !pathname.startsWith('/_next')) {
+            const requestNonce = requestHeaders.get('x-nonce');
+
+            if (requestNonce !== nonce) {
+                console.warn(
+                    `[CSP] WARNING: x-nonce header mismatch for ${pathname}`
+                );
+            }
+        }
     };
 
     // Only protect admin routes (but allow login without auth)
     if (!pathname.startsWith('/admin')) {
         const response = NextResponse.next({
             request: {
-                headers: request.headers,
+                headers: requestHeaders,
             },
         });
         addSecurityHeaders(response);
@@ -99,7 +164,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/admin/login') {
         const response = NextResponse.next({
             request: {
-                headers: request.headers,
+                headers: requestHeaders,
             },
         });
         addSecurityHeaders(response);
@@ -130,10 +195,10 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Create response object for cookie handling
+    // Create response object for cookie handling with modified request headers
     const supabaseResponse = NextResponse.next({
         request: {
-            headers: request.headers,
+            headers: requestHeaders,
         },
     });
 

@@ -14,12 +14,6 @@
         <constraint>All feedback must be added as comments to the PR using the GitHub CLI.</constraint>
     </constraints>
 
-    <variables>
-        <variable name="github-issue" description="The GitHub issue number that the PR addresses."
-            value="30" />
-        <variable name="pr-num" description="The Pull Request number to review." value="53" />
-    </variables>
-
     <context>
         <project>
             <name>YeOldeArtoonist.com Website</name>
@@ -36,17 +30,16 @@
         </project>
 
         <pr_details>
-            <github_issue>{{github-issue}}</github_issue>
-            <pr_number>{{pr-num}}</pr_number>
-            <branch>issue-{{github-issue}}</branch>
+            <github_issue>105</github_issue>
+            <pr_number>104</pr_number>
+            <branch>csp-nonce</branch>
             <base_branch>main</base_branch>
         </pr_details>
 
         <standards>
             <linting>ESLint configured and enforced</linting>
             <formatting>Prettier configured and enforced</formatting>
-            <testing>Vitest for unit and integration tests</testing>
-            <git_hooks>Pre-commit hook enforces linting, formatting, type checking, and testing</git_hooks>
+            <git_hooks>Pre-commit hook enforces linting, formatting, and type checking</git_hooks>
         </standards>
 
     </context>
@@ -57,27 +50,27 @@
             <usage>Access PR details, view issues, add comments to PR</usage>
             <help_command>gh --help</help_command>
             <key_commands>
-                <command>gh issue view {{github-issue}}</command>
-                <command>gh pr view {{pr-num}}</command>
-                <command>gh pr view {{pr-num}} --comments</command>
-                <command>gh pr diff {{pr-num}}</command>
-                <command>gh pr comment {{pr-num}} --body "[comment]"</command>
+                <command>gh issue view 105</command>
+                <command>gh pr view 104</command>
+                <command>gh pr view 104 --comments</command>
+                <command>gh pr diff 104</command>
+                <command>gh pr comment 104 --body "[comment]"</command>
             </key_commands>
         </tool>
         <tool>
             <name>Git CLI</name>
             <usage>View diffs and compare branches</usage>
             <key_commands>
-                <command>git diff main...issue-{{github-issue}}</command>
-                <command>git log main..issue-{{github-issue}}</command>
+                <command>git diff main...issue-105</command>
+                <command>git log main..issue-105</command>
                 <command>git show [commit-hash]</command>
             </key_commands>
         </tool>
     </available_tools>
 
     <purpose>
-        Perform a comprehensive, critical review of Pull Request #{{pr-num}} which implements the
-        requirements of GitHub Issue #{{github-issue}}. Provide detailed, actionable feedback
+        Perform a comprehensive, critical review of Pull Request #104 which implements the
+        requirements of GitHub Issue #105. Provide detailed, actionable feedback
         organized by severity and category, ensuring all feedback is posted as comments on the PR
         for developer action.
     </purpose>
@@ -86,13 +79,13 @@
         <step number="1">
             <action>Gather Context</action>
             <details>
-                <task>Run `gh issue view {{github-issue}}` to read the full requirements and
+                <task>Run `gh issue view 105` to read the full requirements and
                     acceptance criteria.</task>
-                <task>Run `gh pr view {{pr-num}}` to see the PR description, files changed, and
+                <task>Run `gh pr view 104` to see the PR description, files changed, and
                     metadata.</task>
-                <task>Run `gh pr diff {{pr-num}}` or `git diff main...issue-{{github-issue}}` to see
+                <task>Run `gh pr diff 104` or `git diff main...issue-105` to see
                     the code changes.</task>
-                <task>If available, run `gh pr view {{pr-num}} --comments` to see any existing
+                <task>If available, run `gh pr view 104 --comments` to see any existing
                     review comments.</task>
                 <output>Summarize your understanding of: (a) What the issue requires, (b) What the
                     PR implements, (c) The scope of changes (files, lines, components affected).</output>
@@ -104,7 +97,7 @@
             <details>
                 <focus_area name="Alignment with Goal">
                     <question>Does the code successfully achieve the stated goal of GitHub issue
-                        {{github-issue}}?</question>
+                        105?</question>
                     <question>Are all acceptance criteria met?</question>
                     <question>Are there any requirements that are missing or partially implemented?</question>
                 </focus_area>
@@ -264,7 +257,7 @@
                 <task>Categorize all feedback items into: Critical 🚨, Suggestion 🤔, Nitpick ✨</task>
                 <task>For each feedback item, prepare a structured comment with: File, Line, Issue,
                     Explanation, and (if applicable) Suggested Fix</task>
-                <task>Use `gh pr comment {{pr-num}} --body "[comment]"` to post each comment to the
+                <task>Use `gh pr comment 104 --body "[comment]"` to post each comment to the
                     PR</task>
                 <task>Group related comments together where appropriate</task>
                 <task>Ensure each comment is actionable and provides clear guidance</task>
@@ -346,15 +339,15 @@
                 **Rationale:**
                 [Explanation of why this change improves the code, with references to best practices
                 or documentation if applicable]
-            </template>
+</template>
         </comment_structure>
 
         <summary_structure>
             <template>
 
-                ## Code Review Summary - PR #{{pr-num}}
+                ## Code Review Summary - PR #104
 
-                **Reviewed Against:** GitHub Issue #{{github-issue}}
+                **Reviewed Against:** GitHub Issue #105
 
                 **Overall Assessment:** [1-2 sentence summary of the PR quality and implementation]
                 **Findings:**
@@ -372,7 +365,7 @@
 
                 **Next Steps:**
                 [Guidance for the developer on how to address feedback, if applicable]
-            </template>
+</template>
         </summary_structure>
     </feedback_format>
 

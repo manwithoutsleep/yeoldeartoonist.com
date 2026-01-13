@@ -1,9 +1,12 @@
+'use client';
+
 /**
  * StructuredData component
- * Renders JSON-LD structured data in a script tag for SEO
+ * Renders JSON-LD structured data in a script tag for SEO with CSP nonce support
  */
 
 import Script from 'next/script';
+import { useNonce } from '@/context/NonceContext';
 
 interface StructuredDataProps {
     data: object | object[];
@@ -23,6 +26,7 @@ interface StructuredDataProps {
  * ```
  */
 export function StructuredData({ data }: StructuredDataProps) {
+    const nonce = useNonce();
     const jsonLd = Array.isArray(data) ? data : [data];
 
     return (
@@ -32,6 +36,7 @@ export function StructuredData({ data }: StructuredDataProps) {
                     key={index}
                     id={`structured-data-${index}`}
                     type="application/ld+json"
+                    nonce={nonce}
                     dangerouslySetInnerHTML={{
                         __html: JSON.stringify(schema),
                     }}

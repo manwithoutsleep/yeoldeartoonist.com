@@ -4,20 +4,22 @@ import React from 'react';
  * Button component - Styled button with consistent design
  *
  * Variants:
- * - primary: Black background with white text
+ * - primary: Black background with white text and black border (for white backgrounds)
+ * - primary-dark: Black background with white text and white border (for dark backgrounds)
  * - secondary: White background with black border
  * - outline: Transparent with black border
  */
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline';
+    variant?: 'primary' | 'primary-dark' | 'secondary' | 'outline';
     size?: 'sm' | 'md' | 'lg';
     children: React.ReactNode;
 }
 
 const variantStyles = {
     primary: 'bg-black text-white hover:bg-gray-800 border-black',
+    'primary-dark': 'bg-black text-white hover:bg-gray-800 border-white',
     secondary: 'bg-white text-black hover:bg-gray-100 border-black',
     outline: 'bg-transparent text-black hover:bg-gray-100 border-black',
 };

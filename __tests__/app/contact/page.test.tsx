@@ -15,6 +15,9 @@ import { act } from 'react';
 import userEvent from '@testing-library/user-event';
 import ContactPage from '@/app/contact/page';
 
+// Mock fetch API
+global.fetch = vi.fn();
+
 // Mock the site config
 vi.mock('@/config/site', () => ({
     siteConfig: {
@@ -81,6 +84,11 @@ vi.mock('@/components/ui/SocialMediaIcon', () => ({
 describe('Contact Page', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // Mock successful fetch response
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true }),
+        } as Response);
     });
 
     describe('Page Layout', () => {
@@ -220,11 +228,11 @@ describe('Contact Page', () => {
             expect(submitButton).toBeInTheDocument();
         });
 
-        it('should display note about Phase 4 implementation', () => {
+        it('should display response time note', () => {
             render(<ContactPage />);
             expect(
                 screen.getByText(
-                    /Note: Full email functionality will be implemented in Phase 4/i
+                    /I typically respond within 1-2 business days/i
                 )
             ).toBeInTheDocument();
         });
@@ -433,24 +441,29 @@ describe('Contact Page', () => {
                     name: /Send Message/i,
                 });
 
-                // Use fireEvent for typing with fake timers
-                act(() => {
-                    fireEvent.change(nameInput, {
-                        target: { value: 'Test User' },
-                    });
-                    fireEvent.change(emailInput, {
-                        target: { value: 'test@example.com' },
-                    });
-                    fireEvent.change(messageInput, {
-                        target: { value: 'This is a valid test message' },
-                    });
+                // Fill out form
+                fireEvent.change(nameInput, {
+                    target: { value: 'Test User' },
+                });
+                fireEvent.change(emailInput, {
+                    target: { value: 'test@example.com' },
+                });
+                fireEvent.change(messageInput, {
+                    target: { value: 'This is a valid test message' },
+                });
+
+                // Submit form
+                await act(async () => {
                     fireEvent.click(submitButton);
                 });
 
-                // Success message should appear immediately
-                expect(
-                    screen.getByText(/Thank you for your message/i)
-                ).toBeInTheDocument();
+                // Wait for the success message to appear (after fetch completes)
+                // Don't advance timers yet - just wait for the async state update
+                await waitFor(() => {
+                    expect(
+                        screen.getByText(/Thank you for your message/i)
+                    ).toBeInTheDocument();
+                });
 
                 // Advance timers by 3100ms to trigger the timeout
                 await act(async () => {

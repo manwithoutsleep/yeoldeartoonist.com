@@ -45,7 +45,7 @@ export function OrderConfirmation({ order, siteUrl }: OrderConfirmationProps) {
                     {/* Header with Logo */}
                     <Section style={header}>
                         <Img
-                            src={`${siteUrl}/logo.png`}
+                            src={`${siteUrl}/images/header-footer/logo.webp`}
                             alt="Ye Olde Artoonist"
                             width="200"
                             height="50"

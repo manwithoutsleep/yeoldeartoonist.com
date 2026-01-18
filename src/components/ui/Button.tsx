@@ -19,7 +19,8 @@ export interface ButtonProps
 
 const variantStyles = {
     primary: 'bg-black text-white hover:bg-gray-800 border-black',
-    'primary-dark': 'bg-black text-white hover:bg-gray-800 border-white',
+    'primary-dark':
+        'bg-black text-white hover:bg-gray-600 border-white focus:ring-2 focus:ring-offset-2 focus:outline-none',
     secondary: 'bg-white text-black hover:bg-gray-100 border-black',
     outline: 'bg-transparent text-black hover:bg-gray-100 border-black',
 };

@@ -100,7 +100,7 @@ export default function ContactClient() {
         } catch (err) {
             console.error('Contact form submission error:', err);
             setError(
-                'Unable to send message. Please email joe@yeoldeartoonist.com directly.'
+                `Unable to send message. Please email ${siteConfig.artist.email} directly.`
             );
         } finally {
             setIsSubmitting(false);

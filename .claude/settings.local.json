@@ -61,7 +61,11 @@
             "WebFetch(domain:github.com)",
             "Bash(Get-Content \"C:\\\\Users\\\\manwi\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--src-github-mws-yeoldeartoonist-com\\\\tasks\\\\b77c39c.output\")",
             "WebFetch(domain:testing-library.com)",
-            "Bash(gh pr checks:*)"
+            "Bash(gh pr checks:*)",
+            "Bash(git checkout:*)",
+            "Bash(npx grep:*)",
+            "Bash(where:*)",
+            "Bash(npm --version)"
         ],
         "deny": ["Bash(rm:*)"],
         "ask": []

@@ -9,6 +9,7 @@ import { Resend } from 'resend';
 import { render } from '@react-email/render';
 import { OrderConfirmation } from './templates/OrderConfirmation';
 import { AdminNotification } from './templates/AdminNotification';
+import { ContactFormSubmission } from './templates/ContactFormSubmission';
 import type { Order } from '@/types/order';
 
 /**
@@ -259,4 +260,107 @@ export async function sendOrderEmails(order: Order): Promise<{
     }
 
     return { customer: customerResult, admin: adminResult };
+}
+
+/**
+ * Contact form data interface
+ */
+export interface ContactFormData {
+    name: string;
+    email: string;
+    message: string;
+}
+
+/**
+ * Send contact form submission email to admin
+ *
+ * Sends a notification email to admin when someone submits the contact form.
+ * This is a non-blocking operation - failures are logged but do not throw.
+ *
+ * @param contactData - Contact form submission data (name, email, message)
+ * @returns EmailResult indicating success or failure with error details
+ */
+export async function sendContactFormEmail(
+    contactData: ContactFormData
+): Promise<EmailResult> {
+    try {
+        validateEmailConfig();
+
+        if (!ADMIN_EMAIL) {
+            console.warn(
+                'ADMIN_EMAIL not configured, skipping contact form notification'
+            );
+            return {
+                success: false,
+                error: new EmailSendError(
+                    'ADMIN_EMAIL not configured',
+                    'CONFIG_ERROR',
+                    false
+                ),
+            };
+        }
+
+        console.log('Rendering contact form email for:', {
+            name: contactData.name,
+            email: contactData.email,
+            adminEmail: ADMIN_EMAIL,
+        });
+
+        // Render React email component to HTML
+        const html = await render(
+            ContactFormSubmission({
+                ...contactData,
+                submittedAt: new Date().toISOString(),
+            })
+        );
+
+        console.log('Sending contact form email via Resend...');
+
+        // Send email via Resend
+        const { data, error } = await resend.emails.send({
+            from: `${EMAIL_FROM_NAME} <${EMAIL_FROM_ADDRESS}>`,
+            to: [ADMIN_EMAIL],
+            replyTo: contactData.email,
+            subject: `New Contact Form Submission from ${contactData.name}`,
+            html,
+        });
+
+        if (error) {
+            const emailError = new EmailSendError(
+                `Failed to send contact form email: ${error.message}`,
+                'RESEND_ERROR',
+                true
+            );
+            console.error('Resend API error (contact form):', {
+                name: contactData.name,
+                email: contactData.email,
+                error: error.message,
+            });
+            return { success: false, error: emailError };
+        }
+
+        console.log('Contact form email sent successfully:', {
+            name: contactData.name,
+            email: contactData.email,
+            messageId: data?.id,
+        });
+
+        return { success: true, messageId: data?.id };
+    } catch (err) {
+        const errorMessage =
+            err instanceof Error ? err.message : 'Unknown error';
+        const emailError = new EmailSendError(
+            `Error sending contact form email: ${errorMessage}`,
+            'SEND_ERROR',
+            false
+        );
+
+        console.error('Failed to send contact form email:', {
+            name: contactData.name,
+            email: contactData.email,
+            error: errorMessage,
+        });
+
+        return { success: false, error: emailError };
+    }
 }

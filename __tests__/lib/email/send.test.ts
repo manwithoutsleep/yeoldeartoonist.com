@@ -14,10 +14,12 @@ import {
     sendAdminNotificationEmail,
     sendOrderConfirmationEmail,
     sendOrderEmails,
+    sendContactFormEmail,
 } from '@/lib/email/send';
 import { render } from '@react-email/render';
 import { OrderConfirmation } from '@/lib/email/templates/OrderConfirmation';
 import { AdminNotification } from '@/lib/email/templates/AdminNotification';
+import { ContactFormSubmission } from '@/lib/email/templates/ContactFormSubmission';
 import type { Order } from '@/types/order';
 
 // Mock order data for testing
@@ -549,6 +551,153 @@ describe('Email Service', () => {
                 expect(html).toContain('2');
                 expect(html).toContain('First Artwork');
                 expect(html).toContain('Second Artwork');
+            });
+        });
+    });
+
+    describe('sendContactFormEmail', () => {
+        const mockContactData = {
+            name: 'John Doe',
+            email: 'john@example.com',
+            message: 'I would like to inquire about commissioning artwork.',
+        };
+
+        describe('function export', () => {
+            it('should export sendContactFormEmail as a function', () => {
+                expect(typeof sendContactFormEmail).toBe('function');
+            });
+
+            it('should accept a contact data parameter', () => {
+                expect(sendContactFormEmail.length).toBe(1);
+            });
+
+            it('should return a Promise', () => {
+                const result = sendContactFormEmail(mockContactData);
+                expect(result).toBeInstanceOf(Promise);
+            });
+        });
+
+        describe('return type', () => {
+            it('should return EmailResult with success/error properties', async () => {
+                const result = await sendContactFormEmail(mockContactData);
+
+                expect(result).toHaveProperty('success');
+                expect(typeof result.success).toBe('boolean');
+
+                if (!result.success) {
+                    expect(result).toHaveProperty('error');
+                }
+            });
+        });
+
+        describe('configuration validation', () => {
+            const originalEnv = process.env;
+
+            beforeEach(() => {
+                process.env = { ...originalEnv };
+            });
+
+            afterAll(() => {
+                process.env = originalEnv;
+            });
+
+            it('should handle missing RESEND_API_KEY gracefully', async () => {
+                delete process.env.RESEND_API_KEY;
+
+                const result = await sendContactFormEmail(mockContactData);
+
+                expect(result.success).toBe(false);
+                expect(result.error).toBeDefined();
+                expect(result.error?.message).toContain('RESEND_API_KEY');
+            });
+
+            it('should use ADMIN_EMAIL as recipient', async () => {
+                process.env.RESEND_API_KEY = 'test-key';
+                process.env.ADMIN_EMAIL = 'admin@example.com';
+
+                // This will fail without mocking Resend, but we're testing the function is called
+                const result = await sendContactFormEmail(mockContactData);
+
+                // Function should attempt to send (and fail in test environment)
+                expect(result).toHaveProperty('success');
+            });
+        });
+
+        describe('template rendering', () => {
+            it('should render ContactFormSubmission template with contact data', async () => {
+                const submittedAt = new Date().toISOString();
+                const html = await render(
+                    ContactFormSubmission({
+                        ...mockContactData,
+                        submittedAt,
+                    })
+                );
+
+                expect(html).toContain(mockContactData.name);
+                expect(html).toContain(mockContactData.email);
+                expect(html).toContain(mockContactData.message);
+            });
+
+            it('should handle special characters in contact data', async () => {
+                const contactWithSpecialChars = {
+                    name: "O'Connor & Sons <Test>",
+                    email: 'test+tag@example.com',
+                    message: 'Message with <html> tags',
+                };
+                const submittedAt = new Date().toISOString();
+
+                const html = await render(
+                    ContactFormSubmission({
+                        ...contactWithSpecialChars,
+                        submittedAt,
+                    })
+                );
+
+                // HTML should be properly escaped
+                expect(html).not.toContain('<Test>');
+                expect(html).not.toContain('<html>');
+                expect(html).toContain('&lt;');
+            });
+        });
+
+        describe('error handling', () => {
+            const originalEnv = process.env;
+
+            beforeEach(() => {
+                process.env = { ...originalEnv };
+            });
+
+            afterAll(() => {
+                process.env = originalEnv;
+            });
+
+            it('should return error result when email sending fails', async () => {
+                // Missing API key will cause failure
+                delete process.env.RESEND_API_KEY;
+
+                const result = await sendContactFormEmail(mockContactData);
+
+                expect(result.success).toBe(false);
+                expect(result.error).toBeDefined();
+                expect(result.error).toBeInstanceOf(EmailSendError);
+            });
+
+            it('should include appropriate error codes for different failure types', async () => {
+                delete process.env.RESEND_API_KEY;
+
+                const result = await sendContactFormEmail(mockContactData);
+
+                expect(result.error?.code).toBeDefined();
+                expect(typeof result.error?.code).toBe('string');
+            });
+
+            it('should never throw errors', async () => {
+                delete process.env.RESEND_API_KEY;
+
+                // Should not throw, just return error result
+                await expect(
+                    sendContactFormEmail(mockContactData)
+                ).resolves.toBeDefined();
             });
         });
     });

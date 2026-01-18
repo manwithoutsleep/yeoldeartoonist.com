@@ -20,7 +20,15 @@ describe('Button Component', () => {
     it('should render with default primary variant', () => {
         render(<Button>Primary Button</Button>);
         const button = screen.getByRole('button', { name: 'Primary Button' });
-        expect(button).toHaveClass('bg-black', 'text-white');
+        expect(button).toHaveClass('bg-black', 'text-white', 'border-black');
+    });
+
+    it('should render with primary-dark variant for dark backgrounds', () => {
+        render(<Button variant="primary-dark">Primary Dark Button</Button>);
+        const button = screen.getByRole('button', {
+            name: 'Primary Dark Button',
+        });
+        expect(button).toHaveClass('bg-black', 'text-white', 'border-white');
     });
 
     it('should render with secondary variant', () => {

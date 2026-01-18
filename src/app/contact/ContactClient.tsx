@@ -42,6 +42,8 @@ export default function ContactClient() {
     });
     const [submitted, setSubmitted] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -54,7 +56,7 @@ export default function ContactClient() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validate form data
@@ -73,13 +75,36 @@ export default function ContactClient() {
             return;
         }
 
-        // Form functionality will be implemented in Phase 4
-        setSubmitted(true);
-        setTimeout(() => {
-            setSubmitted(false);
-            setFormData({ name: '', email: '', message: '' });
-            setErrors({});
-        }, 3000);
+        setIsSubmitting(true);
+        setError(null);
+
+        try {
+            // Call API to send email
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(result.data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+
+            // Show success message
+            setSubmitted(true);
+            setTimeout(() => {
+                setSubmitted(false);
+                setFormData({ name: '', email: '', message: '' });
+                setErrors({});
+            }, 3000);
+        } catch (err) {
+            console.error('Contact form submission error:', err);
+            setError(
+                `Unable to send message. Please email ${siteConfig.artist.email} directly.`
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -196,6 +221,12 @@ export default function ContactClient() {
                             </div>
                         )}
 
+                        {error && (
+                            <div className="bg-red-500 bg-opacity-20 border-2 border-red-500 text-red-200 px-4 py-3 rounded mb-6">
+                                <p>{error}</p>
+                            </div>
+                        )}
+
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="w-full">
                                 <label
@@ -294,17 +325,16 @@ export default function ContactClient() {
 
                             <Button
                                 type="submit"
-                                variant="primary"
+                                variant="primary-dark"
                                 className="w-full"
+                                disabled={isSubmitting}
                             >
-                                Send Message
+                                {isSubmitting ? 'Sending...' : 'Send Message'}
                             </Button>
                         </form>
 
                         <p className="text-sm text-gray-400 mt-4">
-                            Note: Full email functionality will be implemented
-                            in Phase 4. For now, form submissions aren&apos;t
-                            sent.
+                            I typically respond within 1-2 business days.
                         </p>
                     </div>
                 </div>

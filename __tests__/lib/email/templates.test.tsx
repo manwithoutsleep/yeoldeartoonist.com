@@ -266,7 +266,7 @@ describe('OrderConfirmation Email Template', () => {
             const html = await render(
                 OrderConfirmation({ order: mockOrder, siteUrl })
             );
-            expect(html).toContain(`${siteUrl}/logo.png`);
+            expect(html).toContain(`${siteUrl}/images/header-footer/logo.webp`);
         });
 
         it('should include site URL in footer', async () => {

@@ -308,7 +308,9 @@ describe('Email Service', () => {
                     })
                 );
 
-                expect(html).toContain(`${siteUrl}/logo.png`);
+                expect(html).toContain(
+                    `${siteUrl}/images/header-footer/logo.webp`
+                );
             });
 
             it('should render order confirmation with footer and site link', async () => {

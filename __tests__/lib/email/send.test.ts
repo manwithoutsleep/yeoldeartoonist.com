@@ -12,9 +12,9 @@
 import {
     EmailSendError,
     sendAdminNotificationEmail,
+    sendContactFormEmail,
     sendOrderConfirmationEmail,
     sendOrderEmails,
-    sendContactFormEmail,
 } from '@/lib/email/send';
 import { render } from '@react-email/render';
 import { OrderConfirmation } from '@/lib/email/templates/OrderConfirmation';
@@ -299,7 +299,7 @@ describe('Email Service', () => {
                 );
 
                 expect(html).toContain(
-                    `${siteUrl}/images/header-footer/logo.webp`
+                    `${siteUrl}/images/header-footer/logo.png`
                 );
             });
 

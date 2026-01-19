@@ -26,6 +26,12 @@ export const siteConfig = {
         free_shipping_minimum: 10000,
     },
 
+    // Email Configuration
+    email: {
+        fromAddress: 'orders@yeoldeartoonist.com',
+        fromName: 'Ye Olde Artoonist',
+    },
+
     // Site Information
     site: {
         title: 'Ye Olde Artoonist',

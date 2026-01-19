@@ -11,6 +11,7 @@ import { OrderConfirmation } from './templates/OrderConfirmation';
 import { AdminNotification } from './templates/AdminNotification';
 import { ContactFormSubmission } from './templates/ContactFormSubmission';
 import type { Order } from '@/types/order';
+import { siteConfig } from '@/config/site';
 
 /**
  * Email sending error types for better error handling
@@ -38,11 +39,10 @@ export interface EmailResult {
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Email configuration from environment
-const EMAIL_FROM_ADDRESS =
-    process.env.EMAIL_FROM_ADDRESS || 'orders@yeoldeartoonist.com';
-const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'Ye Olde Artoonist';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+// Email configuration from siteConfig
+const EMAIL_FROM_ADDRESS = siteConfig.email.fromAddress;
+const EMAIL_FROM_NAME = siteConfig.email.fromName;
+const ADMIN_EMAIL = siteConfig.artist.email;
 const SITE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 /**
@@ -145,20 +145,6 @@ export async function sendAdminNotificationEmail(
 ): Promise<EmailResult> {
     try {
         validateEmailConfig();
-
-        if (!ADMIN_EMAIL) {
-            console.warn(
-                'ADMIN_EMAIL not configured, skipping admin notification'
-            );
-            return {
-                success: false,
-                error: new EmailSendError(
-                    'ADMIN_EMAIL not configured',
-                    'CONFIG_ERROR',
-                    false
-                ),
-            };
-        }
 
         console.log('Rendering admin notification email for:', {
             orderId: order.id,
@@ -285,20 +271,6 @@ export async function sendContactFormEmail(
 ): Promise<EmailResult> {
     try {
         validateEmailConfig();
-
-        if (!ADMIN_EMAIL) {
-            console.warn(
-                'ADMIN_EMAIL not configured, skipping contact form notification'
-            );
-            return {
-                success: false,
-                error: new EmailSendError(
-                    'ADMIN_EMAIL not configured',
-                    'CONFIG_ERROR',
-                    false
-                ),
-            };
-        }
 
         console.log('Rendering contact form email for:', {
             name: contactData.name,

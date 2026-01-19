@@ -158,18 +158,6 @@ describe('Email Service', () => {
             expect(result.error?.message).toContain('RESEND_API_KEY');
         });
 
-        it('should handle missing ADMIN_EMAIL gracefully', async () => {
-            // Set required API key but remove admin email
-            process.env.RESEND_API_KEY = 'test-key';
-            delete process.env.ADMIN_EMAIL;
-
-            const result = await sendAdminNotificationEmail(mockOrder);
-
-            expect(result.success).toBe(false);
-            expect(result.error).toBeDefined();
-            expect(result.error?.code).toBe('CONFIG_ERROR');
-        });
-
         it('sendOrderEmails should return results for both emails', async () => {
             const result = await sendOrderEmails(mockOrder);
 
@@ -611,9 +599,8 @@ describe('Email Service', () => {
                 expect(result.error?.message).toContain('RESEND_API_KEY');
             });
 
-            it('should use ADMIN_EMAIL as recipient', async () => {
+            it('should use siteConfig.artist.email as recipient', async () => {
                 process.env.RESEND_API_KEY = 'test-key';
-                process.env.ADMIN_EMAIL = 'admin@example.com';
 
                 // This will fail without mocking Resend, but we're testing the function is called
                 const result = await sendContactFormEmail(mockContactData);
